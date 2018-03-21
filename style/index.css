@@ -1,0 +1,6 @@
+
+.sos_icon {
+	background-image: url('./sos_icon.svg');
+	background-repeat:no-repeat;
+    background-position: center center;
+}
