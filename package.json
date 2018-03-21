@@ -29,7 +29,8 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.15.0"
+    "@jupyterlab/application": "^0.15.0",
+    "@types/codemirror": "0.0.55"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",
