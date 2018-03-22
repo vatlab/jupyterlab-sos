@@ -29,7 +29,11 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.15.0",
+    "@jupyterlab/application": "^0.15.4",
+    "@jupyterlab/apputils": "^0.15.5",
+    "@jupyterlab/docregistry": "^0.15.5",
+    "@jupyterlab/notebook": "^0.15.7",
+    "@phosphor/disposable": "^1.1.2",
     "@types/codemirror": "0.0.55"
   },
   "devDependencies": {
