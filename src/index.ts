@@ -16,6 +16,11 @@ import {
   DocumentRegistry
 } from '@jupyterlab/docregistry';
 
+
+import {
+  KernelMessage
+} from '@jupyterlab/services';
+
 import {
   NotebookActions,
   NotebookPanel,
@@ -26,32 +31,32 @@ import {
 import '../style/index.css';
 
 import * as $ from "jquery";
-import * as codemirror_type from 'codemirror';
+//import * as codemirror_type from 'codemirror';
+import * as CodeMirror from 'codemirror';
 import 'codemirror/mode/meta';
 import 'codemirror/mode/python/python';
 
 const SOS_MIME_TYPE = 'text/x-sos'
 
-function registerSoSFileType(app) {
+function registerSoSFileType(app:  JupyterLab) {
   app.docRegistry.addFileType({
-    name: 'sos',
+    name: 'SoS',
+    displayName: 'SoS File',
     extensions: ['.sos'],
     mimeTypes: [SOS_MIME_TYPE],
-    iconClass: 'sos_icon',
+    iconClass: 'jp-MaterialIcon sos_icon',
   });
 }
 
+
 function registerSoSCodeMirrorMode() {
   /* We should use
-   *   import * as CodeMirror from 'codemirror' directly. However, the typefile
-   *   from @types/codemirror https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/codemirror/index.d.ts
+   *   The typefile from @types/codemirror https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/codemirror/index.d.ts
    *   is different from the one used by Jupyter
    *   (https://github.com/jupyterlab/jupyterlab/blob/3b4c1a3df53b7446516a4cb1138cc57ae91a7b80/packages/codemirror/typings/codemirror/codemirror.d.ts)
-   * so I would get errors such as property "defineMIME" does not exist etc.
+   * To use the following code, there CANNOT be any @types/codemirror in packages.json
    *
-   * The temporary walkaround is to define CodeMirror as any type and stop tsc from generating such errors.
    **/
-  let CodeMirror: any = codemirror_type;
 
   CodeMirror.defineMode('sos', (config: CodeMirror.EditorConfiguration, modeOptions ? : any) => {
     let pythonConf: any = {};
@@ -68,14 +73,14 @@ function registerSoSCodeMirrorMode() {
 
   CodeMirror.defineMIME(SOS_MIME_TYPE, 'sos');
   CodeMirror.modeInfo.push({
-    ext: ['.sos'],
+    ext: ['sos'], // codemirror extension does not need .
     mime: SOS_MIME_TYPE,
     mode: 'sos',
-    name: 'sos'
+    name: 'SoS'
   });
 }
 
-function on_frontend_msg(msg) {
+function on_frontend_msg(msg : KernelMessage.ICommMsgMsg) {
   let data = msg.content.data;
   console.log(data);
 	/*
@@ -353,7 +358,7 @@ function on_frontend_msg(msg) {
 
 function connectSoSComm(panel: NotebookPanel) {
   let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
-  sos_comm.open('ack');
+  sos_comm.open('initial');
   sos_comm.onMsg = on_frontend_msg;
 
   let kernels = panel.notebook.model.metadata.has('sos') ? panel.notebook.model.metadata.get('sos')['kernels'] : [];
