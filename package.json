@@ -37,7 +37,11 @@
     "@jupyterlab/services": "^1.1.4",
     "@phosphor/disposable": "^1.1.2",
     "@types/jquery": "^3.3.1",
-    "codemirror": "^5.36.0"
+    "brackets-npm-registry": "^0.6.5",
+    "brackets-typescript": "^1.1.0",
+    "codemirror": "^5.36.0",
+    "lodash.clonedeep": "^4.5.0",
+    "lodash.omit": "^4.5.0"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",

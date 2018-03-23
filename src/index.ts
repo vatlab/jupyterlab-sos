@@ -1,88 +1,59 @@
 import {
-  JupyterLab,
-  JupyterLabPlugin
+    JupyterLab,
+    JupyterLabPlugin
 } from '@jupyterlab/application';
 
 import {
-  IDisposable,
-  DisposableDelegate
+    IDisposable,
+    DisposableDelegate
 } from '@phosphor/disposable';
 
 import {
-  ToolbarButton
+    ToolbarButton
 } from '@jupyterlab/apputils';
 
 import {
-  DocumentRegistry
+    DocumentRegistry
 } from '@jupyterlab/docregistry';
 
-
 import {
-  KernelMessage
+    KernelMessage
 } from '@jupyterlab/services';
 
 import {
-  NotebookActions,
-  NotebookPanel,
-  INotebookModel
+    NotebookActions,
+    NotebookPanel,
+    INotebookModel
 } from '@jupyterlab/notebook';
 
+// define and register SoS CodeMirror mode
+import './codemirror-sos'
 
 import '../style/index.css';
 
 import * as $ from "jquery";
-//import * as codemirror_type from 'codemirror';
-import * as CodeMirror from 'codemirror';
-import 'codemirror/mode/meta';
-import 'codemirror/mode/python/python';
 
+/*
+ * Define SoS File msg_type
+ */
 const SOS_MIME_TYPE = 'text/x-sos'
 
-function registerSoSFileType(app:  JupyterLab) {
-  app.docRegistry.addFileType({
-    name: 'SoS',
-    displayName: 'SoS File',
-    extensions: ['.sos'],
-    mimeTypes: [SOS_MIME_TYPE],
-    iconClass: 'jp-MaterialIcon sos_icon',
-  });
+function registerSoSFileType(app: JupyterLab) {
+    app.docRegistry.addFileType({
+        name: 'SoS',
+        displayName: 'SoS File',
+        extensions: ['.sos'],
+        mimeTypes: [SOS_MIME_TYPE],
+        iconClass: 'jp-MaterialIcon sos_icon',
+    });
 }
 
-
-function registerSoSCodeMirrorMode() {
-  /* We should use
-   *   The typefile from @types/codemirror https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/codemirror/index.d.ts
-   *   is different from the one used by Jupyter
-   *   (https://github.com/jupyterlab/jupyterlab/blob/3b4c1a3df53b7446516a4cb1138cc57ae91a7b80/packages/codemirror/typings/codemirror/codemirror.d.ts)
-   * To use the following code, there CANNOT be any @types/codemirror in packages.json
-   *
-   **/
-
-  CodeMirror.defineMode('sos', (config: CodeMirror.EditorConfiguration, modeOptions ? : any) => {
-    let pythonConf: any = {};
-    for (let prop in modeOptions) {
-      if (modeOptions.hasOwnProperty(prop)) {
-        pythonConf[prop] = modeOptions[prop];
-      }
-    }
-    pythonConf.name = 'python';
-    pythonConf.singleOperators = new RegExp('^[\\+\\-\\*/%&|@\\^~<>!\\?]');
-    pythonConf.identifiers = new RegExp('^[_A-Za-z\u00A1-\uFFFF][_A-Za-z0-9\u00A1-\uFFFF]*');
-    return CodeMirror.getMode(config, pythonConf);
-  }, 'python');
-
-  CodeMirror.defineMIME(SOS_MIME_TYPE, 'sos');
-  CodeMirror.modeInfo.push({
-    ext: ['sos'], // codemirror extension does not need .
-    mime: SOS_MIME_TYPE,
-    mode: 'sos',
-    name: 'SoS'
-  });
-}
-
-function on_frontend_msg(msg : KernelMessage.ICommMsgMsg) {
-  let data = msg.content.data;
-  console.log(data);
+/*
+ * SoS frontend Comm
+ */
+function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
+    let data = msg.content.data;
+    console.log(data);
 	/*
   var msg_type = msg.metadata.msg_type;
   var i, j;
@@ -234,7 +205,7 @@ function on_frontend_msg(msg : KernelMessage.ICommMsgMsg) {
     }
     if (data[2] === "completed") {
       for (cell in window.pending_cells) {
-				// remove task from pending_cells 
+				// remove task from pending_cells
         for (var idx = 0; idx < window.pending_cells[cell].length; ++idx) {
           if (window.pending_cells[cell][idx][0] !== data[0] ||
             window.pending_cells[cell][idx][1] !== data[1]) {
@@ -357,42 +328,29 @@ function on_frontend_msg(msg : KernelMessage.ICommMsgMsg) {
 }
 
 function connectSoSComm(panel: NotebookPanel) {
-  let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
-  sos_comm.open('initial');
-  sos_comm.onMsg = on_frontend_msg;
+    let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
+    sos_comm.open('initial');
+    sos_comm.onMsg = on_frontend_msg;
 
-  let kernels = panel.notebook.model.metadata.has('sos') ? panel.notebook.model.metadata.get('sos')['kernels'] : [];
-  console.log(kernels);
-  sos_comm.send({
-    "list-kernel": kernels,
-    /* "update-task-status": window.unknown_tasks, 
-    "notebook-version": nb.metadata["sos"]["version"] || "undefined",
-    */
-  });
-  console.log("sos comm registered");
+    let kernels = panel.notebook.model.metadata.has('sos') ? panel.notebook.model.metadata.get('sos')['kernels'] : [];
+    console.log(kernels);
+    sos_comm.send({
+        "list-kernel": kernels,
+        /* "update-task-status": window.unknown_tasks,
+        "notebook-version": nb.metadata["sos"]["version"] || "undefined",
+        */
+    });
+    console.log("sos comm registered");
 }
 
-export
-class ButtonExtension implements DocumentRegistry.IWidgetExtension < NotebookPanel, INotebookModel > {
-  /**
-   * Create a new extension object.
-   */
-  createNew(panel: NotebookPanel, context: DocumentRegistry.IContext < INotebookModel > ): IDisposable {
-    let callback = () => {
-      NotebookActions.runAll(panel.notebook, context.session);
-    };
-
-    // kernel might not be available at this time (e.g. when we open an existing notebook)
-    // in this case, a button will be added. However, the button will be hidden and only 
-    let nb_kernel = context.session.kernelPreference.name;
-    if (nb_kernel && nb_kernel !== 'sos') {
-      return;
-    }
+function addGlobalLanguageSelector(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): ToolbarButton {
 
     let button = new ToolbarButton({
-      className: 'sos_button',
-      onClick: callback,
-      tooltip: 'Run All'
+        className: 'sos_widget',
+        onClick: () => {
+            NotebookActions.runAll(panel.notebook, context.session);
+        },
+        tooltip: 'Run All'
     });
 
     let i = document.createElement('i');
@@ -401,44 +359,63 @@ class ButtonExtension implements DocumentRegistry.IWidgetExtension < NotebookPan
     button.node.appendChild(i);
 
     panel.toolbar.insertItem(0, 'runAll', button);
-
-    // if kernel information is not available, the buttons will be removed
-    // when the kernel is ready. New buttons will not be created because by
-    // that time the kernel information is clear
-    context.session.ready.then(
-      () => {
-        let cur_kernel = panel.context.session.kernelPreference.name;
-        if (cur_kernel !== 'sos') {
-          // if this is not a sos kernel, remove all buttons
-          $('.sos_button', panel.node).remove();
-        } else {
-          connectSoSComm(panel);
-        }
-      }
-    );
-    return new DisposableDelegate(() => {
-      button.dispose();
-    });
-  }
+    return button;
 }
 
-function addLanguageSelector(app: JupyterLab) {
-  app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
+function addCellLevelLanguageSelector(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>) {
+
+}
+
+export
+    class SoSWidgets implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
+    /**
+     * The createNew function does not return whatever created. It is just a registery that Will
+     * be called when a notebook is created/opened, and the toolbar is created. it is therefore
+     * a perfect time to insert SoS language selector and create comms during this time.
+     */
+    createNew(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): IDisposable {
+        // we add SoS widget for all panels because the panel could be switched to SoS kernel later
+        let button = addGlobalLanguageSelector(panel, context);
+        addCellLevelLanguageSelector(panel, context);
+
+        context.session.ready.then(
+            () => {
+                // kernel information (for opened notebook) should be ready
+                // at this time. We can remove all sos_widget from the panel
+                // if it is not sos.
+                let cur_kernel = panel.context.session.kernelPreference.name;
+                if (cur_kernel === 'sos') {
+                    // if this is not a sos kernel, remove all buttons
+                    $('.sos_widget', panel.node).show();
+                    connectSoSComm(panel);
+                } else {
+                    // in this case, the .sos_widget should be hidden
+                    $('.sos_widget', panel.node).hide();
+                }
+            }
+        );
+        return new DisposableDelegate(() => {
+            button.dispose();
+        });
+    }
+}
+
+function registerSoSWidgets(app: JupyterLab) {
+    app.docRegistry.addWidgetExtension('Notebook', new SoSWidgets());
 }
 
 
 /**
  * Initialization data for the sos-extension extension.
  */
-const extension: JupyterLabPlugin < void > = {
-  id: 'sos-extension',
-  autoStart: true,
-  activate: (app: JupyterLab) => {
-    registerSoSCodeMirrorMode();
-    registerSoSFileType(app);
-    addLanguageSelector(app);
-    console.log('JupyterLab extension sos-extension is activated!');
-  }
+const extension: JupyterLabPlugin<void> = {
+    id: 'sos-extension',
+    autoStart: true,
+    activate: (app: JupyterLab) => {
+        registerSoSFileType(app);
+        registerSoSWidgets(app);
+        console.log('JupyterLab extension sos-extension is activated!');
+    }
 };
 
 export default extension;
