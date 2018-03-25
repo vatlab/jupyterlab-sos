@@ -5,7 +5,7 @@
 
 <link rel="stylesheet" href="codemirror/lib/codemirror.css">
 <script src="codemirror/lib/codemirror.js"></script>
-<script src="codemirror-sos.js"></script>
+<script src="sos-mode.js"></script>
 <style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black; height: 200em;}</style>
 
 
@@ -117,7 +117,7 @@ pandoc: input = "report.md", output = "report.html", args = '{input:q} --css pan
 
     <script>
       var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        mode: "python",
+        mode: "sos",
         lineNumbers: true,
         indentUnit: 4,
         matchBrackets: true
