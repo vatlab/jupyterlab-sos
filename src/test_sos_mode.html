@@ -2,71 +2,126 @@
 
 <title>CodeMirror: SoS mode</title>
 <meta charset="utf-8"/>
-<link rel=stylesheet href="../../doc/docs.css">
 
-<link rel="stylesheet" href="../../lib/codemirror.css">
-<script src="../../lib/codemirror.js"></script>
-<script src="codemirror-sos.js"></script>
-<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
-<div id=nav>
-  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+<link rel="stylesheet" href="codemirror/lib/codemirror.css">
+<script src="codemirror/lib/codemirror.js"></script>
+<script src="codemirror/mode/python/python.js"></script>
+<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black; height: 200em;}</style>
 
-  <ul>
-    <li><a href="../../index.html">Home</a>
-    <li><a href="../../doc/manual.html">Manual</a>
-    <li><a href="https://github.com/codemirror/codemirror">Code</a>
-  </ul>
-  <ul>
-    <li><a href="../index.html">Language modes</a>
-    <li><a class=active href="#">Python</a>
-  </ul>
-</div>
 
 <article>
 <h2>SoS mode</h2>
 
 <div><textarea id="code" name="code">
+#!/usr/bin/env sos-runner
+# fileformat=SOS1.0
+# Author: Gao Wang and Bo Peng
 
-parameter: a = 1
+#
+# Linear-model based prediction
+#
+# This script fits linear models
+# using Lasso and Ridge regression
+# and summarizes their prediction performance
+# This script is written in a "backward" flavor
+# aka the "Make Style"
 
-[10: options]
-input: 'something', group_by=1
-output: 'somethingelse'
+parameter: beta = [3, 1.5, 0, 0, 2, 0, 0, 0]
+ridge_result = [f'data_{x+1}.ridge.mse.csv' for x in range(5)]
+lasso_result = [f'data_{x+1}.lasso.mse.csv' for x in range(5)]
 
-sh:
+[simulation: provides = ["data_{id}.train.csv", "data_{id}.test.csv"]]
+# Simulate sparse data-sets
+depends: R_library("MASS")
+parameter: N = (40, 200) # training and testing samples
+parameter: rstd = 3
+output: f"data_{id}.train.csv", f"data_{id}.test.csv"
+R: expand = "${ }"
+  set.seed(${id})
+  N = sum(c(${paths(N):,}))
+  p = length(c(${paths(beta):,}))
+  X = MASS::mvrnorm(n = N, rep(0, p), 0.5^abs(outer(1:p, 1:p, FUN = "-")))
+  Y = X %*% c(${paths(beta):,}) + rnorm(N, mean = 0, sd = ${rstd})
+  Xtrain = X[1:${N[0]},]; Xtest = X[(${N[0]}+1):(${N[0]}+${N[1]}),]
+  Ytrain = Y[1:${N[0]}]; Ytest = Y[(${N[0]}+1):(${N[0]}+${N[1]})]
+  write.table(cbind(Ytrain, Xtrain), ${_output[0]:r}, row.names = F, col.names = F, sep = ',')
+  write.table(cbind(Ytest, Xtest), ${_output[1]:r}, row.names = F, col.names = F, sep = ',')
 
-[10: options]
-input: 'something', group_by=1
-output: 'somethingelse'
+[ridge: provides = ["data_{id}.ridge.predicted.csv", "data_{id}.ridge.coef.csv"]]
+# Ridge regression model implemented in R
+# Build predictor via cross-validation and make prediction
+parameter: nfolds = 5
+depends: f"data_{id}.train.csv", f"data_{id}.test.csv", R_library("glmnet")
+output: f"data_{id}.ridge.predicted.csv", f"data_{id}.ridge.coef.csv"
+R: expand = "${ }"
+  train = read.csv(${_depends[0]:r}, header = F)
+  test = read.csv(${_depends[1]:r}, header = F)
+  model = glmnet::cv.glmnet(as.matrix(train[,-1]), train[,1], family = "gaussian", alpha = 0, nfolds = ${nfolds}, intercept = F)
+  betahat = as.vector(coef(model, s = "lambda.min")[-1])
+  Ypred = predict(model, as.matrix(test[,-1]), s = "lambda.min")
+  write.table(Ypred, ${_output[0]:r}, row.names = F, col.names = F, sep = ',')
+  write.table(betahat, ${_output[1]:r}, row.names = F, col.names = F, sep = ',')
 
-R:
-  R script
+[lasso: provides = ["data_{id}.lasso.predicted.csv", "data_{id}.lasso.coef.csv"]]
+# LASSO model implemented in Python
+# Build predictor via cross-validation and make prediction
+parameter: nfolds = 5
+depends: f"data_{id}.train.csv", f"data_{id}.test.csv", Py_Module("sklearn")
+output: f"data_{id}.lasso.predicted.csv", f"data_{id}.lasso.coef.csv"
+python: expand = "${ }"
+  import numpy as np
+  from sklearn.linear_model import LassoCV
+  train = np.genfromtxt(${_depends[0]:r}, delimiter = ",")
+  test = np.genfromtxt(${_depends[1]:r}, delimiter = ",")
+  model = LassoCV(cv = ${nfolds}, fit_intercept = False).fit(train[:,1:], train[:,1])
+  Ypred = model.predict(test[:,1:])
+  np.savetxt(${_output[0]:r}, Ypred)
+  np.savetxt(${_output[1]:r}, model.coef_)
+
+[evaluation: provides = 'data_{id}.{method}.mse.csv']
+# Evaluate predictors by calculating mean squared error
+# of prediction vs truth (first line of output)
+# and of betahat vs truth (2nd line of output)
+depends: f"data_{id}.test.csv", f"data_{id}.{method}.predicted.csv",
+         f"data_{id}.{method}.coef.csv"
+R: expand = "${ }"
+  b = c(${paths(beta):,})
+  Ytruth = as.matrix(read.csv(${_depends[0]:r}, header = F)[,-1]) %*% b
+  Ypred = scan(${_depends[1]:r})
+  prediction_mse = mean((Ytruth - Ypred)^2)
+  betahat = scan(${_depends[2]:r})
+  estimation_mse = mean((betahat - b) ^ 2)
+  cat(paste(prediction_mse, estimation_mse), file = ${_output:r})
+
+[get-pandoc-css: provides = 'pandoc.css']
+download:
+  https://raw.githubusercontent.com/vatlab/sos-docs/master/css/pandoc.css
+
+[default]
+depends: ridge_result, lasso_result, "pandoc.css", executable('pandoc')
+import numpy as np
+ridge_summary = np.mean(np.matrix([sum([x.strip().split() for x in open(f).readlines()], []) for f in ridge_result], dtype = float).T, axis = 1).tolist()
+lasso_summary = np.mean(np.matrix([sum([x.strip().split() for x in open(f).readlines()], []) for f in lasso_result], dtype = float).T, axis = 1).tolist()
+
+report: expand = "${ }", output = "report.md"
+
+  | Method | Avg. Estimation Error | Avg. Prediction Error |
+  |:------:|:-------:|:-------:|
+  | LASSO | ${lasso_summary[1]} | ${lasso_summary[0]} |
+  | Ridge | ${ridge_summary[1]} | ${ridge_summary[0]} |
+
+pandoc: input = "report.md", output = "report.html", args = '{input:q} --css pandoc.css --output {output:q}'
+
 
 </textarea></div>
 
-
     <script>
       var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        mode: {name: "sos",
-               singleLineStringErrors: false},
+        mode: "python",
         lineNumbers: true,
         indentUnit: 4,
         matchBrackets: true
     });
     </script>
 
-    <h2>Advanced Configuration Options:</h2>
-    <p>Usefull for superset of python syntax like Enthought enaml, IPython magics and  questionmark help</p>
-    <ul>
-      <li>singleOperators - RegEx - Regular Expression for single operator matching,  default : <pre>^[\\+\\-\\*/%&amp;|\\^~&lt;&gt;!]</pre> including <pre>@</pre> on Python 3</li>
-      <li>singleDelimiters - RegEx - Regular Expression for single delimiter matching, default :  <pre>^[\\(\\)\\[\\]\\{\\}@,:`=;\\.]</pre></li>
-      <li>doubleOperators - RegEx - Regular Expression for double operators matching, default : <pre>^((==)|(!=)|(&lt;=)|(&gt;=)|(&lt;&gt;)|(&lt;&lt;)|(&gt;&gt;)|(//)|(\\*\\*))</pre></li>
-      <li>doubleDelimiters - RegEx - Regular Expression for double delimiters matching, default : <pre>^((\\+=)|(\\-=)|(\\*=)|(%=)|(/=)|(&amp;=)|(\\|=)|(\\^=))</pre></li>
-      <li>tripleDelimiters - RegEx - Regular Expression for triple delimiters matching, default : <pre>^((//=)|(&gt;&gt;=)|(&lt;&lt;=)|(\\*\\*=))</pre></li>
-      <li>identifiers - RegEx - Regular Expression for identifier, default : <pre>^[_A-Za-z][_A-Za-z0-9]*</pre> on Python 2 and <pre>^[_A-Za-z\u00A1-\uFFFF][_A-Za-z0-9\u00A1-\uFFFF]*</pre> on Python 3.</li>
-      <li>extra_keywords - list of string - List of extra words ton consider as keywords</li>
-      <li>extra_builtins - list of string - List of extra words ton consider as builtins</li>
-    </ul>
-
-    <p><strong>MIME types defined:</strong> <code>text/x-python</code> and <code>text/x-cython</code>.</p>
   </article>
