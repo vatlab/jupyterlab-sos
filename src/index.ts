@@ -377,7 +377,6 @@ export
         // we add SoS widget for all panels because the panel could be switched to SoS kernel later
         let button = addGlobalLanguageSelector(panel, context);
         addCellLevelLanguageSelector(panel, context);
-
         context.session.ready.then(
             () => {
                 // kernel information (for opened notebook) should be ready
@@ -394,6 +393,17 @@ export
                 }
             }
         );
+
+        context.session.kernelChanged.connect((sender, kernel) => {
+            if (kernel.name === 'sos') {
+                // if this is not a sos kernel, remove all buttons
+                $('.sos_widget', panel.node).show();
+                connectSoSComm(panel);
+            } else {
+                // in this case, the .sos_widget should be hidden
+                $('.sos_widget', panel.node).hide();
+            }
+        });
         return new DisposableDelegate(() => {
             button.dispose();
         });
