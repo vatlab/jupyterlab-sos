@@ -4,7 +4,7 @@ import 'codemirror/mode/meta';
 
 // this module defines codemirror mode of SoS. It is written in JS because it
 // will be used by jupyter sos-notebook as well.
-import 'sos-mode.js'
+import './sos-mode';
 
 CodeMirror.modeInfo.push({
     ext: ['sos'],

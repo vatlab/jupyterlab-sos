@@ -5,6 +5,9 @@
 
 <link rel="stylesheet" href="codemirror/lib/codemirror.css">
 <script src="codemirror/lib/codemirror.js"></script>
+<script src="codemirror/mode/python/python.js"></script>
+<script src="codemirror/mode/r/r.js"></script>
+<script src="codemirror/mode/markdown/markdown.js"></script>
 <script src="sos-mode.js"></script>
 <style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black; height: 200em;}</style>
 
@@ -36,7 +39,8 @@ depends: R_library("MASS")
 parameter: N = (40, 200) # training and testing samples
 parameter: rstd = 3
 output: f"data_{id}.train.csv", f"data_{id}.test.csv"
-R: expand = "${ }"
+R: expand = "${ }",
+   output=False
   set.seed(${id})
   N = sum(c(${paths(N):,}))
   p = length(c(${paths(beta):,}))
@@ -53,14 +57,14 @@ R: expand = "${ }"
 parameter: nfolds = 5
 depends: f"data_{id}.train.csv", f"data_{id}.test.csv", R_library("glmnet")
 output: f"data_{id}.ridge.predicted.csv", f"data_{id}.ridge.coef.csv"
-R: expand = "${ }"
-  train = read.csv(${_depends[0]:r}, header = F)
-  test = read.csv(${_depends[1]:r}, header = F)
-  model = glmnet::cv.glmnet(as.matrix(train[,-1]), train[,1], family = "gaussian", alpha = 0, nfolds = ${nfolds}, intercept = F)
+R: expand = True
+  train = read.csv({_depends[0]:r}, header = F)
+  test = read.csv({_depends[1]:r}, header = F)
+  model = glmnet::cv.glmnet(as.matrix(train[,-1]), train[,1], family = "gaussian", alpha = 0, nfolds = {nfolds}, intercept = F)
   betahat = as.vector(coef(model, s = "lambda.min")[-1])
   Ypred = predict(model, as.matrix(test[,-1]), s = "lambda.min")
-  write.table(Ypred, ${_output[0]:r}, row.names = F, col.names = F, sep = ',')
-  write.table(betahat, ${_output[1]:r}, row.names = F, col.names = F, sep = ',')
+  write.table(Ypred, {_output[0]:r}, row.names = F, col.names = F, sep = ',')
+  write.table(betahat, {_output[1]:r}, row.names = F, col.names = F, sep = ',')
 
 [lasso: provides = ["data_{id}.lasso.predicted.csv", "data_{id}.lasso.coef.csv"]]
 # LASSO model implemented in Python
