@@ -3,6 +3,12 @@
         mod(require("codemirror/lib/codemirror"),
             require("codemirror/mode/python/python"),
             require("codemirror/mode/r/r"),
+            require("codemirror/mode/octave/octave"),
+            require("codemirror/mode/ruby/ruby"),
+            require("codemirror/mode/sas/sas"),
+            require("codemirror/mode/javascript/javascript"),
+            require("codemirror/mode/shell/shell"),
+            require("codemirror/mode/julia/julia"),
             require("codemirror/mode/markdown/markdown"));
     else if (typeof define == "function" && define.amd) // AMD
         define(["codemirror/lib/codemirror", "codemirror/mode/python/python",
@@ -37,7 +43,7 @@
     CodeMirror.registerHelper("hintWords", "sos", hintWords);
 
     var modeMap = {
-        'run': 'bash',
+        'run': 'shell',
         'python': {
             name: 'python',
             version: 3
@@ -53,7 +59,15 @@
         'r': 'r',
         'report': 'markdown',
         'pandoc': 'markdown',
-        'download': 'markdown'
+        'download': 'markdown',
+        // from kernel named, r, ruby, sas, javascript etc are fine
+        'bash': 'shell',
+        'sh': 'shell',
+        'typescript': {
+            name: "javascript",
+            typescript: true
+        },
+        'matlab': 'octave',
     }
 
     function findMode(mode) {

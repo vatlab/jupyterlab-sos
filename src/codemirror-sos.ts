@@ -1,10 +1,16 @@
 import * as CodeMirror from 'codemirror';
 
-import 'codemirror/mode/meta';
 import 'codemirror/lib/codemirror';
 import 'codemirror/mode/python/python';
 import 'codemirror/mode/r/r';
+import 'codemirror/mode/octave/octave';
+import 'codemirror/mode/ruby/ruby';
+import 'codemirror/mode/sas/sas';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/shell/shell';
+import 'codemirror/mode/julia/julia';
 import 'codemirror/mode/markdown/markdown';
+import 'codemirror/mode/meta';
 
 
 var sosKeywords = ["input", "output", "depends", "parameter"];
@@ -31,7 +37,7 @@ var sosMagics = sosMagicWords.map(x => '%' + x);
 CodeMirror.registerHelper("hintWords", "sos", hintWords);
 
 var modeMap = {
-    'run': 'bash',
+    'run': 'shell',
     'python': {
         name: 'python',
         version: 3
@@ -48,8 +54,13 @@ var modeMap = {
     'report': 'markdown',
     'pandoc': 'markdown',
     'download': 'markdown',
-    // from kernel name
-    'ir': 'r',
+    'bash': 'shell',
+    'sh': 'shell',
+    'typescript': {
+        name: "javascript",
+        typescript: true
+    },
+    'matlab': 'octave',
 }
 
 function findMode(mode) {
