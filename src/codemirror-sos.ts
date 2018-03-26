@@ -155,7 +155,7 @@ function markExpr(sigil, python_mode) {
 }
 
 CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, parserConf: any) {
-    let sosPythonConf = {};
+    let sosPythonConf : any = {};
     for (let prop in parserConf) {
         if (parserConf.hasOwnProperty(prop)) {
             sosPythonConf[prop] = parserConf[prop];
