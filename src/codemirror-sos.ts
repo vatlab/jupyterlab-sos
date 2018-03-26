@@ -47,7 +47,9 @@ var modeMap = {
     'r': 'r',
     'report': 'markdown',
     'pandoc': 'markdown',
-    'download': 'markdown'
+    'download': 'markdown',
+    // from kernel name
+    'ir': 'r',
 }
 
 function findMode(mode) {
@@ -148,12 +150,12 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
     sosPythonConf.extra_keywords = sosActionWords.concat(sosFunctionWords);
     // this is the SoS flavored python mode with more identifiers
     var base_mode = null;
-    if ('base_mode' in conf) {
-        let mode = findMode(conf.base_mode.toLowerCase());
+    if ('base_mode' in parserConf) {
+        let mode = findMode(parserConf.base_mode.toLowerCase());
         if (mode) {
             base_mode = CodeMirror.getMode(conf, mode);
         } else {
-            console.log(`No base mode is found for ${conf.base_mode}. Python mode used.`);
+            console.log(`No base mode is found for ${parserConf.base_mode}. Python mode used.`);
         }
     }
     // if there is a user specified base mode, this is the single cell mode
@@ -436,7 +438,6 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                             state.overlayPos = stream.pos;
                         }
                         stream.pos = Math.min(state.basePos, state.overlayPos);
-                        console.log(stream.current())
                         // state.overlay.combineTokens always takes precedence over combine,
                         // unless set to null
                         return (state.overlayCur ? state.overlayCur : state.baseCur) + " em";
