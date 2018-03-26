@@ -2,6 +2,13 @@
 
 JupyterLab extension for SoS workflow engine and polyglot notebook
 
+## Progress
+
+Already Working:
+* SoS file type (`.sos`) and syntax highlighting (edit a `.sos` file in JupyterLab)
+
+Working on:
+* SoS Notebook UIs
 
 ## Prerequisites
 
