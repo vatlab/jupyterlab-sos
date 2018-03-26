@@ -37,7 +37,7 @@ var sosMagics = sosMagicWords.map(x => '%' + x);
 CodeMirror.registerHelper("hintWords", "sos", hintWords);
 
 var modeMap = {
-    'run': 'shell',
+    'sos': null,
     'python': {
         name: 'python',
         version: 3
@@ -54,12 +54,17 @@ var modeMap = {
     'report': 'markdown',
     'pandoc': 'markdown',
     'download': 'markdown',
+    'ruby': 'ruby',
+    'sas': 'sas',
     'bash': 'shell',
     'sh': 'shell',
+    'run': 'shell',
+    'javascript': 'javascript',
     'typescript': {
         name: "javascript",
         typescript: true
     },
+    'octave': 'octave',
     'matlab': 'octave',
 }
 
@@ -161,7 +166,8 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
     sosPythonConf.extra_keywords = sosActionWords.concat(sosFunctionWords);
     // this is the SoS flavored python mode with more identifiers
     var base_mode = null;
-    if ('base_mode' in parserConf) {
+    if ('base_mode' in parserConf && parserConf.base_mode) {
+
         let mode = findMode(parserConf.base_mode.toLowerCase());
         if (mode) {
             base_mode = CodeMirror.getMode(conf, mode);
