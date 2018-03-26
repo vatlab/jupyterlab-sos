@@ -54,6 +54,7 @@ var modeMap = {
     'report': 'markdown',
     'pandoc': 'markdown',
     'download': 'markdown',
+    'markdown': 'markdown',
     'ruby': 'ruby',
     'sas': 'sas',
     'bash': 'shell',
@@ -497,3 +498,4 @@ CodeMirror.modeInfo.push({
     mode: 'sos',
     name: 'SoS'
 });
+
