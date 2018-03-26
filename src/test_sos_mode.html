@@ -9,13 +9,16 @@
 <script src="codemirror/mode/r/r.js"></script>
 <script src="codemirror/mode/markdown/markdown.js"></script>
 <script src="sos-mode.js"></script>
-<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black; height: 200em;}</style>
+<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
 
 
 <article>
 <h2>SoS mode</h2>
 
-<div><textarea id="code" name="code">
+
+<h3>Code in SoS cell</h3>
+
+<div><textarea id="code_sos" name="code_sos">
 #!/usr/bin/env sos-runner
 # fileformat=SOS1.0
 # Author: Gao Wang and Bo Peng
@@ -119,13 +122,40 @@ pandoc: input = "report.md", output = "report.html", args = '{input:q} --css pan
 
 </textarea></div>
 
+<h3>Code in R-cell</h3>
+
+<div><textarea id="code_r" name="code_r">
+%expand ${ }
+cat('This is R code with ${100*100}')
+
+</textarea></div>
+
+<div><textarea id="code_r1" name="code_r">
+%expand
+cat('This is R code with {{100*100}}')
+
+</textarea></div>
     <script>
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+       CodeMirror.fromTextArea(document.getElementById("code_sos"), {
         mode: "sos",
         lineNumbers: true,
         indentUnit: 4,
         matchBrackets: true
     });
-    </script>
 
+       CodeMirror.fromTextArea(document.getElementById("code_r"), {
+        mode: "sos",
+        lineNumbers: true,
+        indentUnit: 4,
+        matchBrackets: true,
+        base_mode: 'r'
+    });
+    CodeMirror.fromTextArea(document.getElementById("code_r1"), {
+     mode: "sos",
+     lineNumbers: true,
+     indentUnit: 4,
+     matchBrackets: true,
+     base_mode: 'r'
+ });
+    </script>
   </article>
