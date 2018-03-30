@@ -437,8 +437,6 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                                 'left': found[1],
                                 'right': found[2]
                             }
-                        } else {
-                            state.overlay_state.sigil = null;
                         }
                     }
                     // if it is end of line, ending the starting switch mode
@@ -494,9 +492,10 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
             indent: function(state, textAfter) {
                 // inner indent
                 if (state.inner_mode) {
+                    if (!state.inner_mode.indent) return CodeMirror.Pass;
                     return state.inner_mode.indent(state.inner_mode, textAfter) + 2;
                 } else {
-                    return 0;
+                    return base_mode.indent(state.base_state, textAfter);
                 }
             },
 
