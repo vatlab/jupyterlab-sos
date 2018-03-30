@@ -4,11 +4,15 @@
 	background-repeat:no-repeat;
     background-position: center center;
 }
-/*
-.cm-sos-interpolated {
-	background-color: #CCD1D1;
-}
 
+/* .cm-sos-interpolated {
+	 text-decoration: underline;
+} */
+.cm-sos-sigil {
+	color: blue;
+	font-weight:bold;
+}
+/*
 .cm-sos-script {
 	font-style: normal;
 }
