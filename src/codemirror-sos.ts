@@ -99,7 +99,7 @@ function markExpr(sigil, python_mode) {
                 if (stream.pos == state.end_pos - sigil.right.length) {
                     state.in_python = false;
                     stream.pos += sigil.right.length;
-                    return "searching";
+                    return "searching sos-interpolated";
                 }
                 let it = null;
                 try {
@@ -108,7 +108,7 @@ function markExpr(sigil, python_mode) {
                     console.log(error);
                     state.in_python = false;
                     stream.pos = state.end_pos;
-                    return "searching";
+                    return "searching sos-interpolated";
                 }
                 if (stream.pos >= state.end_pos)
                     state.in_python = false;
@@ -118,7 +118,7 @@ function markExpr(sigil, python_mode) {
                     if (ct === 'input' || ct === 'output')
                         it += ' error';
                 }
-                return it ? ("searching " + it) : "searching";
+                return it ? ("searching sos-interpolated " + it) : "searching sos-interpolated";
             } else {
                 if (sigil.left === '{' && sigil.right === '}') {
                     // remove the double brace case
@@ -128,14 +128,14 @@ function markExpr(sigil, python_mode) {
                         state.in_python = true;
                         state.end_pos = stream.pos;
                         stream.backUp(stream.current().length - 1);
-                        return "searching";
+                        return "searching sos-interpolated";
                     }
                 } else if (sigil.left === '${' && sigil.right === '}') {
                     if (stream.match(/\$\{[^}]*\}/)) {
                         state.in_python = true;
                         state.end_pos = stream.pos;
                         stream.backUp(stream.current().length - 2);
-                        return "searching";
+                        return "searching sos-interpolated";
                     }
                 } else {
                     // string search
@@ -145,7 +145,7 @@ function markExpr(sigil, python_mode) {
                         state.end_pos = stream.pos;
                         state.in_python = true;
                         stream.backUp(stream.current().length - 2);
-                        return "searching";
+                        return "searching sos-interpolated";
                     }
                 }
                 while (stream.next() && !stream.match(sigil.left, false)) { }
@@ -367,9 +367,11 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                         return "meta";
                     }
                     for (var i = 0; i < sosDirectives.length; i++) {
-                        if (stream.match(sosDirectives[i]))
+                        if (stream.match(sosDirectives[i])) {
                             // the rest of the lines will be processed as Python code
+                            state.sos_state = 'directive_option';
                             return "keyword strong";
+                        }
                     }
                     for (var i = 0; i < sosActions.length; i++) {
                         if (stream.match(sosActions[i])) {
@@ -391,10 +393,29 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                             return "header";
                         } else {
                             stream.backUp(1);
-                            return base_mode.token(stream, state.base_state);
+                            let it = base_mode.token(stream, state.base_state);
+                            return it ? it + ' sos-option' : null;
                         }
                     } else {
-                        return base_mode.token(stream, state.base_state);
+                        let it = base_mode.token(stream, state.base_state);
+                        return it ? it + ' sos-option' : null;
+                    }
+                } else if (state.sos_state == 'directive_option') {
+                    // stuff after input:, R: etc
+                    if (stream.peek() == ',') {
+                        // move next
+                        stream.next();
+                        // , is not the last char, end option line
+                        if (!stream.eol()) {
+                            state.sos_state = null;
+                            state.inner_mode = null;
+                        }
+                        stream.backUp(1);
+                        let it = base_mode.token(stream, state.base_state);
+                        return it ? it + ' sos-option' : null;
+                    } else {
+                        let it = base_mode.token(stream, state.base_state);
+                        return it ? it + ' sos-option' : null;
                     }
                 } else if (state.sos_state && state.sos_state.startsWith("start ")) {
                     let sl = stream.peek();
@@ -429,14 +450,14 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                             state.sos_state = 'nomanland';
                         }
                     }
-                    return token;
+                    return token + ' sos-option';;
                 }
                 // can be start of line but not special
                 if (state.sos_state == 'nomanland') {
                     stream.skipToEnd();
                     return null;
                 } else if (state.inner_mode) {
-                    let it = 'em ';
+                    let it = 'em sos_script';
                     if (!state.sos_sigil) {
                         let st = state.inner_mode.token(stream, state.inner_state);
                         return st ? it + st : null;
@@ -460,7 +481,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                         stream.pos = Math.min(state.basePos, state.overlayPos);
                         // state.overlay.combineTokens always takes precedence over combine,
                         // unless set to null
-                        return (state.overlayCur ? state.overlayCur : state.baseCur) + " em";
+                        return (state.overlayCur ? state.overlayCur : state.baseCur) + " em sos_script";
                     }
                 } else {
                     return base_mode.token(stream, state.base_state);
