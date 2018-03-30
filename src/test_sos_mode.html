@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 
 <link rel="stylesheet" href="codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="../style/index.css">
 <script src="codemirror/lib/codemirror.js"></script>
 <script src="codemirror/mode/python/python.js"></script>
 <script src="codemirror/mode/r/r.js"></script>
@@ -132,7 +133,10 @@ cat('This is R code with ${100*100}')
 
 <div><textarea id="code_r1" name="code_r">
 %expand
-cat('This is R code with {{100*100}}')
+cat('This is R code with {{100*100}} = {{{100*100}}}')
+if (true) {
+  print(100);
+}
 
 </textarea></div>
     <script>

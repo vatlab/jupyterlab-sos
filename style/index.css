@@ -5,12 +5,16 @@
     background-position: center center;
 }
 
-/* .cm-sos-interpolated {
-	 text-decoration: underline;
-} */
+.cm-sos-interpolated {
+	 font-style:italic;
+}
+
+.cm-sos-unmatched {
+	background-color: red;
+}
 .cm-sos-sigil {
 	color: blue;
-	font-weight:bold;
+	font-weight: bold;
 }
 /*
 .cm-sos-script {
