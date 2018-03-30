@@ -362,8 +362,20 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                     for (var i = 0; i < sosActions.length; i++) {
                         if (stream.match(sosActions[i])) {
                             // switch to submode?
-                            state.sos_state = 'start ' + stream.current().slice(0, -1);
-                            state.overlay_state.sigil = null;
+                            if (stream.eol()) {
+                                // really
+                                let mode = findMode(stream.current().slice(0, -1).toLowerCase());
+                                if (mode) {
+                                    state.sos_state = null;
+                                    state.inner_mode = CodeMirror.getMode(conf, mode);
+                                    state.inner_state = CodeMirror.startState(state.inner_mode);
+                                } else {
+                                    state.sos_state = 'nomanland';
+                                }
+                            } else {
+                                state.sos_state = 'start ' + stream.current().slice(0, -1);
+                                state.overlay_state.sigil = null;
+                            }
                             return "builtin strong";
                         }
                     }
@@ -420,11 +432,14 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                         let found = stream.match(/expand\s*=\s*"(\S+) (\S+)"/, false);
                         if (!found)
                             found = stream.match(/expand\s*=\s*'(\S+) (\S+)'/, false);
-                        if (found)
+                        if (found) {
                             state.overlay_state.sigil = {
                                 'left': found[1],
                                 'right': found[2]
                             }
+                        } else {
+                            state.overlay_state.sigil = null;
+                        }
                     }
                     // if it is end of line, ending the starting switch mode
                     if (stream.eol() && sl !== ',') {
@@ -479,7 +494,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
             indent: function(state, textAfter) {
                 // inner indent
                 if (state.inner_mode) {
-                    return state.inner_mode.indent(state.inner_mode, textAfter) + 4;
+                    return state.inner_mode.indent(state.inner_mode, textAfter) + 2;
                 } else {
                     return 0;
                 }
@@ -493,7 +508,8 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
             },
 
             lineComment: "#",
-            fold: "indent"
+            fold: "indent",
+            electricInput: /^\s*[\}\]\)]$/,
         };
     };
 }, "python");
