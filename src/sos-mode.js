@@ -43,7 +43,7 @@
     CodeMirror.registerHelper("hintWords", "sos", hintWords);
 
     var modeMap = {
-        'run': 'shell',
+        'sos': null,
         'python': {
             name: 'python',
             version: 3
@@ -60,13 +60,18 @@
         'report': 'markdown',
         'pandoc': 'markdown',
         'download': 'markdown',
-        // from kernel named, r, ruby, sas, javascript etc are fine
+        'markdown': 'markdown',
+        'ruby': 'ruby',
+        'sas': 'sas',
         'bash': 'shell',
         'sh': 'shell',
+        'run': 'shell',
+        'javascript': 'javascript',
         'typescript': {
             name: "javascript",
             typescript: true
         },
+        'octave': 'octave',
         'matlab': 'octave',
     }
 
