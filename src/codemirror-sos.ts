@@ -103,6 +103,7 @@ function markExpr(python_mode) {
             if (state.in_python) {
                 if (stream.match(state.sigil.right)) {
                     state.in_python = false;
+                    state.python_state = CodeMirror.startState(python_mode);
                     return "sos-sigil";
                 }
                 let it = null;
