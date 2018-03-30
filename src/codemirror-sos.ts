@@ -156,7 +156,7 @@ function markExpr(sigil, python_mode) {
 }
 
 CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, parserConf: any) {
-    let sosPythonConf : any = {};
+    let sosPythonConf: any = {};
     for (let prop in parserConf) {
         if (parserConf.hasOwnProperty(prop)) {
             sosPythonConf[prop] = parserConf[prop];
@@ -350,6 +350,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                             if (stream.match(/^\[[^:]*\]$/)) {
                                 // reset state
                                 state.sos_state = null;
+                                state.inner_mode = null;
                                 return "header";
                             } else {
                                 // match up to :
@@ -386,6 +387,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                         // ] is the last char
                         if (stream.eol()) {
                             state.sos_state = null;
+                            state.inner_mode = null;
                             return "header";
                         } else {
                             stream.backUp(1);
@@ -498,4 +500,3 @@ CodeMirror.modeInfo.push({
     mode: 'sos',
     name: 'SoS'
 });
-

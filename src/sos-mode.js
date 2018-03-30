@@ -351,6 +351,7 @@
                                 if (stream.match(/^\[[^:]*\]$/)) {
                                     // reset state
                                     state.sos_state = null;
+                                    state.inner_mode = null;
                                     return "header";
                                 } else {
                                     // match up to :
@@ -387,6 +388,7 @@
                             // ] is the last char
                             if (stream.eol()) {
                                 state.sos_state = null;
+                                state.inner_mode = null;
                                 return "header";
                             } else {
                                 stream.backUp(1);
