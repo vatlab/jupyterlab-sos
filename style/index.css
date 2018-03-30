@@ -6,15 +6,13 @@
 }
 
 .cm-sos-interpolated {
-	 font-style:italic;
-}
-
-.cm-sos-unmatched {
-	background-color: red;
+	 background-color: #ebf9e8;
 }
 .cm-sos-sigil {
-	color: blue;
-	font-weight: bold;
+	background-color: #ebf9e8;
+}
+.cm-sos-unmatched {
+	background-color: orange;
 }
 /*
 .cm-sos-script {
