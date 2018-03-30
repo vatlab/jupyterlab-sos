@@ -29,6 +29,20 @@ download: dest_dir = resource_dir, expand = True
     {ucsc_url}/goldenPath/hg19/bigZips/hg19.2bit
     {ucsc_url}/admin/exe/linux.x86_64/twoBitToFa
 
+[multiline]
+R:
+  if (true) {
+      cat("hello");
+  }
+R: expand=True
+  if (true) {
+    cat("hello");
+  }
+Unknown:
+  This is {unknown}
+Unknown: expand=True
+  This is {innown}
+
 [hg19_reference_2 (decompress hg19.fa)]
 # Use `twoBitToFa` to extract `hg19.fa` from `hg19.2bit`
 output: f"{resource_dir}/{ref_fa}"
