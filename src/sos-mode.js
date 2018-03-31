@@ -160,12 +160,12 @@
         sosPythonConf.extra_keywords = sosActionWords.concat(sosFunctionWords);
         // this is the SoS flavored python mode with more identifiers
         var base_mode = null;
-        if ('base_mode' in conf) {
-            let mode = findMode(conf.base_mode.toLowerCase());
+        if ('base_mode' in parserConf && parserConf.base_mode) {
+            let mode = findMode(parserConf.base_mode.toLowerCase());
             if (mode) {
                 base_mode = CodeMirror.getMode(conf, mode);
             } else {
-                console.log(`No base mode is found for ${conf.base_mode}. Python mode used.`);
+                console.log(`No base mode is found for ${parserConf.base_mode}. Python mode used.`);
             }
         }
         // if there is a user specified base mode, this is the single cell mode
