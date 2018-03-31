@@ -129,7 +129,16 @@ function markExpr(python_mode) {
                     state.in_python = true;
                     // let us see if there is any right sigil till the end of the editor.
                     try {
-                        state.matched = stream.lookAhead(5).includes(state.sigil.right);
+                        let rest = stream.string.slice(stream.pos);
+                        if (!rest.includes(state.sigil.right)) {
+                            state.matched = false;
+                            for (let idx = 1; idx < 5; ++idx) {
+                                if (stream.lookAhead(idx).includes(state.sigil.right)) {
+                                    state.matched = true;
+                                    break;
+                                }
+                            }
+                        }
                     } catch (error) {
                         // only codemirror 5.27.0 supports this function
                     }
@@ -157,6 +166,13 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
     if ('base_mode' in parserConf && parserConf.base_mode) {
 
         let mode = findMode(parserConf.base_mode.toLowerCase());
+        if (mode) {
+            base_mode = CodeMirror.getMode(conf, mode);
+        } else {
+            console.log(`No base mode is found for ${parserConf.base_mode}. Python mode used.`);
+        }
+    } else if ('base_mode' in conf && conf.base_mode) {
+        let mode = findMode(conf.base_mode.toLowerCase());
         if (mode) {
             base_mode = CodeMirror.getMode(conf, mode);
         } else {
