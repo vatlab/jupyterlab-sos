@@ -18,11 +18,12 @@ export class NotebookInfo {
 
         this.BackgroundColor = new Map<string, string>();
         this.DisplayName = new Map<string, string>();
+        this.KernelName = new Map<string, string>();
         this.LanguageName = new Map<string, string>();
         this.KernelOptions = new Map<string, string>();
     }
 
-    addLanguage(data: Array<Array<string>>) {
+    add_language(data: Array<Array<string>>) {
         // fill the look up tables with language list passed from the kernel
         for (let i = 0; i < data.length; i++) {
             // BackgroundColor is color
@@ -42,7 +43,7 @@ export class NotebookInfo {
         }
     }
 
-    updateLanguage(data: Array<Array<string>>) {
+    update_language(data: Array<Array<string>>) {
         for (let i = 0; i < data.length; i++) {
             // BackgroundColor is color
             this.BackgroundColor[data[i][0]] = data[i][3];
@@ -85,14 +86,13 @@ export class Manager {
     // global registry for notebook info
     private static _instance: Manager;
 
+    private _comms: Map<string, NotebookPanel>;
     private _info: Map<NotebookPanel, NotebookInfo>;
 
     private constructor() {
         if (!this._info) {
-            console.log("Manager info map created.")
             this._info = new Map<NotebookPanel, NotebookInfo>();
-        } else {
-            console.log("Reusing manager info map")
+            this._comms = new Map<string, NotebookPanel>();
         }
     }
 
@@ -112,8 +112,14 @@ export class Manager {
         return this._info.get(notebook);
     }
 
+    public register_comm(comm_id: string, notebook: NotebookPanel) {
+        if (!this._comms.has(comm_id)) {
+            this._comms.set(comm_id, notebook);
+        }
+    }
+
     // this is the same as get_info,
-    public register(notebook: NotebookPanel): NotebookInfo {
-        return this.get_info(notebook);
+    public notebook_of_comm(comm_id: string): NotebookPanel {
+        return this._comms.get(comm_id);
     }
 }

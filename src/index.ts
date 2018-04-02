@@ -54,12 +54,15 @@ function registerSoSFileType(app: JupyterLab) {
  * SoS frontend Comm
  */
 function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
-    let data = msg.content.data;
+    let data: any = msg.content.data;
+    let nb = Manager.manager.notebook_of_comm(msg.content.comm_id);
     var msg_type = msg.metadata.msg_type;
 
     console.log(data);
 
     if (msg_type === "kernel-list") {
+        let info = Manager.manager.get_info(nb);
+        info.update_language(data);
         // Languages.updateLanguages(data);
         //add dropdown menu of kernels in frontend
         //    load_select_kernel();
@@ -278,6 +281,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
 function connectSoSComm(panel: NotebookPanel) {
     let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
+    Manager.manager.register_comm(sos_comm.commId, panel);
     sos_comm.open('initial');
     sos_comm.onMsg = on_frontend_msg;
 
@@ -327,7 +331,6 @@ export
         let button = addGlobalLanguageSelector(panel, context);
         addCellLevelLanguageSelector(panel, context);
         // this is a singleton class
-        Manager.manager.register(panel);
         context.session.ready.then(
             () => {
                 // kernel information (for opened notebook) should be ready
