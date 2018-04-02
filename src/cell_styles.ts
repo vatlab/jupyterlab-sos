@@ -50,9 +50,11 @@ function changeStyleOnKernel(cell: Cell, type: any, info: NotebookInfo) {
     //     op[0].style.backgroundColor = col;
     // }
     let prompt = cell.node.getElementsByClassName("jp-InputPrompt") as HTMLCollectionOf<HTMLElement>;
-    if (prompt)
+    if (prompt.length > 0)
         prompt[0].style.backgroundColor = col;
-
+    prompt = cell.node.getElementsByClassName("jp-OutputPrompt") as HTMLCollectionOf<HTMLElement>;
+    if (prompt.length > 0)
+        prompt[0].style.backgroundColor = col;
     // cell.user_highlight = {
     //     name: 'sos',
     //     base_mode: info.LanguageName[type] || info.KernelName[type] || type,
@@ -64,8 +66,11 @@ function changeStyleOnKernel(cell: Cell, type: any, info: NotebookInfo) {
 
 export function updateCellStyles(panel: NotebookPanel) {
     var cells = panel.notebook.widgets;
-    debugger;
+
     let info = Manager.manager.get_info(panel);
+    // first update the info with language definitions from meta information
+    info.add_languages(panel.model.metadata.get('sos')['kernels'])
+
     // setting up background color and selection according to notebook metadata
     for (let i = 0; i < cells.length; ++i) {
         if (cells[i].model.type === "code") {

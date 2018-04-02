@@ -23,7 +23,7 @@ export class NotebookInfo {
         this.KernelOptions = new Map<string, string>();
     }
 
-    add_language(data: Array<Array<string>>) {
+    add_languages(data: Array<Array<string>>) {
         // fill the look up tables with language list passed from the kernel
         for (let i = 0; i < data.length; i++) {
             // BackgroundColor is color
@@ -43,7 +43,7 @@ export class NotebookInfo {
         }
     }
 
-    update_language(data: Array<Array<string>>) {
+    update_languages(data: Array<Array<string>>) {
         for (let i = 0; i < data.length; i++) {
             // BackgroundColor is color
             this.BackgroundColor[data[i][0]] = data[i][3];

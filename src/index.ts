@@ -64,7 +64,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
     if (msg_type === "kernel-list") {
         let info = Manager.manager.get_info(nb);
-        info.update_language(data);
+        info.update_languages(data);
         // Languages.updateLanguages(data);
         //add dropdown menu of kernels in frontend
         //    load_select_kernel();
