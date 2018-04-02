@@ -25,6 +25,9 @@ import {
     createDefaultLanguageSwitcher
 } from './language_selector';
 
+import {
+    updateCellStyles
+} from './cell_styles'
 // define and register SoS CodeMirror mode
 import './codemirror-sos'
 
@@ -297,7 +300,6 @@ function connectSoSComm(panel: NotebookPanel) {
 
 
 
-
 function addCellLevelLanguageSelector(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>) {
 
 }
@@ -324,6 +326,7 @@ export
                     // if this is not a sos kernel, remove all buttons
                     $('.sos-widget', panel.node).show();
                     connectSoSComm(panel);
+                    updateCellStyles(panel);
                 } else {
                     // in this case, the .sos_widget should be hidden
                     $('.sos-widget', panel.node).hide();
@@ -336,6 +339,7 @@ export
                 // if this is not a sos kernel, remove all buttons
                 $('.sos-widget', panel.node).show();
                 connectSoSComm(panel);
+                updateCellStyles(panel);
             } else {
                 // in this case, the .sos_widget should be hidden
                 $('.sos-widget', panel.node).hide();
