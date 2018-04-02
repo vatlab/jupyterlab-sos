@@ -54,8 +54,9 @@ function changeStyleOnKernel(cell: Cell, type: any, info: NotebookInfo) {
     if (prompt.length > 0)
         prompt[0].style.backgroundColor = col;
     prompt = cell.node.getElementsByClassName("jp-OutputPrompt") as HTMLCollectionOf<HTMLElement>;
-    if (prompt.length > 0)
-        prompt[0].style.backgroundColor = col;
+    for (let i = 0; i < prompt.length; ++i) {
+        prompt[i].style.backgroundColor = col;
+    }
     // cell.user_highlight = {
     //     name: 'sos',
     //     base_mode: info.LanguageName[type] || info.KernelName[type] || type,
