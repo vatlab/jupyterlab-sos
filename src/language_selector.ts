@@ -14,6 +14,7 @@ import {
     Styling
 } from '@jupyterlab/apputils';
 
+
 const TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS = 'jp-Notebook-toolbarCelllanguageDropDown';
 
 /**

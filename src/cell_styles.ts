@@ -10,6 +10,7 @@ import {
 } from '@jupyterlab/cells';
 
 import { Manager, NotebookInfo } from "./manager"
+import * as $ from "jquery";
 
 function changeStyleOnKernel(cell: Cell, type: any, info: NotebookInfo) {
     // type should be  displayed name of kernel
@@ -64,6 +65,62 @@ function changeStyleOnKernel(cell: Cell, type: any, info: NotebookInfo) {
 
 }
 
+function addCellLevelLanguageSelector(cell: Cell, kernel: any, info: NotebookInfo) {
+    //
+    if (cell.node.getElementsByClassName("cell_kernel_selector").length > 0) {
+        // update existing list
+        var select = $(".cell_kernel_selector", cell.node).empty();
+        for (var i = 0; i < info.KernelList.length; i++) {
+            select.append($("<option/>")
+                .attr("value", info.DisplayName[info.KernelList[i][0]])
+                .text(info.DisplayName[info.KernelList[i][0]]));
+        }
+        select.val(kernel ? kernel : "");
+        return;
+    }
+    // add a new one
+    var select = $("<select/>").attr("id", "cell_kernel_selector")
+        .css("margin-left", "0.75em")
+        .attr("class", "jp-cell-kernel-selector sos-widget");
+    for (var i = 0; i < info.KernelList.length; i++) {
+        select.append($("<option/>")
+            .attr("value", info.DisplayName[info.KernelList[i][0]])
+            .text(info.DisplayName[info.KernelList[i][0]]));
+    }
+    select.val(kernel ? kernel : "");
+
+    select.change(function() {
+        let value = (<HTMLInputElement>(this)).value;
+        cell.model.metadata.set('kernel', info.DisplayName[value]);
+        // cell in panel does not have prompt area
+        var ip = cell.node.getElementsByClassName("input_prompt") as HTMLCollectionOf<HTMLElement>;
+        var op = cell.node.getElementsByClassName("out_prompt_overlay") as HTMLCollectionOf<HTMLElement>;
+        if (info.BackgroundColor[value]) {
+            ip[0].style.backgroundColor = info.BackgroundColor[value];
+            op[0].style.backgroundColor = info.BackgroundColor[value];
+        } else {
+            // Use "" to remove background-color?
+            ip[0].style.backgroundColor = "";
+            op[0].style.backgroundColor = "";
+        }
+        // // https://github.com/vatlab/sos-notebook/issues/55
+        // cell.user_highlight = {
+        //     name: 'sos',
+        //     base_mode: info.LanguageName[this.value] || info.KernelName[this.value] || this.value,
+        // };
+        // //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
+        // cell.code_mirror.setOption('mode', cell.user_highlight);
+    });
+
+    //cell.node.find("div.input_area").prepend(select);
+    //let ia = cell.node.getElementsByClassName("jp-InputArea-editor") as HTMLCollectionOf<HTMLElement>;
+    //if (ia.length > 0)
+    //    (ia[0] as any).appendChild(select);
+    $('.jp-InputArea-editor', cell.node).prepend(select);
+    //cell.node.appendChild(select);
+    return select;
+}
+
 export function updateCellStyles(panel: NotebookPanel) {
     var cells = panel.notebook.widgets;
 
@@ -75,6 +132,7 @@ export function updateCellStyles(panel: NotebookPanel) {
     for (let i = 0; i < cells.length; ++i) {
         if (cells[i].model.type === "code") {
             changeStyleOnKernel(cells[i], cells[i].model.metadata.get('kernel'), info);
+            addCellLevelLanguageSelector(cells[i], cells[i].model.metadata.get('kernel'), info)
         }
     }
 

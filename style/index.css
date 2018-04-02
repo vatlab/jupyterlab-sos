@@ -22,3 +22,14 @@
 .cm-sos-option {
 	font-style: italic;
 } */
+.jp-InputArea-editor .jp-cell-kernel-selector
+ {
+    width: 70pt;
+    background: none;
+    z-index: 1000;
+    position: absolute;
+    height: 1.7em;
+    margin-top: 3pt;
+    right: 8pt;
+    font-size: 80%;
+}
