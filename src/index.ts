@@ -9,10 +9,6 @@ import {
 } from '@phosphor/disposable';
 
 import {
-    ToolbarButton
-} from '@jupyterlab/apputils';
-
-import {
     DocumentRegistry
 } from '@jupyterlab/docregistry';
 
@@ -21,10 +17,13 @@ import {
 } from '@jupyterlab/services';
 
 import {
-    NotebookActions,
     NotebookPanel,
     INotebookModel
 } from '@jupyterlab/notebook';
+
+import {
+    createDefaultLanguageSwitcher
+} from './language_selector';
 
 // define and register SoS CodeMirror mode
 import './codemirror-sos'
@@ -296,24 +295,8 @@ function connectSoSComm(panel: NotebookPanel) {
     console.log("sos comm registered");
 }
 
-function addGlobalLanguageSelector(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): ToolbarButton {
 
-    let button = new ToolbarButton({
-        className: 'sos_widget',
-        onClick: () => {
-            NotebookActions.runAll(panel.notebook, context.session);
-        },
-        tooltip: 'Run All'
-    });
 
-    let i = document.createElement('i');
-
-    i.classList.add('fa', 'fa-fast-forward');
-    button.node.appendChild(i);
-
-    panel.toolbar.insertItem(0, 'runAll', button);
-    return button;
-}
 
 function addCellLevelLanguageSelector(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>) {
 
@@ -328,7 +311,7 @@ export
      */
     createNew(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): IDisposable {
         // we add SoS widget for all panels because the panel could be switched to SoS kernel later
-        let button = addGlobalLanguageSelector(panel, context);
+        panel.toolbar.insertItem(0, "defaultLanguage", createDefaultLanguageSwitcher(panel));
         addCellLevelLanguageSelector(panel, context);
         // this is a singleton class
         context.session.ready.then(
@@ -339,11 +322,11 @@ export
                 let cur_kernel = panel.context.session.kernelPreference.name;
                 if (cur_kernel === 'sos') {
                     // if this is not a sos kernel, remove all buttons
-                    $('.sos_widget', panel.node).show();
+                    $('.sos-widget', panel.node).show();
                     connectSoSComm(panel);
                 } else {
                     // in this case, the .sos_widget should be hidden
-                    $('.sos_widget', panel.node).hide();
+                    $('.sos-widget', panel.node).hide();
                 }
             }
         );
@@ -351,16 +334,14 @@ export
         context.session.kernelChanged.connect((sender, kernel) => {
             if (kernel.name === 'sos') {
                 // if this is not a sos kernel, remove all buttons
-                $('.sos_widget', panel.node).show();
+                $('.sos-widget', panel.node).show();
                 connectSoSComm(panel);
             } else {
                 // in this case, the .sos_widget should be hidden
-                $('.sos_widget', panel.node).hide();
+                $('.sos-widget', panel.node).hide();
             }
         });
-        return new DisposableDelegate(() => {
-            button.dispose();
-        });
+        return new DisposableDelegate(() => { });
     }
 }
 
