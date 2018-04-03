@@ -368,6 +368,10 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                     } else if (sl == '%') {
                         stream.skipToEnd();
                         return "meta";
+                    } else if (state.sos_state == 'entering') {
+                        // the second parameter is starting column
+                        state.inner_state = CodeMirror.startState(state.inner_mode, stream.indentation());
+                        state.sos_state = null;
                     }
                     for (var i = 0; i < sosDirectives.length; i++) {
                         if (stream.match(sosDirectives[i])) {
@@ -383,9 +387,8 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                                 // really
                                 let mode = findMode(stream.current().slice(0, -1).toLowerCase());
                                 if (mode) {
-                                    state.sos_state = null;
+                                    state.sos_state = "entering";
                                     state.inner_mode = CodeMirror.getMode(conf, mode);
-                                    state.inner_state = CodeMirror.startState(state.inner_mode);
                                 } else {
                                     state.sos_state = 'unknown_language';
                                 }
@@ -467,9 +470,8 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                         // really
                         let mode = findMode(state.sos_state.slice(6).toLowerCase());
                         if (mode) {
-                            state.sos_state = null;
+                            state.sos_state = "entering";
                             state.inner_mode = CodeMirror.getMode(conf, mode);
-                            state.inner_state = CodeMirror.startState(state.inner_mode);
                         } else {
                             state.sos_state = 'unknown_language';
                         }
