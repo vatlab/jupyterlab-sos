@@ -344,7 +344,6 @@ export
 
         context.session.kernelChanged.connect((sender, kernel) => {
             if (kernel.name === 'sos') {
-                // if this is not a sos kernel, remove all buttons
                 if (panel.notebook.model.metadata.has('sos'))
                     info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
                 connectSoSComm(panel);
