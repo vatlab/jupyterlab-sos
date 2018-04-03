@@ -22,7 +22,7 @@ import {
 } from '@jupyterlab/notebook';
 
 import {
-    createDefaultLanguageSwitcher
+    DefaultLanguageSwitcher
 } from './language_selector';
 
 import {
@@ -319,7 +319,7 @@ export
         let info = Manager.manager.get_info(panel);
 
         // we add SoS widget for all panels because the panel could be switched to SoS kernel later
-        let lanSelector = createDefaultLanguageSwitcher(panel, info);
+        let lanSelector = new DefaultLanguageSwitcher(panel.notebook, info.KernelList);
         panel.toolbar.insertItem(0, "defaultLanguage", lanSelector);
         // this is a singleton class
         context.session.ready.then(
@@ -334,7 +334,7 @@ export
                         info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
                     lanSelector.update_selector(info.KernelList);
                     connectSoSComm(panel);
-                    updateCellStyles(panel);
+                    updateCellStyles(panel, info);
                     showSoSWidgets(panel.node);
                 } else {
                     hideSoSWidgets(panel.node);
@@ -345,8 +345,10 @@ export
         context.session.kernelChanged.connect((sender, kernel) => {
             if (kernel.name === 'sos') {
                 // if this is not a sos kernel, remove all buttons
+                if (panel.notebook.model.metadata.has('sos'))
+                    info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
                 connectSoSComm(panel);
-                updateCellStyles(panel);
+                updateCellStyles(panel, info);
                 showSoSWidgets(panel.node);
             } else {
                 // in this case, the .sos_widget should be hidden

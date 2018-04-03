@@ -7,31 +7,20 @@ import {
 } from '@phosphor/widgets';
 
 import {
-    Notebook, NotebookPanel //, NotebookActions
+    Notebook
 } from '@jupyterlab/notebook';
 
 import {
     Styling
 } from '@jupyterlab/apputils';
 
-import {
-    NotebookInfo
-} from "./manager"
+const TOOLBAR_LANGUAGE_DROPDOWN_CLASS = 'jp-NotebooklanguageDropDown';
 
-const TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS = 'jp-Notebook-toolbarCelllanguageDropDown';
-
-/**
- * Create a notebook language switcher
- */
-export
-    function createDefaultLanguageSwitcher(panel: NotebookPanel, info: NotebookInfo): DefaultLanguageSwitcher {
-    return new DefaultLanguageSwitcher(panel.notebook, info.KernelList);
-}
 
 export class DefaultLanguageSwitcher extends Widget {
     constructor(widget: Notebook, languages: Array<string>) {
         super({ node: createLanguageSwitcher(languages) });
-        this.addClass(TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS);
+        this.addClass(TOOLBAR_LANGUAGE_DROPDOWN_CLASS);
         this.addClass('sos-widget')
 
         this._select = this.node.firstChild as HTMLSelectElement;
@@ -179,7 +168,7 @@ function createLanguageSwitcher(languages): HTMLElement {
         option.textContent = lan;
         select.appendChild(option);
     }
-    select.className = TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS + " sos-widget";
+    select.className = TOOLBAR_LANGUAGE_DROPDOWN_CLASS + " sos-widget";
     select.value = 'SoS';
     //select.selectedIndex = languages.indexOf('SoS');
     div.appendChild(select);

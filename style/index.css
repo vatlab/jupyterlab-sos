@@ -22,7 +22,7 @@
 .cm-sos-option {
 	font-style: italic;
 } */
-.jp-InputArea-editor .jp-cell-kernel-selector
+.jp-InputArea-editor .jp-CelllanguageDropDown
  {
     width: 70pt;
     background: none;
@@ -33,3 +33,12 @@
     right: 8pt;
     font-size: 80%;
 }
+
+.report-output {
+    border-right-width: 13px;
+    border-right-color: #aaaaaa;
+    border-right-style: solid;
+}
+
+/* jp-NotebooklanguageDropDown */
+/* jp-CelllanguageDropDown */
