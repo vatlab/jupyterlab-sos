@@ -14,6 +14,9 @@ import {
     Styling
 } from '@jupyterlab/apputils';
 
+import {
+    NotebookInfo
+} from "./manager"
 
 const TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS = 'jp-Notebook-toolbarCelllanguageDropDown';
 
@@ -21,19 +24,13 @@ const TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS = 'jp-Notebook-toolbarCelllanguageD
  * Create a notebook language switcher
  */
 export
-    function createDefaultLanguageSwitcher(panel: NotebookPanel): Widget {
-    return new DefaultLanguageSwitcher(panel.notebook);
+    function createDefaultLanguageSwitcher(panel: NotebookPanel, info: NotebookInfo): DefaultLanguageSwitcher {
+    return new DefaultLanguageSwitcher(panel.notebook, info.KernelList);
 }
 
-/**
- * A toolbar widget that switches cell types.
- */
-class DefaultLanguageSwitcher extends Widget {
-    /**
-     * Construct a new cell type switcher.
-     */
-    constructor(widget: Notebook) {
-        super({ node: createDefaultLanguageSwitcherNode() });
+export class DefaultLanguageSwitcher extends Widget {
+    constructor(widget: Notebook, languages: Array<string>) {
+        super({ node: createLanguageSwitcher(languages) });
         this.addClass(TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS);
         this.addClass('sos-widget')
 
@@ -56,6 +53,18 @@ class DefaultLanguageSwitcher extends Widget {
         widget.selectionChanged.connect(this._updateValue, this);
     }
 
+    public update_selector(languages: Array<string>): void {
+        for (let lan of languages) {
+            // ignore if already exists
+            if (this._select.options.namedItem(lan))
+                continue;
+            let option = document.createElement('option');
+            option.value = lan;
+            option.id = lan;
+            option.textContent = lan;
+            this._select.appendChild(option);
+        }
+    }
     /**
      * Handle the DOM events for the widget.
      *
@@ -160,16 +169,19 @@ class DefaultLanguageSwitcher extends Widget {
 /**
  * Create the node for the cell type switcher.
  */
-function createDefaultLanguageSwitcherNode(): HTMLElement {
+function createLanguageSwitcher(languages): HTMLElement {
     let div = document.createElement('div');
     let select = document.createElement('select');
-    for (let t of ['R', 'Python', 'SoS']) {
+    for (let lan of languages) {
         let option = document.createElement('option');
-        option.value = t.toLowerCase();
-        option.textContent = t;
+        option.value = lan;
+        option.id = lan;
+        option.textContent = lan;
         select.appendChild(option);
     }
     select.className = TOOLBAR_DEFAULTLANGUAGE_DROPDOWN_CLASS + " sos-widget";
+    select.value = 'SoS';
+    //select.selectedIndex = languages.indexOf('SoS');
     div.appendChild(select);
     return div;
 }

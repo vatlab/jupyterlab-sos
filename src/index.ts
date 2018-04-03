@@ -33,8 +33,6 @@ import './codemirror-sos'
 
 import '../style/index.css';
 
-import * as $ from "jquery";
-
 import { Manager } from "./manager"
 
 /*
@@ -59,8 +57,6 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     let data: any = msg.content.data;
     let nb = Manager.manager.notebook_of_comm(msg.content.comm_id);
     var msg_type = msg.metadata.msg_type;
-
-    console.log(data);
 
     if (msg_type === "kernel-list") {
         let info = Manager.manager.get_info(nb);
@@ -298,10 +294,16 @@ function connectSoSComm(panel: NotebookPanel) {
     console.log("sos comm registered");
 }
 
+function hideSoSWidgets(element) {
+    let sos_elements = element.getElementsByClassName('sos-widget') as HTMLCollectionOf<HTMLElement>;
+    for (let i = 0; i < sos_elements.length; ++i)
+        sos_elements[i].style.display = 'none';
+}
 
-
-function addCellLevelLanguageSelector(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>) {
-
+function showSoSWidgets(element) {
+    let sos_elements = element.getElementsByClassName('sos-widget') as HTMLCollectionOf<HTMLElement>;
+    for (let i = 0; i < sos_elements.length; ++i)
+        sos_elements[i].style.display = '';
 }
 
 export
@@ -312,9 +314,13 @@ export
      * a perfect time to insert SoS language selector and create comms during this time.
      */
     createNew(panel: NotebookPanel, context: DocumentRegistry.IContext<INotebookModel>): IDisposable {
+        // register notebook to get language info, or get existing info
+        // unfortunately, for new notebook, language info is currently empty
+        let info = Manager.manager.get_info(panel);
+
         // we add SoS widget for all panels because the panel could be switched to SoS kernel later
-        panel.toolbar.insertItem(0, "defaultLanguage", createDefaultLanguageSwitcher(panel));
-        addCellLevelLanguageSelector(panel, context);
+        let lanSelector = createDefaultLanguageSwitcher(panel, info);
+        panel.toolbar.insertItem(0, "defaultLanguage", lanSelector);
         // this is a singleton class
         context.session.ready.then(
             () => {
@@ -324,12 +330,14 @@ export
                 let cur_kernel = panel.context.session.kernelPreference.name;
                 if (cur_kernel === 'sos') {
                     // if this is not a sos kernel, remove all buttons
-                    $('.sos-widget', panel.node).show();
+                    if (panel.notebook.model.metadata.has('sos'))
+                        info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
+                    lanSelector.update_selector(info.KernelList);
                     connectSoSComm(panel);
                     updateCellStyles(panel);
+                    showSoSWidgets(panel.node);
                 } else {
-                    // in this case, the .sos_widget should be hidden
-                    $('.sos-widget', panel.node).hide();
+                    hideSoSWidgets(panel.node);
                 }
             }
         );
@@ -337,12 +345,12 @@ export
         context.session.kernelChanged.connect((sender, kernel) => {
             if (kernel.name === 'sos') {
                 // if this is not a sos kernel, remove all buttons
-                $('.sos-widget', panel.node).show();
                 connectSoSComm(panel);
                 updateCellStyles(panel);
+                showSoSWidgets(panel.node);
             } else {
                 // in this case, the .sos_widget should be hidden
-                $('.sos-widget', panel.node).hide();
+                hideSoSWidgets(panel.node);
             }
         });
         return new DisposableDelegate(() => { });

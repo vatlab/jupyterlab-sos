@@ -4,7 +4,7 @@ import {
 
 export class NotebookInfo {
     notebook: NotebookPanel;
-    KernelList: Array<Array<string>>;
+    KernelList: Array<string>;
 
     BackgroundColor: Map<string, string>;
     DisplayName: Map<string, string>;
@@ -12,34 +12,37 @@ export class NotebookInfo {
     LanguageName: Map<string, string>;
     KernelOptions: Map<string, string>;
 
+    /** create an info object from metadata of the notebook
+    */
     constructor(notebook) {
         this.notebook = notebook;
-        this.KernelList = [];
+        this.KernelList = new Array<string>();
 
         this.BackgroundColor = new Map<string, string>();
         this.DisplayName = new Map<string, string>();
         this.KernelName = new Map<string, string>();
         this.LanguageName = new Map<string, string>();
-        this.KernelOptions = new Map<string, string>();
-    }
+        this.KernelOptions = new Map<string, any>();
 
-    add_languages(data: Array<Array<string>>) {
+        let data = [['SoS', 'sos', '', '']];
+        if (notebook.model.metadata.has('sos'))
+            data = notebook.model.metadata.get('sos')['kernels'];
         // fill the look up tables with language list passed from the kernel
         for (let i = 0; i < data.length; i++) {
             // BackgroundColor is color
-            this.BackgroundColor[data[i][0]] = data[i][3];
-            this.BackgroundColor[data[i][1]] = data[i][3];
+            this.BackgroundColor.set(data[i][0], data[i][3]);
+            this.BackgroundColor.set(data[i][1], data[i][3]);
             // DisplayName
-            this.DisplayName[data[i][0]] = data[i][0];
-            this.DisplayName[data[i][1]] = data[i][0];
+            this.DisplayName.set(data[i][0], data[i][0]);
+            this.DisplayName.set(data[i][1], data[i][0]);
             // Name
-            this.KernelName[data[i][0]] = data[i][1];
-            this.KernelName[data[i][1]] = data[i][1];
+            this.KernelName.set(data[i][0], data[i][1]);
+            this.KernelName.set(data[i][1], data[i][1]);
             // LanguageName
-            this.LanguageName[data[i][0]] = data[i][2];
-            this.LanguageName[data[i][1]] = data[i][2];
-            // KernelList, use displayed name
-            this.KernelList.push([data[i][0], data[i][0]]);
+            this.LanguageName.set(data[i][0], data[i][2]);
+            this.LanguageName.set(data[i][1], data[i][2]);
+
+            this.KernelList.push(data[i][0]);
         }
     }
 
@@ -66,14 +69,14 @@ export class NotebookInfo {
             if (!(data[i][2] in this.LanguageName)) {
                 this.LanguageName[data[i][2]] = data[i][2];
             }
-            // KernelList, use displayed name
-            if (this.KernelList.findIndex((item) => item[0] === data[i][0]) === -1) {
-                this.KernelList.push([data[i][0], data[i][0]]);
-            }
+
             // if options ...
             if (data[i].length > 4) {
                 this.KernelOptions[data[i][0]] = data[i][4];
             }
+
+            if (!(data[i][0] in this.KernelList))
+                this.KernelList.push(data[i][0]);
         }
     }
 

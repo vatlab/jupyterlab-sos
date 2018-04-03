@@ -126,8 +126,6 @@ export function updateCellStyles(panel: NotebookPanel) {
     var cells = panel.notebook.widgets;
 
     let info = Manager.manager.get_info(panel);
-    // first update the info with language definitions from meta information
-    info.add_languages(panel.model.metadata.get('sos')['kernels'])
 
     // setting up background color and selection according to notebook metadata
     for (let i = 0; i < cells.length; ++i) {
