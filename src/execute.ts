@@ -44,7 +44,9 @@ function get_workflow_from_cell(cell) {
     return workflow;
 }
 
-
+/*
+* FIXME This is a really bad way but let us have it done and then modify jupyterlab to add it to better places
+*/
 let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone: boolean = true): Kernel.IFuture {
     let panel = Manager.currentNotebook;
     let info = Manager.manager.get_info(panel);
@@ -73,15 +75,15 @@ let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone:
     }
 
     let i;
-    let cells = panel.notebook.model.cells;
+    let cells = panel.notebook.widgets;
     if (run_notebook) {
         // Running %sossave --to html needs to save notebook
         //FIXME nb.save_notebook();
         for (i = 0; i < cells.length; ++i) {
             // older version of the notebook might have sos in metadata
-            if (cells[i].cell_type === "code" && (!cells[i].metadata.kernel || cells[i].metadata.kernel === "SoS" ||
-                cells[i].metadata.kernel === "sos")) {
-                workflow += get_workflow_from_cell(cells[i]);
+            let cell = cells[i].model;
+            if (cell.type === "code" && (!cell.metadata.get('kernel') || cell.metadata.get('kernel') === "SoS")) {
+                workflow += get_workflow_from_cell(cell);
             }
         }
     }
@@ -96,21 +98,24 @@ let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone:
         // according to this.set_input_prompt("*") before execute is called.
         // also, because a cell might be starting without a previous cell
         // being finished, we should start from reverse and check actual code
-        if (cells[i].input_prompt_number === "*" && code === cells[i].get_text()) {
+        let cell = cells[i];
+        if (code === cell.model.value.text) {
+            // check *
+            let prompt = cell.node.querySelector('.jp-InputArea-prompt');
+            if (!prompt || prompt.textContent.indexOf("*") === -1)
+                continue;
             // use cell kernel if meta exists, otherwise use nb.metadata["sos"].default_kernel
             if (info.autoResume) {
                 rerun_option = " --resume ";
                 info.autoResume = false;
             }
-
             // passing to kernel
             // 1. the default kernel (might have been changed from menu bar
             // 2. cell kernel (might be unspecified for new cell)
             // 3. cell index (for setting style after execution)
             content.code = "%frontend " +
-                (panel.notebook.model.metadata.get("sos")["panel"].displayed ? " --use-panel" : "") +
                 " --default-kernel " + panel.notebook.model.metadata.get("sos")['default_kernel'] +
-                " --cell-kernel " + cells[i].metadata.kernel + rerun_option +
+                " --cell-kernel " + cell.model.metadata.get('kernel') + rerun_option +
                 (run_notebook ? " --filename '" + panel.session.name + "'" : "") +
                 " --cell " + i.toString() + "\n" + code
             return this.orig_execute(content, disposeOnDone);
