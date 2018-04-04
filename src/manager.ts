@@ -16,7 +16,7 @@ export class NotebookInfo {
 
     /** create an info object from metadata of the notebook
     */
-    constructor(notebook) {
+    constructor(notebook: NotebookPanel) {
         this.notebook = notebook;
         this.defaultKernel = 'SoS';
         this.KernelList = new Array<string>();

@@ -31,12 +31,18 @@ import {
     DefaultLanguageSwitcher
 } from './selectors';
 
+import {
+    wrapExecutor
+} from './execute'
+
 // define and register SoS CodeMirror mode
 import './codemirror-sos'
 
 import '../style/index.css';
 
-import { Manager } from "./manager"
+import {
+    Manager
+} from "./manager"
 
 /*
  * Define SoS File msg_type
@@ -340,6 +346,7 @@ export
                         info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
                     info.languageSelector.update_selector(info.KernelList);
                     connectSoSComm(panel);
+                    wrapExecutor(panel);
                     updateCellStyles(panel, info);
                     showSoSWidgets(panel.node);
                 } else {
@@ -353,6 +360,7 @@ export
                 if (panel.notebook.model.metadata.has('sos'))
                     info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
                 connectSoSComm(panel);
+                wrapExecutor(panel);
                 info.languageSelector.update_selector(info.KernelList);
                 updateCellStyles(panel, info);
                 showSoSWidgets(panel.node);
