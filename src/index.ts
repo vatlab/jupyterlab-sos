@@ -290,7 +290,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
 function connectSoSComm(panel: NotebookPanel) {
     let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
-    Manager.manager.register_comm(sos_comm.commId, panel);
+    Manager.manager.register_comm(sos_comm, panel);
     sos_comm.open('initial');
     sos_comm.onMsg = on_frontend_msg;
 

@@ -2,12 +2,18 @@ import {
     NotebookPanel
 } from '@jupyterlab/notebook';
 
+import {
+    Kernel
+} from '@jupyterlab/services';
+//
 export class NotebookInfo {
     notebook: NotebookPanel;
     languageSelector: any;
     KernelList: Array<string>;
 
     defaultKernel: string;
+    sos_comm: Kernel.IComm;
+
     BackgroundColor: Map<string, string>;
     DisplayName: Map<string, string>;
     KernelName: Map<string, string>;
@@ -92,13 +98,12 @@ export class Manager {
     // global registry for notebook info
     private static _instance: Manager;
 
-    private _comms: Map<string, NotebookPanel>;
     private _info: Map<NotebookPanel, NotebookInfo>;
 
     private constructor() {
         if (!this._info) {
             this._info = new Map<NotebookPanel, NotebookInfo>();
-            this._comms = new Map<string, NotebookPanel>();
+            this._comms = new Map<Kernel.IComm, NotebookPanel>();
         }
     }
 
@@ -118,14 +123,14 @@ export class Manager {
         return this._info.get(notebook);
     }
 
-    public register_comm(comm_id: string, notebook: NotebookPanel) {
-        if (!this._comms.has(comm_id)) {
-            this._comms.set(comm_id, notebook);
-        }
+    public register_comm(comm: Kernel.IComm, otebook: NotebookPanel) {
+        this.get_info(notebook)._info.sos_comm = comm;
     }
 
     // this is the same as get_info,
     public notebook_of_comm(comm_id: string): NotebookPanel {
-        return this._comms.get(comm_id);
+        self._info.forEach(info, panel) => {
+            if (panel.sos_comm.commId === comm_id)
+                return panel;
+        });
     }
-}
