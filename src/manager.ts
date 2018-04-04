@@ -131,6 +131,7 @@ export class Manager {
         if (!this._info.has(notebook)) {
             console.log("Creating a new notebook info")
             this._info.set(notebook, new NotebookInfo(notebook));
+            Manager._tracker.add(notebook);
         }
         return this._info.get(notebook);
     }
