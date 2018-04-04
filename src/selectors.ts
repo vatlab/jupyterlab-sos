@@ -146,6 +146,11 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
         let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
         editor.insertBefore(select, editor.children[0]);
         select.value = kernel ? kernel : 'SoS';
+        select.addEventListener('change', function(evt) {
+            cell.model.metadata.set('kernel', (evt.target as HTMLOptionElement).value);
+            changeStyleOnKernel(cell, (evt.target as HTMLOptionElement).value, info);
+        });
+
     } else {
         // use the existing dropdown box
         let select = nodes.item(0) as HTMLSelectElement;
