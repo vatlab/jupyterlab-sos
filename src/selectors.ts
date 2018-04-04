@@ -28,14 +28,14 @@ const TOOLBAR_LANGUAGE_DROPDOWN_CLASS = 'jp-NotebooklanguageDropDown';
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
 
 export class DefaultLanguageSwitcher extends Widget {
-    constructor(widget: Notebook, languages: Array<string>) {
-        super({ node: createLanguageSwitcher(languages) });
+    constructor(widget: Notebook, info: NotebookInfo) {
+        super({ node: createLanguageSwitcher(info.KernelList) });
         this.addClass(TOOLBAR_LANGUAGE_DROPDOWN_CLASS);
         this.addClass('sos-widget')
 
         this._select = this.node.firstChild as HTMLSelectElement;
         Styling.wrapSelect(this._select);
-        this._notebook = widget;
+        this._info = info;
     }
 
     public update_selector(languages: Array<string>): void {
@@ -54,22 +54,10 @@ export class DefaultLanguageSwitcher extends Widget {
      * Handle the DOM events for the widget.
      *
      * @param event - The DOM event sent to the widget.
-     *
-     * #### Notes
-     * This method implements the DOM `EventListener` interface and is
-     * called in response to events on the dock panel's node. It should
-     * not be called directly by user code.
      */
     handleEvent(event: Event): void {
-        switch (event.type) {
-            case 'change':
-                this._evtChange(event);
-                break;
-            case 'keydown':
-                this._evtKeyDown(event as KeyboardEvent);
-                break;
-            default:
-                break;
+        if (event.type === 'change') {
+            this._info.defaultKernel = (event.target as HTMLOptionElement).value;
         }
     }
 
@@ -78,7 +66,6 @@ export class DefaultLanguageSwitcher extends Widget {
      */
     protected onAfterAttach(msg: Message): void {
         this._select.addEventListener('change', this);
-        this._select.addEventListener('keydown', this);
     }
 
     /**
@@ -86,27 +73,10 @@ export class DefaultLanguageSwitcher extends Widget {
      */
     protected onBeforeDetach(msg: Message): void {
         this._select.removeEventListener('change', this);
-        this._select.removeEventListener('keydown', this);
-    }
-
-    /**
-     * Handle `changed` events for the widget.
-     */
-    private _evtChange(event: Event): void {
-
-    }
-
-    /**
-     * Handle `keydown` events for the widget.
-     */
-    private _evtKeyDown(event: KeyboardEvent): void {
-        if (event.keyCode === 13) {  // Enter
-            this._notebook.activate();
-        }
     }
 
     private _select: HTMLSelectElement = null;
-    private _notebook: Notebook = null;
+    private _info: NotebookInfo = null;
 }
 
 

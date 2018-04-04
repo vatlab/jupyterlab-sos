@@ -324,7 +324,7 @@ export
         let info = Manager.manager.get_info(panel);
 
         // we add SoS widget for all panels because the panel could be switched to SoS kernel later
-        let lanSelector = new DefaultLanguageSwitcher(panel.notebook, info.KernelList);
+        let lanSelector = new DefaultLanguageSwitcher(panel.notebook, info);
         info.languageSelector = lanSelector;
         panel.toolbar.insertItem(0, "defaultLanguage", lanSelector);
         // this is a singleton class
