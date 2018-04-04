@@ -4,6 +4,7 @@ import {
 
 export class NotebookInfo {
     notebook: NotebookPanel;
+    languageSelector: any;
     KernelList: Array<string>;
 
     defaultKernel: string;
@@ -77,7 +78,7 @@ export class NotebookInfo {
                 this.KernelOptions[data[i][0]] = data[i][4];
             }
 
-            if (!(data[i][0] in this.KernelList))
+            if (this.KernelList.indexOf(data[i][0]) === -1)
                 this.KernelList.push(data[i][0]);
         }
     }

@@ -1,17 +1,134 @@
-
-
-
 import {
-    NotebookPanel
+    NotebookPanel, Notebook
 } from '@jupyterlab/notebook';
 
 import {
     Cell // ICellModel
 } from '@jupyterlab/cells';
 
-import { NotebookInfo } from "./manager"
+import {
+    Message
+} from '@phosphor/messaging';
 
+import {
+    Widget
+} from '@phosphor/widgets';
+
+
+import {
+    Styling
+} from '@jupyterlab/apputils';
+
+import {
+    NotebookInfo
+} from "./manager"
+
+
+const TOOLBAR_LANGUAGE_DROPDOWN_CLASS = 'jp-NotebooklanguageDropDown';
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
+
+export class DefaultLanguageSwitcher extends Widget {
+    constructor(widget: Notebook, languages: Array<string>) {
+        super({ node: createLanguageSwitcher(languages) });
+        this.addClass(TOOLBAR_LANGUAGE_DROPDOWN_CLASS);
+        this.addClass('sos-widget')
+
+        this._select = this.node.firstChild as HTMLSelectElement;
+        Styling.wrapSelect(this._select);
+        this._notebook = widget;
+    }
+
+    public update_selector(languages: Array<string>): void {
+        for (let lan of languages) {
+            // ignore if already exists
+            if (this._select.options.namedItem(lan))
+                continue;
+            let option = document.createElement('option');
+            option.value = lan;
+            option.id = lan;
+            option.textContent = lan;
+            this._select.appendChild(option);
+        }
+    }
+    /**
+     * Handle the DOM events for the widget.
+     *
+     * @param event - The DOM event sent to the widget.
+     *
+     * #### Notes
+     * This method implements the DOM `EventListener` interface and is
+     * called in response to events on the dock panel's node. It should
+     * not be called directly by user code.
+     */
+    handleEvent(event: Event): void {
+        switch (event.type) {
+            case 'change':
+                this._evtChange(event);
+                break;
+            case 'keydown':
+                this._evtKeyDown(event as KeyboardEvent);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Handle `after-attach` messages for the widget.
+     */
+    protected onAfterAttach(msg: Message): void {
+        this._select.addEventListener('change', this);
+        this._select.addEventListener('keydown', this);
+    }
+
+    /**
+     * Handle `before-detach` messages for the widget.
+     */
+    protected onBeforeDetach(msg: Message): void {
+        this._select.removeEventListener('change', this);
+        this._select.removeEventListener('keydown', this);
+    }
+
+    /**
+     * Handle `changed` events for the widget.
+     */
+    private _evtChange(event: Event): void {
+
+    }
+
+    /**
+     * Handle `keydown` events for the widget.
+     */
+    private _evtKeyDown(event: KeyboardEvent): void {
+        if (event.keyCode === 13) {  // Enter
+            this._notebook.activate();
+        }
+    }
+
+    private _select: HTMLSelectElement = null;
+    private _notebook: Notebook = null;
+}
+
+
+/**
+ * Create the node for the cell type switcher.
+ */
+function createLanguageSwitcher(languages): HTMLElement {
+    let div = document.createElement('div');
+    let select = document.createElement('select');
+    for (let lan of languages) {
+        let option = document.createElement('option');
+        option.value = lan;
+        option.id = lan;
+        option.textContent = lan;
+        select.appendChild(option);
+    }
+    select.className = TOOLBAR_LANGUAGE_DROPDOWN_CLASS + " sos-widget";
+    select.value = 'SoS';
+    //select.selectedIndex = languages.indexOf('SoS');
+    div.appendChild(select);
+    return div;
+}
 
 
 export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookInfo) {

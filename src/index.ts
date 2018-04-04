@@ -26,13 +26,11 @@ import {
 } from '@jupyterlab/notebook';
 
 import {
-    DefaultLanguageSwitcher
-} from './language_selector';
-
-import {
     updateCellStyles,
-    changeStyleOnKernel
-} from './cell_styles'
+    changeStyleOnKernel,
+    DefaultLanguageSwitcher
+} from './selectors';
+
 // define and register SoS CodeMirror mode
 import './codemirror-sos'
 
@@ -60,12 +58,14 @@ function registerSoSFileType(app: JupyterLab) {
  */
 function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     let data: any = msg.content.data;
-    let nb = Manager.manager.notebook_of_comm(msg.content.comm_id);
+    let panel = Manager.manager.notebook_of_comm(msg.content.comm_id);
     var msg_type = msg.metadata.msg_type;
 
     if (msg_type === "kernel-list") {
-        let info = Manager.manager.get_info(nb);
+        let info = Manager.manager.get_info(panel);
         info.update_languages(data);
+        info.languageSelector.update_selector(info.KernelList);
+        updateCellStyles(panel, info);
         // Languages.updateLanguages(data);
         //add dropdown menu of kernels in frontend
         //    load_select_kernel();
@@ -325,6 +325,7 @@ export
 
         // we add SoS widget for all panels because the panel could be switched to SoS kernel later
         let lanSelector = new DefaultLanguageSwitcher(panel.notebook, info.KernelList);
+        info.languageSelector = lanSelector;
         panel.toolbar.insertItem(0, "defaultLanguage", lanSelector);
         // this is a singleton class
         context.session.ready.then(
@@ -337,7 +338,7 @@ export
                     // if this is not a sos kernel, remove all buttons
                     if (panel.notebook.model.metadata.has('sos'))
                         info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
-                    lanSelector.update_selector(info.KernelList);
+                    info.languageSelector.update_selector(info.KernelList);
                     connectSoSComm(panel);
                     updateCellStyles(panel, info);
                     showSoSWidgets(panel.node);
@@ -352,6 +353,7 @@ export
                 if (panel.notebook.model.metadata.has('sos'))
                     info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
                 connectSoSComm(panel);
+                info.languageSelector.update_selector(info.KernelList);
                 updateCellStyles(panel, info);
                 showSoSWidgets(panel.node);
             } else {
