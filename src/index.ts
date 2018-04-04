@@ -4,6 +4,10 @@ import {
 } from '@jupyterlab/application';
 
 import {
+    each
+} from '@phosphor/algorithm';
+
+import {
     IDisposable,
     DisposableDelegate
 } from '@phosphor/disposable';
@@ -26,7 +30,8 @@ import {
 } from './language_selector';
 
 import {
-    updateCellStyles
+    updateCellStyles,
+    changeStyleOnKernel
 } from './cell_styles'
 // define and register SoS CodeMirror mode
 import './codemirror-sos'
@@ -352,6 +357,16 @@ export
             } else {
                 // in this case, the .sos_widget should be hidden
                 hideSoSWidgets(panel.node);
+            }
+        });
+
+        panel.notebook.model.cells.changed.connect((list, changed) => {
+            let cur_kernel = panel.context.session.kernelPreference.name;
+            if (cur_kernel === 'sos' && changed.type == 'add') {
+                each(changed.newValues, cellmodel => {
+                    let cell = panel.notebook.widgets.find(x => x.model.id == cellmodel.id);
+                    changeStyleOnKernel(cell, info.defaultKernel, info);
+                });
             }
         });
         return new DisposableDelegate(() => { });

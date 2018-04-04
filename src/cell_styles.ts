@@ -14,7 +14,7 @@ import { NotebookInfo } from "./manager"
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
 
 
-function changeStyleOnKernel(cell: Cell, kernel: any, info: NotebookInfo) {
+export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookInfo) {
     // Note: JupyterLab does not yet support tags
     if (cell.model.metadata.get('tags') && (cell.model.metadata.get('tags') as Array<string>).indexOf("report_output") >= 0) {
         let op = cell.node.getElementsByClassName('jp-Cell-outputWrapper') as HTMLCollectionOf<HTMLElement>;
@@ -100,7 +100,7 @@ export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) {
     // setting up background color and selection according to notebook metadata
     for (let i = 0; i < cells.length; ++i) {
         if (cells[i].model.type === "code") {
-            changeStyleOnKernel(cells[i], cells[i].model.metadata.get('kernel'), info);
+            changeStyleOnKernel(cells[i], cells[i].model.metadata.get('kernel') as string, info);
         }
     }
 

@@ -6,6 +6,7 @@ export class NotebookInfo {
     notebook: NotebookPanel;
     KernelList: Array<string>;
 
+    defaultKernel: string;
     BackgroundColor: Map<string, string>;
     DisplayName: Map<string, string>;
     KernelName: Map<string, string>;
@@ -16,6 +17,7 @@ export class NotebookInfo {
     */
     constructor(notebook) {
         this.notebook = notebook;
+        this.defaultKernel = 'SoS';
         this.KernelList = new Array<string>();
 
         this.BackgroundColor = new Map<string, string>();
