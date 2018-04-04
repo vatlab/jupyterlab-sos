@@ -1,8 +1,7 @@
 
 import {
     // Notebook,
-    NotebookPanel,
-    NotebookTracker
+    NotebookPanel
 } from '@jupyterlab/notebook';
 
 import {
@@ -27,9 +26,27 @@ export function wrapExecutor(panel: NotebookPanel) {
     }
 }
 
+function get_workflow_from_cell(cell) {
+    var lines = cell.get_text().split("\n");
+    var workflow = "";
+    var l;
+    for (l = 0; l < lines.length; ++l) {
+        if (lines[l].startsWith("%include") || lines[l].startsWith("%from")) {
+            workflow += lines[l] + "\n";
+            continue;
+        } else if (lines[l].startsWith("#") || lines[l].startsWith("%") || lines[l].trim() === "" || lines[l].startsWith("!")) {
+            continue;
+        } else if (lines[l].startsWith("[") && lines[l].endsWith("]")) {
+            workflow += lines.slice(l).join("\n") + "\n\n";
+            break;
+        }
+    }
+    return workflow;
+}
+
+
 let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone: boolean = true): Kernel.IFuture {
-    let tracker = new NotebookTracker({ namespace: 'notebook' });
-    let panel = tracker.currentWidget.notebook;
+    let panel = Manager.currentNotebook;
     let info = Manager.manager.get_info(panel);
 
     let code = content.code;
@@ -81,29 +98,29 @@ let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone:
         // being finished, we should start from reverse and check actual code
         if (cells[i].input_prompt_number === "*" && code === cells[i].get_text()) {
             // use cell kernel if meta exists, otherwise use nb.metadata["sos"].default_kernel
-            if (window._auto_resume) {
+            if (info.autoResume) {
                 rerun_option = " --resume ";
-                window._auto_resume = false;
+                info.autoResume = false;
             }
-            return this.orig_execute(
-                // passing to kernel
-                // 1. the default kernel (might have been changed from menu bar
-                // 2. cell kernel (might be unspecified for new cell)
-                // 3. cell index (for setting style after execution)
-                "%frontend " +
-                (nb.metadata["sos"]["panel"].displayed ? " --use-panel" : "") +
-                " --default-kernel " + nb.metadata["sos"].default_kernel +
+
+            // passing to kernel
+            // 1. the default kernel (might have been changed from menu bar
+            // 2. cell kernel (might be unspecified for new cell)
+            // 3. cell index (for setting style after execution)
+            content.code = "%frontend " +
+                (panel.notebook.model.metadata.get("sos")["panel"].displayed ? " --use-panel" : "") +
+                " --default-kernel " + panel.notebook.model.metadata.get("sos")['default_kernel'] +
                 " --cell-kernel " + cells[i].metadata.kernel + rerun_option +
-                (run_notebook ? " --filename '" + window.document.getElementById("notebook_name").innerHTML + "'" : "") +
-                " --cell " + i.toString() + "\n" + code,
-                callbacks, options);
+                (run_notebook ? " --filename '" + panel.session.name + "'" : "") +
+                " --cell " + i.toString() + "\n" + code
+            return this.orig_execute(content, disposeOnDone);
         }
     }
-    // // if this is a command from scratch pad (not part of the notebook)
+    // if this is a command from scratch pad (not part of the notebook)
     // return this.orig_execute(
     //     "%frontend " +
     //     " --use-panel " +
-    //     " --default-kernel " + nb.metadata["sos"].default_kernel +
+    //     " --default-kernel " + panel.notebook.model.metadata.get("sos").default_kernel +
     //     " --cell-kernel " + window.my_panel.cell.metadata.kernel +
     //     (run_notebook ? " --filename '" + window.document.getElementById("notebook_name").innerHTML + "'" : "") +
     //     " --cell -1 " + "\n" + code,
@@ -111,5 +128,6 @@ let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone:
     //         "silent": false,
     //         "store_history": false
     //     });
+
     return this.orig_executor(content, disposeOnDone);
 };

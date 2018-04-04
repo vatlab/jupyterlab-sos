@@ -1,5 +1,6 @@
 import {
-    NotebookPanel
+    NotebookPanel,
+    NotebookTracker
 } from '@jupyterlab/notebook';
 
 import {
@@ -20,12 +21,15 @@ export class NotebookInfo {
     LanguageName: Map<string, string>;
     KernelOptions: Map<string, string>;
 
+    autoResume: boolean;
     /** create an info object from metadata of the notebook
     */
     constructor(notebook: NotebookPanel) {
         this.notebook = notebook;
         this.defaultKernel = 'SoS';
         this.KernelList = new Array<string>();
+        this.autoResume = false;
+        this.sos_comm = null;
 
         this.BackgroundColor = new Map<string, string>();
         this.DisplayName = new Map<string, string>();
@@ -97,20 +101,28 @@ export class NotebookInfo {
 export class Manager {
     // global registry for notebook info
     private static _instance: Manager;
+    // used to track the current notebook widget
+    private static _tracker: NotebookTracker;
 
     private _info: Map<NotebookPanel, NotebookInfo>;
 
     private constructor() {
         if (!this._info) {
             this._info = new Map<NotebookPanel, NotebookInfo>();
-            this._comms = new Map<Kernel.IComm, NotebookPanel>();
         }
     }
 
+    static get currentNotebook() {
+        if (this._tracker === null || this._tracker === undefined)
+            this._tracker = new NotebookTracker({ namespace: 'notebook' });
+        return this._tracker.currentWidget;
+    }
+
     static get manager() {
-        if (this._instance === null || this._instance === undefined) {
+        if (this._instance === null || this._instance === undefined)
             this._instance = new Manager();
-        }
+        if (this._tracker === null || this._tracker === undefined)
+            this._tracker = new NotebookTracker({ namespace: 'notebook' });
         return this._instance;
     }
 
@@ -123,14 +135,14 @@ export class Manager {
         return this._info.get(notebook);
     }
 
-    public register_comm(comm: Kernel.IComm, otebook: NotebookPanel) {
-        this.get_info(notebook)._info.sos_comm = comm;
+    public register_comm(comm: Kernel.IComm, notebook: NotebookPanel) {
+        this.get_info(notebook).sos_comm = comm;
     }
 
     // this is the same as get_info,
     public notebook_of_comm(comm_id: string): NotebookPanel {
-        self._info.forEach(info, panel) => {
-            if (panel.sos_comm.commId === comm_id)
+        for (let [panel, info] of Array.from(this._info.entries()))
+            if (info.sos_comm && info.sos_comm.commId === comm_id)
                 return panel;
-        });
     }
+}
