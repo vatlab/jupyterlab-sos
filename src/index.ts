@@ -289,6 +289,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 }
 
 function connectSoSComm(panel: NotebookPanel) {
+    if (Manager.manager.get_info(panel).sos_comm.length > 0)
+        return;
     let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
     Manager.manager.register_comm(sos_comm, panel);
     sos_comm.open('initial');
