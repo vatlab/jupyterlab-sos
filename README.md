@@ -7,9 +7,10 @@ JupyterLab extension for SoS workflow engine and polyglot notebook
 Already Working:
 * 03/20/2018 SoS file type (`.sos`) and syntax highlighting (edit a `.sos` file in JupyterLab)
 * 04/03/2018 SoS Notebook UIs. SoS Notebooks can be properly displayed with notebook and cell level language selector
+* 04/04/2018 Events, namely effects of language dropdown and frontend message.
 
 Working on:
-* Events, namely effects of language dropdown and frontend message.
+* Magics
 
 ## Prerequisites
 
