@@ -23,6 +23,9 @@ import {
     NotebookInfo
 } from "./manager"
 
+import {
+    Manager
+} from "./manager"
 
 const TOOLBAR_LANGUAGE_DROPDOWN_CLASS = 'jp-NotebooklanguageDropDown';
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
@@ -109,6 +112,26 @@ function createLanguageSwitcher(languages): HTMLElement {
     return div;
 }
 
+function saveKernelInfo() {
+    let panel = Manager.currentNotebook;
+    let info = Manager.manager.get_info(panel);
+
+    let used_kernels = new Set();
+    let cells = panel.notebook.model.cells;
+    for (var i = cells.length - 1; i >= 0; --i) {
+        let cell = cells.get(i);
+        if (cell.type === "code" && cell.metadata.get('kernel')) {
+            used_kernels.add(cell.metadata.get('kernel'));
+        }
+    }
+    panel.notebook.model.metadata.get("sos")["kernels"] = Array.from(used_kernels).sort().map(
+        function(x) {
+            return [info.DisplayName[x], info.KernelName[x],
+            info.LanguageName[x] || "", info.BackgroundColor[x] || ""
+            ]
+        }
+    );
+}
 
 export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookInfo) {
     // Note: JupyterLab does not yet support tags
@@ -156,8 +179,12 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
         editor.insertBefore(select, editor.children[0]);
         select.value = kernel ? kernel : 'SoS';
         select.addEventListener('change', function(evt) {
+            // set cell level meta data
             cell.model.metadata.set('kernel', (evt.target as HTMLOptionElement).value);
+            // change style
             changeStyleOnKernel(cell, (evt.target as HTMLOptionElement).value, info);
+            // set global meta data
+            saveKernelInfo();
         });
 
     } else {
