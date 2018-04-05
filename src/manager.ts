@@ -59,7 +59,7 @@ export class NotebookInfo {
         }
     }
 
-    update_languages(data: Array<Array<string>>) {
+    updateLanguages(data: Array<Array<string>>) {
         for (let i = 0; i < data.length; i++) {
             // BackgroundColor is color
             this.BackgroundColor[data[i][0]] = data[i][3];

@@ -38,7 +38,11 @@ export class DefaultLanguageSwitcher extends Widget {
         this._info = info;
     }
 
-    public update_selector(languages: Array<string>): void {
+    public setDefault(language: string): void {
+        this._select.value = language;
+    }
+
+    public updateOptions(languages: Array<string>): void {
         for (let lan of languages) {
             // ignore if already exists
             if (this._select.options.namedItem(lan))
@@ -188,6 +192,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
 
 export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) {
     var cells = panel.notebook.widgets;
+
 
     // setting up background color and selection according to notebook metadata
     for (let i = 0; i < cells.length; ++i) {

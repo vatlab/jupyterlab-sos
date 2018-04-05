@@ -69,8 +69,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
     if (msg_type === "kernel-list") {
         let info = Manager.manager.get_info(panel);
-        info.update_languages(data);
-        info.languageSelector.update_selector(info.KernelList);
+        info.updateLanguages(data);
+        info.languageSelector.updateOptions(info.KernelList);
         updateCellStyles(panel, info);
         // Languages.updateLanguages(data);
         //add dropdown menu of kernels in frontend
@@ -289,7 +289,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 }
 
 function connectSoSComm(panel: NotebookPanel) {
-    if (Manager.manager.get_info(panel).sos_comm.length > 0)
+    if (Manager.manager.get_info(panel).sos_comm)
         return;
     let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
     Manager.manager.register_comm(sos_comm, panel);
@@ -344,9 +344,17 @@ export
                 let cur_kernel = panel.context.session.kernelPreference.name;
                 if (cur_kernel === 'sos') {
                     // if this is not a sos kernel, remove all buttons
-                    if (panel.notebook.model.metadata.has('sos'))
-                        info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
-                    info.languageSelector.update_selector(info.KernelList);
+                    if (panel.notebook.model.metadata.has('sos')) {
+                        info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
+                        info.languageSelector.setDefault(panel.notebook.model.metadata.get('sos')['default_kernel']);
+                    } else {
+                        panel.notebook.model.metadata.set('sos',
+                            {
+                                'kernels': [['SoS', 'sos', '', '']],
+                                'default_kernel': 'SoS'
+                            })
+                    }
+                    info.languageSelector.updateOptions(info.KernelList);
                     connectSoSComm(panel);
                     wrapExecutor(panel);
                     updateCellStyles(panel, info);
@@ -359,11 +367,19 @@ export
 
         context.session.kernelChanged.connect((sender, kernel) => {
             if (kernel.name === 'sos') {
-                if (panel.notebook.model.metadata.has('sos'))
-                    info.update_languages(panel.notebook.model.metadata.get('sos')['kernels']);
+                if (panel.notebook.model.metadata.has('sos')) {
+                    info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
+                    info.languageSelector.setDefault(panel.notebook.model.metadata.get('sos')['default_kernel']);
+                } else {
+                    panel.notebook.model.metadata.set('sos',
+                        {
+                            'kernels': [['SoS', 'sos', '', '']],
+                            'default_kernel': 'SoS'
+                        })
+                }
                 connectSoSComm(panel);
                 wrapExecutor(panel);
-                info.languageSelector.update_selector(info.KernelList);
+                info.languageSelector.updateOptions(info.KernelList);
                 updateCellStyles(panel, info);
                 showSoSWidgets(panel.node);
             } else {
