@@ -112,7 +112,7 @@ function createLanguageSwitcher(languages): HTMLElement {
     return div;
 }
 
-function saveKernelInfo() {
+export function saveKernelInfo() {
     let panel = Manager.currentNotebook;
     let info = Manager.manager.get_info(panel);
 

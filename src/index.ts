@@ -28,7 +28,8 @@ import {
 import {
     updateCellStyles,
     changeStyleOnKernel,
-    DefaultLanguageSwitcher
+    DefaultLanguageSwitcher,
+    saveKernelInfo
 } from './selectors';
 
 import {
@@ -66,16 +67,15 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     let data: any = msg.content.data;
     let panel = Manager.manager.notebook_of_comm(msg.content.comm_id);
     var msg_type = msg.metadata.msg_type;
+    let info = Manager.manager.get_info(panel);
 
     if (msg_type === "kernel-list") {
-        let info = Manager.manager.get_info(panel);
         info.updateLanguages(data);
         info.languageSelector.updateOptions(info.KernelList);
         updateCellStyles(panel, info);
         console.log("kernel list updated");
     }
     else if (msg_type === "default-kernel") {
-        let info = Manager.manager.get_info(panel);
 
         if (data in info.DisplayName) {
             info.languageSelector.setDefault(info.DisplayName[data])
@@ -83,23 +83,26 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
             console.log(`WARN: Unrecognized default kernel ${data}`)
         }
     }
-    /* else if (msg_type === "cell-kernel") {
-      // get cell from passed cell index, which was sent through the
-      // %frontend magic
-
-      cell = data[0] === -1 ? window.my_panel.cell : nb.get_cell(data[0]);
-      if (cell.metadata.kernel !== window.DisplayName[data[1]]) {
-        cell.metadata.kernel = window.DisplayName[data[1]];
-        // set meta information
-        changeStyleOnKernel(cell, data[1]);
-        save_kernel_info();
-      } else if (cell.metadata.tags && cell.metadata.tags.indexOf("report_output") >= 0) {
-        // #639
-        // if kernel is different, changeStyleOnKernel would set report_output.
-        // otherwise we mark report_output
-        $(".output_wrapper", cell.element).addClass("report_output");
-      }
-    } else if (msg_type === "preview-input") {
+    else if (msg_type === "cell-kernel") {
+        // jupyter lab does not yet handle panel cell
+        if (data[0] === -1)
+            return;
+        let cell = panel.notebook.widgets[data[0]];
+        if (cell.model.metadata.get('kernel') !== info.DisplayName[data[1]]) {
+            cell.model.metadata.set('kernel', info.DisplayName[data[1]]);
+            // set meta information
+            changeStyleOnKernel(cell, info.DisplayName[data[1]], info);
+            saveKernelInfo();
+        } else if (cell.model.metadata.get('tags') &&
+            (cell.model.metadata.get('tags') as Array<string>).indexOf("report_output") >= 0) {
+            // #639
+            // if kernel is different, changeStyleOnKernel would set report_output.
+            // otherwise we mark report_output
+            let op = cell.node.getElementsByClassName('jp-Cell-outputWrapper') as HTMLCollectionOf<HTMLElement>;
+            for (let i = 0; i < op.length; ++i)
+                op.item(i).classList.add('report-output');
+        }
+    } /* else if (msg_type === "preview-input") {
       cell = window.my_panel.cell;
       cell.clear_input();
       cell.set_text(data);
