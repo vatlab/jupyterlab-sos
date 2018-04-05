@@ -35,6 +35,8 @@ export class DefaultLanguageSwitcher extends Widget {
 
         this._select = this.node.firstChild as HTMLSelectElement;
         Styling.wrapSelect(this._select);
+
+        this._notebook = widget;
         this._info = info;
     }
 
@@ -61,7 +63,9 @@ export class DefaultLanguageSwitcher extends Widget {
      */
     handleEvent(event: Event): void {
         if (event.type === 'change') {
-            this._info.defaultKernel = (event.target as HTMLOptionElement).value;
+            let val = (event.target as HTMLOptionElement).value
+            this._info.defaultKernel = val;
+            this._notebook.model.metadata.get('sos')['default_kernel'] = val;
         }
     }
 
@@ -81,6 +85,7 @@ export class DefaultLanguageSwitcher extends Widget {
 
     private _select: HTMLSelectElement = null;
     private _info: NotebookInfo = null;
+    private _notebook: Notebook = null;
 }
 
 
