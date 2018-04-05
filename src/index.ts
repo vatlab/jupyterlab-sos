@@ -72,19 +72,18 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
         info.updateLanguages(data);
         info.languageSelector.updateOptions(info.KernelList);
         updateCellStyles(panel, info);
-        // Languages.updateLanguages(data);
-        //add dropdown menu of kernels in frontend
-        //    load_select_kernel();
-        //  console.log("kernel list updated");
+        console.log("kernel list updated");
     }
-    /*
     else if (msg_type === "default-kernel") {
-      // update the cells when the notebook is being opened.
-      // we also set a global kernel to be used for new cells
-      $("#kernel_selector").val(window.DisplayName[data]);
-      // a side effect of change is cells without metadata kernel info will change background
-      $("#kernel_selector").change();
-    } else if (msg_type === "cell-kernel") {
+        let info = Manager.manager.get_info(panel);
+
+        if (data in info.DisplayName) {
+            info.languageSelector.setDefault(info.DisplayName[data])
+        } else {
+            console.log(`WARN: Unrecognized default kernel ${data}`)
+        }
+    }
+    /* else if (msg_type === "cell-kernel") {
       // get cell from passed cell index, which was sent through the
       // %frontend magic
 
