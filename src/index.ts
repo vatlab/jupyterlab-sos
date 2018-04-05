@@ -13,6 +13,10 @@ import {
 } from '@phosphor/disposable';
 
 import {
+    Cell, CodeCell
+} from '@jupyterlab/cells';
+
+import {
     DocumentRegistry
 } from '@jupyterlab/docregistry';
 
@@ -60,13 +64,41 @@ function registerSoSFileType(app: JupyterLab) {
     });
 }
 
+function formatDuration(start_date: Date): string {
+    let ms: number = +new Date() - +start_date;
+    let res = [];
+    let seconds: number = Math.floor(ms / 1000);
+    let day: number = Math.floor(seconds / 86400);
+    if (day > 0) {
+        res.push(day + " day");
+    }
+    let hh = Math.floor((seconds % 86400) / 3600);
+    if (hh > 0) {
+        res.push(hh + " hr");
+    }
+    let mm = Math.floor((seconds % 3600) / 60);
+    if (mm > 0) {
+        res.push(mm + " min");
+    }
+    let ss = seconds % 60;
+    if (ss > 0) {
+        res.push(ss + " sec");
+    }
+    let ret = res.join(" ");
+    if (ret === "") {
+        return "0 sec";
+    } else {
+        return ret;
+    }
+}
+
 /*
  * SoS frontend Comm
  */
 function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     let data: any = msg.content.data;
     let panel = Manager.manager.notebook_of_comm(msg.content.comm_id);
-    var msg_type = msg.metadata.msg_type;
+    let msg_type = msg.metadata.msg_type;
     let info = Manager.manager.get_info(panel);
 
     if (msg_type === "kernel-list") {
@@ -74,16 +106,14 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
         info.languageSelector.updateOptions(info.KernelList);
         updateCellStyles(panel, info);
         console.log("kernel list updated");
-    }
-    else if (msg_type === "default-kernel") {
+    } else if (msg_type === "default-kernel") {
 
         if (data in info.DisplayName) {
             info.languageSelector.setDefault(info.DisplayName[data])
         } else {
             console.log(`WARN: Unrecognized default kernel ${data}`)
         }
-    }
-    else if (msg_type === "cell-kernel") {
+    } else if (msg_type === "cell-kernel") {
         // jupyter lab does not yet handle panel cell
         if (data[0] === -1)
             return;
@@ -102,192 +132,203 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
             for (let i = 0; i < op.length; ++i)
                 op.item(i).classList.add('report-output');
         }
-    } /* else if (msg_type === "preview-input") {
-      cell = window.my_panel.cell;
-      cell.clear_input();
-      cell.set_text(data);
-      cell.clear_output();
-    } else if (msg_type === "preview-kernel") {
-      changeStyleOnKernel(window.my_panel.cell, data);
-    } else if (msg_type === "highlight-workflow") {
-      //cell = window.my_panel.cell;
-      //cell.clear_input();
-      //cell.set_text("%preview --workflow");
-      //cell.clear_output();
-      //cell.output_area.append_output({
-      //    "output_type": "display_data",
-      //    "metadata": {},
-      //    "data": {
-      //             "text/html": "<textarea id='panel_preview_workflow'>" + data + "</textarea>"
-      //    }
-      //});
-      // <textarea id="side_panel_code">{}</textarea>'
-      CodeMirror.fromTextArea(document.getElementById(data), {
-        "mode": "sos",
-        "theme": "ipython"
-      })
+        /* } else if (msg_type === "preview-input") {
+         cell = window.my_panel.cell;
+         cell.clear_input();
+         cell.set_text(data);
+         cell.clear_output();
+       } else if (msg_type === "preview-kernel") {
+         changeStyleOnKernel(window.my_panel.cell, data);
+       } else if (msg_type === "highlight-workflow") {
+         //cell = window.my_panel.cell;
+         //cell.clear_input();
+         //cell.set_text("%preview --workflow");
+         //cell.clear_output();
+         //cell.output_area.append_output({
+         //    "output_type": "display_data",
+         //    "metadata": {},
+         //    "data": {
+         //             "text/html": "<textarea id='panel_preview_workflow'>" + data + "</textarea>"
+         //    }
+         //});
+         // <textarea id="side_panel_code">{}</textarea>'
+         CodeMirror.fromTextArea(document.getElementById(data), {
+           "mode": "sos",
+           "theme": "ipython"
+         })
+        */
     } else if (msg_type === "tasks-pending") {
-      cell = nb.get_cell(data[0]);
-      window.pending_cells[cell.cell_id] = data[1];
+        let cell = panel.notebook.widgets[data[0]];
+        info.pendingCells.set(cell.model.id, data[1]);
     } else if (msg_type === "remove-task") {
-      var item = document.getElementById("table_" + data[0] + "_" + data[1]);
-      if (item) {
-        item.parentNode.removeChild(item);
-      }
-    } else if (msg_type === "update-duration") {
-      if (!window._duration_updater) {
-        window._duration_updater = window.setInterval(function() {
-          $("[id^=duration_]").text(function() {
-            if ($(this).attr("class") != "running")
-              return $(this).text();
-            return window.durationFormatter($(this).attr("datetime"));
-          });
-        }, 5000);
-      }
+        let item = document.getElementById("table_" + data[0] + "_" + data[1]);
+        if (item) {
+            item.parentNode.removeChild(item);
+        }
+        /*} else if (msg_type === "update-duration") {
+            if (!info._duration_updater) {
+                info._duration_updater = setInterval(function() {
+
+                    $("[id^=duration_]").text(function() {
+                        if ($(this).attr("class") != "running")
+                            return $(this).text();
+                        return window.durationFormatter($(this).attr("datetime"));
+                    });
+                }, 5000);
+            }*/
     } else if (msg_type === "task-status") {
-      // console.log(data);
-      var item = document.getElementById("status_" + data[0] + "_" + data[1]);
-      if (!item) {
-        return;
-      } else {
-        // id, status, status_class, action_class, action_func
-        item.className = "fa fa-fw fa-2x " + data[3];
-        item.setAttribute("onmouseover", "$('#status_" + data[0] + "_" + data[1] + "').addClass('" + data[4] + " task_hover').removeClass('" + data[3] + "')");
-        item.setAttribute("onmouseleave", "$('#status_" + data[0] + "_" + data[1] + "').addClass('" + data[3] + "').removeClass('" + data[4] + " task_hover')");
-        item.setAttribute("onClick", data[5] + "('" + data[1] + "', '" + data[0] + "')");
-      }
-      var item = document.getElementById("duration_" + data[0] + "_" + data[1]);
-      if (item) {
-        item.className = data[2];
-        // stop update and reset time ...
-        if (data[2] != "running") {
-          var curTime = new Date();
-          item.innerText = window.durationFormatter(item.getAttribute("datetime"));
-          item.setAttribute('datetime', curTime.getTime());
-        }
-      }
-      if (data[2] === "completed") {
-        for (cell in window.pending_cells) {
-                  // remove task from pending_cells
-          for (var idx = 0; idx < window.pending_cells[cell].length; ++idx) {
-            if (window.pending_cells[cell][idx][0] !== data[0] ||
-              window.pending_cells[cell][idx][1] !== data[1]) {
-              continue;
-            }
-            window.pending_cells[cell].splice(idx, 1);
-            if (window.pending_cells[cell].length === 0) {
-              delete window.pending_cells[cell];
-                          // if the does not have any pending one, re-run it.
-              var cells = nb.get_cells();
-              var rerun = null;
-              for (i = 0; i < cells.length; ++i) {
-                if (cells[i].cell_id === cell) {
-                  rerun = cells[i];
-                  break;
-                }
-              }
-              if (rerun) {
-                window._auto_resume = true;
-                rerun.execute();
-              }
-              break;
-            }
-          }
-        }
-      }
-    } else if (msg_type === "show_toc") {
-      show_toc();
-    } else if (msg_type === "paste-table") {
-      var cm = nb.get_selected_cell().code_mirror;
-      cm.replaceRange(data, cm.getCursor());
-    } else if (msg_type === 'alert') {
-      alert(data);
-    } else if (msg_type === 'notebook-version') {
-      // right now no upgrade, just save version to notebook
-      nb.metadata["sos"]["version"] = data;
-    } else if (msg_type === 'clear-output') {
-      // console.log(data)
-      var active = nb.get_selected_cells_indices();
-      var clear_task = function(cell, status) {
-        var status_element = cell.element[0].getElementsByClassName(status);
-        while (status_element.length > 0) {
-          var table_element = status_element[0].parentNode.parentNode.parentNode.parentNode;
-          // remove the table
-          if (table_element.className == 'task_table') {
-            table_element.parentElement.remove(table_element);
-          }
-        }
-      }
-      var clear_class = function(cell, element_class) {
-        var elements = cell.element[0].getElementsByClassName(element_class);
-        while (elements.length > 0) {
-          elements[0].parentNode.removeChild(elements[0]);
-          elements = cell.element[0].getElementsByClassName(element_class);
-        }
-      }
-      // if remove all
-      if (data[1]) {
-        var cells = nb.get_cells();
-        var i;
-        var j;
-        for (i = 0; i < cells.length; ++i) {
-          if (cells[i].cell_type != "code")
-            continue;
-          if (data[2]) {
-            for (j = 0; j < data[2].length; ++j) {
-              clear_task(cells[i], data[2][j]);
-            }
-          } else if (data[3]) {
-            for (j = 0; j < data[3].length; ++j) {
-              clear_class(cells[i], data[3][j]);
-            }
-          } else {
-            cells[i].clear_output();
-          }
-        }
-      } else if (data[0] === -1) {
-        // clear output of selected cells
-        var i;
-        var j;
-        for (i = 0; i < active.length; ++i) {
-          if (nb.get_cell(active[i]).cell_type != "code")
-            continue;
-          if (data[2]) {
-            for (j = 0; j < data[2].length; ++j) {
-              clear_task(nb.get_cell(active[i]), data[2][j]);
-            }
-          } else if (data[3]) {
-            for (j = 0; j < data[3].length; ++j) {
-              clear_class(nb.get_cell(active[i]), data[3][j]);
-            }
-          } else {
-            nb.get_cell(active[i]).clear_output();
-          }
-        }
-      } else if (nb.get_cell(data[0]).cell_type === "code") {
-        // clear current cell
-        var j;
-        if (data[2]) {
-          for (j = 0; j < data[2].length; ++j) {
-            clear_task(nb.get_cell(data[0]), data[2][j]);
-          }
-        } else if (data[3]) {
-          for (j = 0; j < data[3].length; ++j) {
-            clear_class(nb.get_cell(data[0]), data[3][j]);
-          }
+        // console.log(data);
+        let item = document.getElementById("status_" + data[0] + "_" + data[1]);
+        if (!item) {
+            return;
         } else {
-          nb.get_cell(data[0]).clear_output();
+            // id, status, status_class, action_class, action_func
+            item.className = "fa fa-fw fa-2x " + data[3];
+            item.setAttribute("onmouseover", "$('#status_" + data[0] + "_" + data[1] + "').addClass('" + data[4] + " task_hover').removeClass('" + data[3] + "')");
+            item.setAttribute("onmouseleave", "$('#status_" + data[0] + "_" + data[1] + "').addClass('" + data[3] + "').removeClass('" + data[4] + " task_hover')");
+            item.setAttribute("onClick", data[5] + "('" + data[1] + "', '" + data[0] + "')");
         }
-      }
-      if (active.length > 0) {
-        nb.select(active[0]);
-      }
-    } else {
-      // this is preview output
-      cell = window.my_panel.cell;
-      data.output_type = msg_type;
-      cell.output_area.append_output(data);
-          } */
+        item = document.getElementById("duration_" + data[0] + "_" + data[1]);
+        if (item) {
+            item.className = data[2];
+            // stop update and reset time ...
+            if (data[2] != "running") {
+                let curTime = new Date();
+                item.innerText = formatDuration(new Date(item.getAttribute("datetime")));
+                item.setAttribute('datetime', curTime.getTime().toString());
+            }
+        }
+        if (data[2] === "completed") {
+            for (let cell in info.pendingCells) {
+                // remove task from pendingCells
+                for (let idx = 0; idx < info.pendingCells[cell].length; ++idx) {
+                    if (info.pendingCells[cell][idx][0] !== data[0] ||
+                        info.pendingCells[cell][idx][1] !== data[1]) {
+                        continue;
+                    }
+                    info.pendingCells[cell].splice(idx, 1);
+                    if (info.pendingCells[cell].length === 0) {
+                        delete info.pendingCells[cell];
+                        // if the does not have any pending one, re-run it.
+                        let cells = panel.notebook.widgets;
+                        let rerun = null;
+                        for (let i = 0; i < cells.length; ++i) {
+                            if (cells[i].id === cell) {
+                                rerun = cells[i];
+                                break;
+                            }
+                        }
+                        if (rerun) {
+                            info.autoResume = true;
+                            rerun.execute();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        /*  } else if (msg_type === "show_toc") {
+        show_toc();
+        */
+    } else if (msg_type === "paste-table") {
+        //let idx = panel.notebook.activeCellIndex;
+        //let cm = panel.notebook.widgets[idx].editor;
+        // cm.replaceRange(data, cm.getCursor());
+    } else if (msg_type === 'alert') {
+        alert(data);
+    } else if (msg_type === 'notebook-version') {
+        // right now no upgrade, just save version to notebook
+        panel.notebook.model.metadata.get("sos")["version"] = data;
+    } else if (msg_type === 'clear-output') {
+        // console.log(data)
+        let active: Cell[] = [];
+        each(panel.notebook.widgets, child => {
+            if (panel.notebook.isSelectedOrActive(child)) {
+                active.push(child);
+            }
+        });
+
+        let clear_task = function(cell, status) {
+            let status_element = cell.node.getElementsByClassName(status);
+            while (status_element.length > 0) {
+                let table_element = status_element[0].parentNode.parentNode.parentNode.parentNode;
+                // remove the table
+                if (table_element.className == 'task_table') {
+                    table_element.parentElement.remove(table_element);
+                }
+            }
+        }
+        let clear_class = function(cell, element_class) {
+            let elements = cell.node.getElementsByClassName(element_class);
+            while (elements.length > 0) {
+                elements[0].parentNode.removeChild(elements[0]);
+                elements = cell.node.getElementsByClassName(element_class);
+            }
+        }
+        // if remove all
+        if (data[1]) {
+            let cells = panel.notebook.widgets;
+            let i;
+            let j;
+            for (i = 0; i < cells.length; ++i) {
+                if (cells[i].model.type != "code")
+                    continue;
+                if (data[2]) {
+                    for (j = 0; j < data[2].length; ++j) {
+                        clear_task(cells[i], data[2][j]);
+                    }
+                } else if (data[3]) {
+                    for (j = 0; j < data[3].length; ++j) {
+                        clear_class(cells[i], data[3][j]);
+                    }
+                } else {
+                    (cells[i] as CodeCell).outputArea.model.clear();
+                }
+            }
+        } else if (data[0] === -1) {
+            // clear output of selected cells
+            let i;
+            let j;
+            for (i = 0; i < active.length; ++i) {
+                if (active[i].model.type != "code")
+                    continue;
+                if (data[2]) {
+                    for (j = 0; j < data[2].length; ++j) {
+                        clear_task(active[i], data[2][j]);
+                    }
+                } else if (data[3]) {
+                    for (j = 0; j < data[3].length; ++j) {
+                        clear_class(active[i], data[3][j]);
+                    }
+                } else {
+                    (active[i] as CodeCell).outputArea.model.clear();
+                }
+            }
+        } else if (panel.notebook.widgets[data[0]].model.type === "code") {
+            // clear current cell
+            let j;
+            if (data[2]) {
+                for (j = 0; j < data[2].length; ++j) {
+                    clear_task(panel.notebook.widgets[data[0]], data[2][j]);
+                }
+            } else if (data[3]) {
+                for (j = 0; j < data[3].length; ++j) {
+                    clear_class(panel.notebook.widgets[data[0]], data[3][j]);
+                }
+            } else {
+                (panel.notebook.widgets[data[0]] as CodeCell).outputArea.model.clear();
+            }
+        }
+        /*
+        if (active.length > 0) {
+            nb.select(active[0]);
+         } else {
+            // this is preview output
+            cell = window.my_panel.cell;
+            data.output_type = msg_type;
+            cell.output_area.append_output(data);
+        } */
+    }
 }
 
 function connectSoSComm(panel: NotebookPanel) {

@@ -22,6 +22,7 @@ export class NotebookInfo {
     KernelOptions: Map<string, string>;
 
     autoResume: boolean;
+    pendingCells: Map<any, any>;
     /** create an info object from metadata of the notebook
     */
     constructor(notebook: NotebookPanel) {
@@ -36,6 +37,8 @@ export class NotebookInfo {
         this.KernelName = new Map<string, string>();
         this.LanguageName = new Map<string, string>();
         this.KernelOptions = new Map<string, any>();
+
+        this.pendingCells = new Map<any, any>();
 
         let data = [['SoS', 'sos', '', '']];
         if (notebook.model.metadata.has('sos'))
