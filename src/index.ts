@@ -466,6 +466,8 @@ function registerRunSelectedCommand(commands: CommandRegistry) {
         label: 'Run current line or selected code in console',
         execute: args => {
             const widget = Manager.currentNotebook;
+            const path = widget.context.path;
+
             if (!widget) {
                 return;
             }
@@ -492,8 +494,12 @@ function registerRunSelectedCommand(commands: CommandRegistry) {
                     editor.setCursorPosition({ line: cursor.line + 1, column: cursor.column });
                 }
             }
-            console.log(`EXECUTE ${code}`)
-
+            const activate = false;
+            if (code) {
+                return commands.execute('console:inject', { activate, code, path });
+            } else {
+                return Promise.resolve(void 0);
+            }
         }
     });
     commands.addKeyBinding(
