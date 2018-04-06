@@ -8,6 +8,10 @@ import {
 } from '@phosphor/algorithm';
 
 import {
+    CommandRegistry
+} from '@phosphor/commands';
+
+import {
     IDisposable,
     DisposableDelegate
 } from '@phosphor/disposable';
@@ -450,6 +454,54 @@ function registerSoSWidgets(app: JupyterLab) {
 
 
 /**
+ * Command used by SoS Plugin
+ */
+
+function registerRunSelectedCommand(commands: CommandRegistry) {
+
+    let selector: string = '.jp-NotebookPanel';
+
+    let command: string = 'notebook:run-in-console';
+    commands.addCommand(command, {
+        label: 'Run current line or selected code in console',
+        execute: args => {
+            const widget = Manager.currentNotebook;
+            if (!widget) {
+                return;
+            }
+            let cell: Cell = widget.notebook.activeCell;
+            if (!cell)
+                return;
+
+            let code = '';
+            const editor = cell.editor;
+            const selection = editor.getSelection();
+            const { start, end } = selection;
+            let selected = start.column !== end.column || start.line !== end.line;
+
+            if (selected) {
+                // Get the selected code from the editor.
+                const start = editor.getOffsetAt(selection.start);
+                const end = editor.getOffsetAt(selection.end);
+                code = editor.model.value.text.substring(start, end);
+            } else {
+                // no selection, submit whole line and advance
+                code = editor.getLine(selection.start.line);
+                const cursor = editor.getCursorPosition();
+                if (cursor.line + 1 !== editor.lineCount) {
+                    editor.setCursorPosition({ line: cursor.line + 1, column: cursor.column });
+                }
+            }
+            console.log(`EXECUTE ${code}`)
+
+        }
+    });
+    commands.addKeyBinding(
+        { command, selector, keys: ['Ctrl Shift Enter'] }
+    )
+}
+
+/**
  * Initialization data for the sos-extension extension.
  */
 const extension: JupyterLabPlugin<void> = {
@@ -458,6 +510,7 @@ const extension: JupyterLabPlugin<void> = {
     activate: (app: JupyterLab) => {
         registerSoSFileType(app);
         registerSoSWidgets(app);
+        registerRunSelectedCommand(app.commands);
         console.log('JupyterLab extension sos-extension is activated!');
     }
 };
