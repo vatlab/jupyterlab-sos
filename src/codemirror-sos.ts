@@ -81,10 +81,7 @@ function markExpr(python_mode) {
     startState: function() {
       return {
         in_python: false,
-        sigil: {
-          left: '{',
-          right: '}'
-        },
+        sigil: null,
         matched: true,
         python_state: CodeMirror.startState(python_mode),
       };

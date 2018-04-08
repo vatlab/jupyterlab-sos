@@ -87,10 +87,7 @@
             startState: function() {
                 return {
                     in_python: false,
-                    sigil: {
-                        left: '{',
-                        right: '}'
-                    },
+                    sigil: null,
                     matched: true,
                     python_state: CodeMirror.startState(python_mode),
                 };
@@ -233,7 +230,6 @@
                             for (var i = 0; i < sosMagics.length; i++) {
                                 if (stream.match(sosMagics[i])) {
                                     if (sosMagics[i] === "%expand") {
-                                        // if there is no :, the easy case
                                         if (stream.eol() || stream.match(/\s*$/, false)) {
                                             state.overlay_state.sigil = {
                                                 'left': '{',
