@@ -1,4 +1,3 @@
-
 import {
   // Notebook,
   NotebookPanel
@@ -8,6 +7,10 @@ import {
   KernelMessage,
   Kernel
 } from '@jupyterlab/services';
+
+import {
+  ICellModel
+} from '@jupyterlab/cells';
 
 import {
   Manager
@@ -26,8 +29,28 @@ export function wrapExecutor(panel: NotebookPanel) {
   }
 }
 
-function get_workflow_from_cell(cell) {
-  var lines = cell.get_text().split("\n");
+// detect if the code contains notebook-involved magics such as %sosrun, sossave, preview
+function hasWorkflowMagic(code: string) {
+  let lines = code.split("\n");
+  for (let l = 0; l < lines.length; ++l) {
+    // ignore starting comment, new line and ! lines
+    if (lines[l].startsWith("#") || lines[l].trim() === "" || lines[l].startsWith("!")) {
+      continue;
+    }
+    // other magic
+    if (lines[l].startsWith("%")) {
+      if (lines[l].match(/^%sosrun($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/)) {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+}
+
+// get the workflow part of text from a cell
+function getCellWorkflow(cell: ICellModel) {
+  var lines = cell.value.text.split("\n");
   var workflow = "";
   var l;
   for (l = 0; l < lines.length; ++l) {
@@ -44,56 +67,36 @@ function get_workflow_from_cell(cell) {
   return workflow;
 }
 
-/*
-* FIXME This is a really bad way but let us have it done and then modify jupyterlab to add it to better places
-*/
-let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone: boolean = true): Kernel.IFuture {
-  let panel = Manager.currentNotebook;
-  let info = Manager.manager.get_info(panel);
-
-  let code = content.code;
-  let workflow = "";
-  let run_notebook = false;
-  let lines = code.split("\n");
-
-  for (let l = 0; l < lines.length; ++l) {
-    if (lines[l].startsWith("#") || lines[l].trim() === "" || lines[l].startsWith("!")) {
-      continue;
-    }
-    // other magic
-    if (lines[l].startsWith("%")) {
-      if (lines[l].match(/^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/)) {
-        run_notebook = true;
-        break;
-      } else {
-        continue;
-      }
-    } else {
-      run_notebook = false;
-      break;
-    }
-  }
-
-  let i;
+// get workflow from notebook
+function getNotebookWorkflow(panel: NotebookPanel) {
   let cells = panel.notebook.widgets;
-  if (run_notebook) {
-    // Running %sossave --to html needs to save notebook
-    //FIXME nb.save_notebook();
-    for (i = 0; i < cells.length; ++i) {
-      // older version of the notebook might have sos in metadata
-      let cell = cells[i].model;
-      if (cell.type === "code" && (!cell.metadata.get('kernel') || cell.metadata.get('kernel') === "SoS")) {
-        workflow += get_workflow_from_cell(cell);
-      }
+  let workflow = '#!/usr/bin/env sos-runner\n#fileformat=SOS1.0\n\n';
+  for (let i = 0; i < cells.length; ++i) {
+    let cell = cells[i].model;
+    if (cell.type === "code" && (!cell.metadata.get('kernel') || cell.metadata.get('kernel') === "SoS")) {
+      workflow += getCellWorkflow(cell);
     }
   }
-  if (run_notebook) {
-    info.sos_comm.send({
-      "workflow": workflow,
-    });
+  return workflow;
+}
+
+function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boolean = true): Kernel.IFuture {
+  let code = content.code;
+
+  content.sos = {};
+  let panel = Manager.currentNotebook;
+  if (hasWorkflowMagic(code)) {
+    content.sos['workflow'] = getNotebookWorkflow(panel);
+    debugger;
+    content.sos['filename'] = ''; // FIXME Manager.currentNotebook.session.ID;
   }
-  let rerun_option = "";
-  for (i = cells.length - 1; i >= 0; --i) {
+
+  let info = Manager.manager.get_info(panel);
+  content.sos['default_kernel'] = info.defaultKernel;
+
+  // find the cell that is being executed...
+  let cells = panel.notebook.widgets;
+  for (let i = cells.length - 1; i >= 0; --i) {
     // this is the cell that is being executed...
     // according to this.set_input_prompt("*") before execute is called.
     // also, because a cell might be starting without a previous cell
@@ -106,33 +109,20 @@ let my_execute = function(content: KernelMessage.IExecuteRequest, disposeOnDone:
         continue;
       // use cell kernel if meta exists, otherwise use nb.metadata["sos"].default_kernel
       if (info.autoResume) {
-        rerun_option = " --resume ";
+        content.sos['rerun'] = true;
         info.autoResume = false;
       }
-      // passing to kernel
-      // 1. the default kernel (might have been changed from menu bar
-      // 2. cell kernel (might be unspecified for new cell)
-      // 3. cell index (for setting style after execution)
-      content.code = "%frontend " +
-        " --default-kernel " + panel.notebook.model.metadata.get("sos")['default_kernel'] +
-        " --cell-kernel " + cell.model.metadata.get('kernel') + rerun_option +
-        (run_notebook ? " --filename '" + panel.session.name + "'" : "") +
-        " --cell " + i.toString() + "\n" + code
+      content.sos['cell_id'] = cell.id;
+      content.sos['cell_kernel'] = cell.model.metadata.get('kernel');
       return this.orig_execute(content, disposeOnDone);
     }
   }
-  // if this is a command from scratch pad (not part of the notebook)
-  // return this.orig_execute(
-  //     "%frontend " +
-  //     " --use-panel " +
-  //     " --default-kernel " + panel.notebook.model.metadata.get("sos").default_kernel +
-  //     " --cell-kernel " + window.my_panel.cell.metadata.kernel +
-  //     (run_notebook ? " --filename '" + window.document.getElementById("notebook_name").innerHTML + "'" : "") +
-  //     " --cell -1 " + "\n" + code,
-  //     callbacks, {
-  //         "silent": false,
-  //         "store_history": false
-  //     });
 
-  return this.orig_executor(content, disposeOnDone);
+  // not sure how to handle console cell yet
+  content.sos['cell_kernel'] = 'SoS';
+  content.sos['cell_id'] = -1;
+  content.silent = false;
+  content.store_history = false;
+
+  return this.orig_execute(content, disposeOnDone);
 };
