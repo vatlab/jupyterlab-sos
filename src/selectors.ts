@@ -14,9 +14,6 @@ import {
   Widget
 } from '@phosphor/widgets';
 
-import {
-  CodeMirrorEditor
-} from '@jupyterlab/codemirror';
 
 import {
   Styling
@@ -165,10 +162,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
   //     base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
   // };
   // //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
-  (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', {
-    name: 'sos',
-    base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
-  });
+  // cell.code_mirror.setOption('mode', cell.user_highlight);
   let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
   if (nodes.length === 0) {
     // if there is no selector, create one

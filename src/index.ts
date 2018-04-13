@@ -37,7 +37,7 @@ import {
 } from './selectors';
 
 import {
-  wrapExecutor
+  prepareContext
 } from './execute'
 
 // define and register SoS CodeMirror mode
@@ -398,7 +398,7 @@ export
           }
           info.languageSelector.updateOptions(info.KernelList);
           connectSoSComm(panel);
-          wrapExecutor(panel);
+          panel.session.kernel.registerPreprocessor(prepareContext);
           updateCellStyles(panel, info);
           showSoSWidgets(panel.node);
         } else {
@@ -420,7 +420,7 @@ export
             })
         }
         connectSoSComm(panel);
-        wrapExecutor(panel);
+        panel.session.kernel.registerPreprocessor(prepareContext);
         info.languageSelector.updateOptions(info.KernelList);
         updateCellStyles(panel, info);
         showSoSWidgets(panel.node);
