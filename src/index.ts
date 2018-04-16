@@ -333,19 +333,22 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 function connectSoSComm(panel: NotebookPanel) {
   if (Manager.manager.get_info(panel).sos_comm)
     return;
-  let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
-  Manager.manager.register_comm(sos_comm, panel);
-  sos_comm.open('initial');
-  sos_comm.onMsg = on_frontend_msg;
+  panel.context.session.kernel.connectToComm("sos_comm").then(
+    sos_comm => {
+      Manager.manager.register_comm(sos_comm, panel);
+      sos_comm.open('initial');
+      sos_comm.onMsg = on_frontend_msg;
 
-  let kernels = panel.notebook.model.metadata.has('sos') ? panel.notebook.model.metadata.get('sos')['kernels'] : [];
-  console.log(kernels);
-  sos_comm.send({
-    "list-kernel": kernels,
-    /* "update-task-status": window.unknown_tasks,
-    "notebook-version": nb.metadata["sos"]["version"] || "undefined",
-    */
-  });
+      let kernels = panel.notebook.model.metadata.has('sos') ? panel.notebook.model.metadata.get('sos')['kernels'] : [];
+      sos_comm.send({
+        "list-kernel": kernels,
+        /* "update-task-status": window.unknown_tasks,
+        "notebook-version": nb.metadata["sos"]["version"] || "undefined",
+        */
+      });
+    }
+  )
+
   console.log("sos comm registered");
 }
 
