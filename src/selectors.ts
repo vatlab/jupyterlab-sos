@@ -165,10 +165,15 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
   //     base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
   // };
   // //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
-  (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', {
-    name: 'sos',
-    base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
-  });
+  let base_mode = info.LanguageName[kernel] || info.KernelName[kernel] || kernel;
+  if (!base_mode || base_mode.toLowerCase() === 'sos') {
+    (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', 'sos');
+  } else {
+    (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', {
+      name: 'sos',
+      base_mode: base_mode,
+    });
+  }
   let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
   if (nodes.length === 0) {
     // if there is no selector, create one
