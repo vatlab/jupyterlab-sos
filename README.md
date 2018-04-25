@@ -1,6 +1,4 @@
-# sos-extension
-
-JupyterLab extension for SoS workflow engine and polyglot notebook
+# JupyterLab extension for SoS workflow engine and polyglot notebook
 
 ## Progress
 
