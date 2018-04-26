@@ -17,7 +17,7 @@ Working on:
 ## Installation
 
 ```bash
-jupyter labextension install sos-extension
+jupyter labextension install jupyterlab-sos
 ```
 
 ## Development
