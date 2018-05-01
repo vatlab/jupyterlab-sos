@@ -39,7 +39,7 @@ function hasWorkflowMagic(code: string) {
     }
     // other magic
     if (lines[l].startsWith("%")) {
-      if (lines[l].match(/^%sosrun($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/)) {
+      if (lines[l].match(/^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/)) {
         return true;
       }
     } else {
