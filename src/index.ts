@@ -383,11 +383,12 @@ export
     // this is a singleton class
     context.session.ready.then(
       () => {
-        // kernel information (for opened notebook) should be ready
-        // at this time. We can remove all sos_widget from the panel
-        // if it is not sos.
-        let cur_kernel = panel.context.session.kernelPreference.name;
-        if (cur_kernel === 'sos') {
+        // kernel information (for opened notebook) should be ready at this time.
+        // However, when the notebook is created from File -> New Notebook -> Select Kernel
+        // The kernelPreference.name is not yet set and we have to use kernelDisplayName
+        // which is SoS (not sos)
+        let cur_kernel = panel.context.session.kernelPreference.name || panel.context.session.kernelDisplayName;
+        if (cur_kernel.toLowerCase() === 'sos') {
           // if this is not a sos kernel, remove all buttons
           if (panel.notebook.model.metadata.has('sos')) {
             info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
