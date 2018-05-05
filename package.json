@@ -1,5 +1,5 @@
 {
-  "name": "sos-extension",
+  "name": "jupyterlab-sos",
   "version": "0.1.0",
   "description": "JupyterLab extension for SoS workflow engine and polyglot notebook",
   "keywords": [
@@ -7,9 +7,9 @@
     "jupyterlab",
     "jupyterlab-extension"
   ],
-  "homepage": "https://github.com/vatlab/sos-extension",
+  "homepage": "https://github.com/vatlab/jupyterlab-sos",
   "bugs": {
-    "url": "https://github.com/vatlab/sos-extension/issues"
+    "url": "https://github.com/vatlab/jupyterlab-sos/issues"
   },
   "license": "BSD-3-Clause",
   "author": "Bo Peng",
@@ -21,7 +21,7 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vatlab/sos-extension.git"
+    "url": "https://github.com/vatlab/jupyterlab-sos.git"
   },
   "scripts": {
     "build": "tsc",
