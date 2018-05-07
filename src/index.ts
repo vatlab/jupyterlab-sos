@@ -330,8 +330,9 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
   }
 }
 
-function connectSoSComm(panel: NotebookPanel) {
-  if (Manager.manager.get_info(panel).sos_comm)
+function connectSoSComm(panel: NotebookPanel, renew: boolean=false) {
+  let info = Manager.manager.get_info(panel);
+  if (info.sos_comm && !renew)
     return;
   panel.context.session.kernel.connectToComm("sos_comm").then(
     sos_comm => {
@@ -347,7 +348,9 @@ function connectSoSComm(panel: NotebookPanel) {
         */
       });
     }
-  )
+  ).catch((error) => {
+      console.log(error);
+  });
 
   console.log("sos comm registered");
 }
@@ -431,6 +434,15 @@ export
       } else {
         // in this case, the .sos_widget should be hidden
         hideSoSWidgets(panel.node);
+      }
+    });
+
+    context.session.statusChanged.connect((sender, status) => {
+      // if a sos notebook is restarted
+      console.log(status);
+      if (status === 'connected' && panel.notebook.model.metadata.has('sos')) {
+        connectSoSComm(panel, true);
+        wrapExecutor(panel);
       }
     });
 
