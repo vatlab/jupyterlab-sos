@@ -87,9 +87,8 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
   let panel = Manager.currentNotebook;
   if (hasWorkflowMagic(code)) {
     content.sos['workflow'] = getNotebookWorkflow(panel);
-    debugger;
-    content.sos['filename'] = ''; // FIXME Manager.currentNotebook.session.ID;
   }
+  content.sos['path'] = panel.context.path;
 
   let info = Manager.manager.get_info(panel);
   content.sos['default_kernel'] = info.defaultKernel;
