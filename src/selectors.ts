@@ -191,9 +191,11 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
     select.value = kernel ? kernel : 'SoS';
     select.addEventListener('change', function(evt) {
       // set cell level meta data
-      cell.model.metadata.set('kernel', (evt.target as HTMLOptionElement).value);
+      let kernel = (evt.target as HTMLOptionElement).value;
+      cell.model.metadata.set('kernel', kernel);
+      info.sos_comm.send({'set-editor-kernel': kernel})
       // change style
-      changeStyleOnKernel(cell, (evt.target as HTMLOptionElement).value, info);
+      changeStyleOnKernel(cell, kernel, info);
       // set global meta data
       saveKernelInfo();
     });
