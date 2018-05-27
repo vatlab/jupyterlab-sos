@@ -455,6 +455,16 @@ export
         });
       }
     });
+
+    panel.notebook.activeCellChanged.connect((sender, cell) => {
+      if (cell.model.type === 'code') {
+        let cell_kernel = cell.model.metadata.get('kernel') || info.defaultKernel;
+        info.sos_comm.send({
+          'set-editor-kernel': cell_kernel
+        });
+      }
+    });
+
     return new DisposableDelegate(() => { });
   }
 }
