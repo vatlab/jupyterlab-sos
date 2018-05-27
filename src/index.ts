@@ -367,6 +367,31 @@ function showSoSWidgets(element) {
     sos_elements[i].style.display = '';
 }
 
+export function kill_task(task_id : string, task_queue:string) {
+  console.log("Kill " + task_id);
+  // send_kernel_msg({
+  //   "kill-task": [task_id, task_queue],
+  // });
+};
+
+export function resume_task(task_id: string, task_queue: string) {
+  console.log("Resume " + task_id);
+  // send_kernel_msg({
+  //   "resume-task": [task_id, task_queue],
+  // });
+};
+
+export function task_info(task_id: string, task_queue: string) {
+  console.log("Request info on " + task_id);
+  // send_kernel_msg({
+  //   "task-info": [task_id, task_queue],
+  // });
+  // var cell = window.my_panel.cell;
+  // cell.clear_input();
+  // cell.set_text("%taskinfo " + task_id + " -q " + task_queue);
+  // cell.clear_output();
+};
+
 export
   class SoSWidgets implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
   /**
