@@ -30,6 +30,7 @@ import {
 } from '@jupyterlab/notebook';
 
 import {
+  addLanSelector,
   updateCellStyles,
   changeStyleOnKernel,
   DefaultLanguageSwitcher,
@@ -476,6 +477,7 @@ export
       if (cur_kernel === 'sos' && changed.type == 'add') {
         each(changed.newValues, cellmodel => {
           let cell = panel.notebook.widgets.find(x => x.model.id == cellmodel.id);
+          addLanSelector(cell, info);
           changeStyleOnKernel(cell, info.defaultKernel, info);
         });
       }

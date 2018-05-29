@@ -14,6 +14,11 @@
 .cm-sos-unmatched {
 	background-color: orange;
 }
+
+.jp-CelllanguageDropDown {
+    display: none;
+}
+
 /*
 .cm-sos-script {
 	font-style: normal;
@@ -22,7 +27,7 @@
 .cm-sos-option {
 	font-style: italic;
 } */
-.jp-InputArea-editor .jp-CelllanguageDropDown
+.jp-CodeCell .jp-InputArea-editor .jp-CelllanguageDropDown
  {
     width: 70pt;
     background: none;
@@ -32,6 +37,7 @@
     margin-top: 3pt;
     right: 8pt;
     font-size: 80%;
+		display: block;
 }
 
 .report-output {

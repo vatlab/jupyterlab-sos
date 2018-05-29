@@ -136,6 +136,56 @@ export function saveKernelInfo() {
   );
 }
 
+export function addLanSelector(cell: Cell, info: NotebookInfo) {
+  if (!cell.model.metadata.has('kernel')) {
+    cell.model.metadata.set('kernel', info.defaultKernel);
+  }
+  let kernel = cell.model.metadata.get('kernel') as string;
+
+  let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
+  if (nodes.length === 0) {
+    // if there is no selector, create one
+    let select = document.createElement('select');
+    for (let lan of info.KernelList) {
+      let option = document.createElement('option');
+      option.value = lan;
+      option.id = lan;
+      option.textContent = lan;
+      select.appendChild(option);
+    }
+    select.className = CELL_LANGUAGE_DROPDOWN_CLASS + " sos-widget";
+    let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
+    editor.insertBefore(select, editor.children[0]);
+    select.value = kernel;
+    select.addEventListener('change', function(evt) {
+      // set cell level meta data
+      let kernel = (evt.target as HTMLOptionElement).value;
+      cell.model.metadata.set('kernel', kernel);
+      info.sos_comm.send({'set-editor-kernel': kernel})
+      // change style
+      changeStyleOnKernel(cell, kernel, info);
+      // set global meta data
+      saveKernelInfo();
+    });
+
+  } else {
+    // use the existing dropdown box
+    let select = nodes.item(0) as HTMLSelectElement;
+    // update existing
+    for (let lan of info.KernelList) {
+      // ignore if already exists
+      if (select.options.namedItem(lan))
+        continue;
+      let option = document.createElement('option');
+      option.value = lan;
+      option.id = lan;
+      option.textContent = lan;
+      select.appendChild(option);
+    }
+    select.value = kernel ? kernel : 'SoS';
+  }
+}
+
 export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookInfo) {
   // Note: JupyterLab does not yet support tags
   if (cell.model.metadata.get('tags') && (cell.model.metadata.get('tags') as Array<string>).indexOf("report_output") >= 0) {
@@ -174,73 +224,14 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
       base_mode: base_mode,
     });
   }
-  let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
-  if (nodes.length === 0) {
-    // if there is no selector, create one
-    let select = document.createElement('select');
-    for (let lan of info.KernelList) {
-      let option = document.createElement('option');
-      option.value = lan;
-      option.id = lan;
-      option.textContent = lan;
-      select.appendChild(option);
-    }
-    select.className = CELL_LANGUAGE_DROPDOWN_CLASS + " sos-widget";
-    let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
-    editor.insertBefore(select, editor.children[0]);
-    select.value = kernel ? kernel : 'SoS';
-    select.addEventListener('change', function(evt) {
-      // set cell level meta data
-      let kernel = (evt.target as HTMLOptionElement).value;
-      cell.model.metadata.set('kernel', kernel);
-      info.sos_comm.send({'set-editor-kernel': kernel})
-      // change style
-      changeStyleOnKernel(cell, kernel, info);
-      // set global meta data
-      saveKernelInfo();
-    });
-
-  } else {
-    // use the existing dropdown box
-    let select = nodes.item(0) as HTMLSelectElement;
-    // update existing
-    for (let lan of info.KernelList) {
-      // ignore if already exists
-      if (select.options.namedItem(lan))
-        continue;
-      let option = document.createElement('option');
-      option.value = lan;
-      option.id = lan;
-      option.textContent = lan;
-      select.appendChild(option);
-    }
-    select.value = kernel ? kernel : 'SoS';
-  }
-
-  //
-  // select.change(function() {
-  //     let value = (<HTMLInputElement>(this)).value;
-  //     cell.model.metadata.set('kernel', info.DisplayName[value]);
-  //     // cell in panel does not have prompt area
-  //     var ip = cell.node.getElementsByClassName("input_prompt") as HTMLCollectionOf<HTMLElement>;
-  //     var op = cell.node.getElementsByClassName("out_prompt_overlay") as HTMLCollectionOf<HTMLElement>;
-  //     if (info.BackgroundColor[value]) {
-  //         ip[0].style.backgroundColor = info.BackgroundColor[value];
-  //         op[0].style.backgroundColor = info.BackgroundColor[value];
-  //     } else {
-  //         // Use "" to remove background-color?
-  //         ip[0].style.backgroundColor = "";
-  //         op[0].style.backgroundColor = "";
-  //     }
-
 }
 
 export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) {
   var cells = panel.notebook.widgets;
 
-
   // setting up background color and selection according to notebook metadata
   for (let i = 0; i < cells.length; ++i) {
+    addLanSelector(cells[i], info);
     if (cells[i].model.type === "code") {
       changeStyleOnKernel(cells[i], cells[i].model.metadata.get('kernel') as string, info);
     }
