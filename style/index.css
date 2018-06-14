@@ -96,6 +96,10 @@
     white-space: nowrap;
 }
 
+pre.section-header.CodeMirror-line {
+  background-color: #eee;
+}
+
 
 
 /* jp-NotebooklanguageDropDown */
