@@ -60,7 +60,14 @@ function getCellWorkflow(cell: ICellModel) {
     } else if (lines[l].startsWith("#") || lines[l].startsWith("%") || lines[l].trim() === "" || lines[l].startsWith("!")) {
       continue;
     } else if (lines[l].startsWith("[") && lines[l].endsWith("]")) {
-      workflow += lines.slice(l).join("\n") + "\n\n";
+      // include comments before section header
+      let c = l - 1
+      let comment = ''
+      while (c >= 0 && lines[c].startsWith('#')) {
+          comment = lines[c] + '\n' + comment;
+          c -= 1;
+      }
+      workflow += comment + lines.slice(l).join("\n") + "\n\n";
       break;
     }
   }
