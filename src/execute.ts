@@ -98,7 +98,6 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
   content.sos['path'] = panel.context.path;
 
   let info = Manager.manager.get_info(panel);
-  content.sos['default_kernel'] = info.defaultKernel;
 
   // find the cell that is being executed...
   let cells = panel.notebook.widgets;

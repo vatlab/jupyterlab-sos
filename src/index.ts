@@ -33,7 +33,6 @@ import {
   addLanSelector,
   updateCellStyles,
   changeStyleOnKernel,
-  DefaultLanguageSwitcher,
   saveKernelInfo
 } from './selectors';
 
@@ -104,16 +103,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
   if (msg_type === "kernel-list") {
     info.updateLanguages(data);
-    info.languageSelector.updateOptions(info.KernelList);
     updateCellStyles(panel, info);
     console.log("kernel list updated");
-  } else if (msg_type === "default-kernel") {
-
-    if (data in info.DisplayName) {
-      info.languageSelector.setDefault(info.DisplayName[data])
-    } else {
-      console.log(`WARN: Unrecognized default kernel ${data}`)
-    }
   } else if (msg_type === "cell-kernel") {
     // jupyter lab does not yet handle panel cell
     if (data[0] === -1)
@@ -405,10 +396,6 @@ export
     // unfortunately, for new notebook, language info is currently empty
     let info = Manager.manager.get_info(panel);
 
-    // we add SoS widget for all panels because the panel could be switched to SoS kernel later
-    let lanSelector = new DefaultLanguageSwitcher(panel.notebook, info);
-    info.languageSelector = lanSelector;
-    panel.toolbar.insertItem(0, "defaultLanguage", lanSelector);
     // this is a singleton class
     context.session.ready.then(
       () => {
@@ -421,15 +408,12 @@ export
           // if this is not a sos kernel, remove all buttons
           if (panel.notebook.model.metadata.has('sos')) {
             info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
-            info.languageSelector.setDefault(panel.notebook.model.metadata.get('sos')['default_kernel']);
           } else {
             panel.notebook.model.metadata.set('sos',
               {
-                'kernels': [['SoS', 'sos', '', '']],
-                'default_kernel': 'SoS'
+                'kernels': [['SoS', 'sos', '', '']]
               })
           }
-          info.languageSelector.updateOptions(info.KernelList);
           connectSoSComm(panel);
           wrapExecutor(panel);
           updateCellStyles(panel, info);
@@ -444,17 +428,14 @@ export
       if (kernel.name === 'sos') {
         if (panel.notebook.model.metadata.has('sos')) {
           info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
-          info.languageSelector.setDefault(panel.notebook.model.metadata.get('sos')['default_kernel']);
         } else {
           panel.notebook.model.metadata.set('sos',
             {
-              'kernels': [['SoS', 'sos', '', '']],
-              'default_kernel': 'SoS'
+              'kernels': [['SoS', 'sos', '', '']]
             })
         }
         connectSoSComm(panel);
         wrapExecutor(panel);
-        info.languageSelector.updateOptions(info.KernelList);
         updateCellStyles(panel, info);
         showSoSWidgets(panel.node);
       } else {
@@ -478,14 +459,14 @@ export
         each(changed.newValues, cellmodel => {
           let cell = panel.notebook.widgets.find(x => x.model.id == cellmodel.id);
           addLanSelector(cell, info);
-          changeStyleOnKernel(cell, info.defaultKernel, info);
+          changeStyleOnKernel(cell, "SoS", info);
         });
       }
     });
 
     panel.notebook.activeCellChanged.connect((sender, cell) => {
       if (cell.model.type === 'code') {
-        let cell_kernel = cell.model.metadata.get('kernel') || info.defaultKernel;
+        let cell_kernel = cell.model.metadata.get('kernel');
         info.sos_comm.send({
           'set-editor-kernel': cell_kernel
         });

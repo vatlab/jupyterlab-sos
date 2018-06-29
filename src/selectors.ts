@@ -1,5 +1,5 @@
 import {
-  NotebookPanel, Notebook
+  NotebookPanel
 } from '@jupyterlab/notebook';
 
 import {
@@ -7,20 +7,8 @@ import {
 } from '@jupyterlab/cells';
 
 import {
-  Message
-} from '@phosphor/messaging';
-
-import {
-  Widget
-} from '@phosphor/widgets';
-
-import {
   CodeMirrorEditor
 } from '@jupyterlab/codemirror';
-
-import {
-  Styling
-} from '@jupyterlab/apputils';
 
 import {
   NotebookInfo
@@ -30,90 +18,7 @@ import {
   Manager
 } from "./manager"
 
-const TOOLBAR_LANGUAGE_DROPDOWN_CLASS = 'jp-NotebooklanguageDropDown';
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
-
-export class DefaultLanguageSwitcher extends Widget {
-  constructor(widget: Notebook, info: NotebookInfo) {
-    super({ node: createLanguageSwitcher(info.KernelList) });
-    this.addClass(TOOLBAR_LANGUAGE_DROPDOWN_CLASS);
-    this.addClass('sos-widget')
-
-    this._select = this.node.firstChild as HTMLSelectElement;
-    Styling.wrapSelect(this._select);
-
-    this._notebook = widget;
-    this._info = info;
-  }
-
-  public setDefault(language: string): void {
-    this._select.value = language;
-  }
-
-  public updateOptions(languages: Array<string>): void {
-    for (let lan of languages) {
-      // ignore if already exists
-      if (this._select.options.namedItem(lan))
-        continue;
-      let option = document.createElement('option');
-      option.value = lan;
-      option.id = lan;
-      option.textContent = lan;
-      this._select.appendChild(option);
-    }
-  }
-  /**
-   * Handle the DOM events for the widget.
-   *
-   * @param event - The DOM event sent to the widget.
-   */
-  handleEvent(event: Event): void {
-    if (event.type === 'change') {
-      let val = (event.target as HTMLOptionElement).value
-      this._info.defaultKernel = val;
-      this._notebook.model.metadata.get('sos')['default_kernel'] = val;
-    }
-  }
-
-  /**
-   * Handle `after-attach` messages for the widget.
-   */
-  protected onAfterAttach(msg: Message): void {
-    this._select.addEventListener('change', this);
-  }
-
-  /**
-   * Handle `before-detach` messages for the widget.
-   */
-  protected onBeforeDetach(msg: Message): void {
-    this._select.removeEventListener('change', this);
-  }
-
-  private _select: HTMLSelectElement = null;
-  private _info: NotebookInfo = null;
-  private _notebook: Notebook = null;
-}
-
-
-/**
- * Create the node for the cell type switcher.
- */
-function createLanguageSwitcher(languages): HTMLElement {
-  let div = document.createElement('div');
-  let select = document.createElement('select');
-  for (let lan of languages) {
-    let option = document.createElement('option');
-    option.value = lan;
-    option.id = lan;
-    option.textContent = lan;
-    select.appendChild(option);
-  }
-  select.className = TOOLBAR_LANGUAGE_DROPDOWN_CLASS + " sos-widget";
-  select.value = 'SoS';
-  //select.selectedIndex = languages.indexOf('SoS');
-  div.appendChild(select);
-  return div;
-}
 
 export function saveKernelInfo() {
   let panel = Manager.currentNotebook;
@@ -138,7 +43,7 @@ export function saveKernelInfo() {
 
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
   if (!cell.model.metadata.has('kernel')) {
-    cell.model.metadata.set('kernel', info.defaultKernel);
+    cell.model.metadata.set('kernel', "SoS");
   }
   let kernel = cell.model.metadata.get('kernel') as string;
 

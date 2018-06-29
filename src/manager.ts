@@ -9,10 +9,8 @@ import {
 //
 export class NotebookInfo {
   notebook: NotebookPanel;
-  languageSelector: any;
   KernelList: Array<string>;
 
-  defaultKernel: string;
   sos_comm: Kernel.IComm;
 
   BackgroundColor: Map<string, string>;
@@ -27,7 +25,6 @@ export class NotebookInfo {
   */
   constructor(notebook: NotebookPanel) {
     this.notebook = notebook;
-    this.defaultKernel = 'SoS';
     this.KernelList = new Array<string>();
     this.autoResume = false;
     this.sos_comm = null;
