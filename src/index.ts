@@ -446,7 +446,6 @@ export
 
     context.session.statusChanged.connect((sender, status) => {
       // if a sos notebook is restarted
-      console.log(status);
       if (status === 'connected' && panel.notebook.model.metadata.has('sos')) {
         connectSoSComm(panel, true);
         wrapExecutor(panel);
@@ -454,12 +453,25 @@ export
     });
 
     panel.notebook.model.cells.changed.connect((list, changed) => {
-      let cur_kernel = panel.context.session.kernelPreference.name;
-      if (cur_kernel === 'sos' && changed.type == 'add') {
+      let cur_kernel = panel.context.session.kernelPreference.name || panel.context.session.kernelDisplayName;
+      if (cur_kernel.toLowerCase() === 'sos' && changed.type == 'add') {
         each(changed.newValues, cellmodel => {
-          let cell = panel.notebook.widgets.find(x => x.model.id == cellmodel.id);
+          let idx = changed.newIndex; // panel.notebook.widgets.findIndex(x => x.model.id == cellmodel.id);
+          let cell = panel.notebook.widgets[idx];
+          // find the kernel of a cell before this one to determine the default
+          // kernel of a new cell #18
+          let kernel = 'SoS';
+          if (idx > 0) {
+            for (idx = idx - 1; idx >= 0; --idx) {
+              if (panel.notebook.widgets[idx].model.type === 'code') {
+                kernel = panel.notebook.widgets[idx].model.metadata.get('kernel') as string;
+                break;
+              }
+            }
+          }
+          cell.model.metadata.set('kernel', kernel);
           addLanSelector(cell, info);
-          changeStyleOnKernel(cell, "SoS", info);
+          changeStyleOnKernel(cell, kernel, info);
         });
       }
     });
