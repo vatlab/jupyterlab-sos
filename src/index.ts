@@ -109,7 +109,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     // jupyter lab does not yet handle panel cell
     if (data[0] === -1)
       return;
-    let cell = panel.notebook.widgets[data[0]];
+    let cell = panel.notebook.widgets.find(x => x.model.id == data[0]);
     if (cell.model.metadata.get('kernel') !== info.DisplayName[data[1]]) {
       cell.model.metadata.set('kernel', info.DisplayName[data[1]]);
       // set meta information

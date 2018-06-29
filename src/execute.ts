@@ -117,7 +117,7 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
         content.sos['rerun'] = true;
         info.autoResume = false;
       }
-      content.sos['cell_id'] = cell.id;
+      content.sos['cell_id'] = cell.model.id;
       content.sos['cell_kernel'] = cell.model.metadata.get('kernel');
       return this.orig_execute(content, disposeOnDone);
     }
