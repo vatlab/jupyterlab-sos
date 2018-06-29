@@ -454,22 +454,30 @@ export
 
     panel.notebook.model.cells.changed.connect((list, changed) => {
       let cur_kernel = panel.context.session.kernelPreference.name || panel.context.session.kernelDisplayName;
-      if (cur_kernel.toLowerCase() === 'sos' && changed.type == 'add') {
+      if (cur_kernel.toLowerCase() === 'sos') {
         each(changed.newValues, cellmodel => {
           let idx = changed.newIndex; // panel.notebook.widgets.findIndex(x => x.model.id == cellmodel.id);
           let cell = panel.notebook.widgets[idx];
-          // find the kernel of a cell before this one to determine the default
-          // kernel of a new cell #18
+
+          if (changed.type !== 'add' && changed.type !== 'set') {
+            return;
+          }
           let kernel = 'SoS';
-          if (idx > 0) {
-            for (idx = idx - 1; idx >= 0; --idx) {
-              if (panel.notebook.widgets[idx].model.type === 'code') {
-                kernel = panel.notebook.widgets[idx].model.metadata.get('kernel') as string;
-                break;
+          if (cell.model.metadata.has('kernel')) {
+            kernel = cell.model.metadata.get('kernel') as string;
+          } else {
+            // find the kernel of a cell before this one to determine the default
+            // kernel of a new cell #18
+            if (idx > 0) {
+              for (idx = idx - 1; idx >= 0; --idx) {
+                if (panel.notebook.widgets[idx].model.type === 'code') {
+                  kernel = panel.notebook.widgets[idx].model.metadata.get('kernel') as string;
+                  break;
+                }
               }
             }
+            cell.model.metadata.set('kernel', kernel);
           }
-          cell.model.metadata.set('kernel', kernel);
           addLanSelector(cell, info);
           changeStyleOnKernel(cell, kernel, info);
         });
