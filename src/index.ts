@@ -115,15 +115,16 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       // set meta information
       changeStyleOnKernel(cell, info.DisplayName[data[1]], info);
       saveKernelInfo();
-    } else if (cell.model.metadata.get('tags') &&
+    }
+  } else if (cell.model.metadata.get('tags') &&
       (cell.model.metadata.get('tags') as Array<string>).indexOf("report_output") >= 0) {
       // #639
       // if kernel is different, changeStyleOnKernel would set report_output.
       // otherwise we mark report_output
       let op = cell.node.getElementsByClassName('jp-Cell-outputWrapper') as HTMLCollectionOf<HTMLElement>;
-      for (let i = 0; i < op.length; ++i)
+      for (let i = 0; i < op.length; ++i) {
         op.item(i).classList.add('report-output');
-    }
+      }
     /* } else if (msg_type === "preview-input") {
      cell = window.my_panel.cell;
      cell.clear_input();
