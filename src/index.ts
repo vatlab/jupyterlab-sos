@@ -405,6 +405,7 @@ export
         // which is SoS (not sos)
         let cur_kernel = panel.context.session.kernelPreference.name || panel.context.session.kernelDisplayName;
         if (cur_kernel.toLowerCase() === 'sos') {
+          console.log(`session ready with kernel sos`)
           // if this is not a sos kernel, remove all buttons
           if (panel.notebook.model.metadata.has('sos')) {
             info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
@@ -425,6 +426,7 @@ export
     );
 
     context.session.kernelChanged.connect((sender, kernel) => {
+      console.log(`kernel changed to ${kernel.name}`)
       if (kernel.name === 'sos') {
         if (panel.notebook.model.metadata.has('sos')) {
           info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
@@ -447,6 +449,7 @@ export
     context.session.statusChanged.connect((sender, status) => {
       // if a sos notebook is restarted
       if (status === 'connected' && panel.context.session.kernelDisplayName === "SoS") {
+        console.log(`connected to sos kernel`)
         connectSoSComm(panel, true);
         wrapExecutor(panel);
       }
