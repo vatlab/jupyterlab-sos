@@ -91,6 +91,17 @@ export function addLanSelector(cell: Cell, info: NotebookInfo) {
   }
 }
 
+
+export function changeCellKernel(cell: Cell, kernel: string, info: NotebookInfo) {
+  cell.model.metadata.set('kernel', kernel);
+  let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
+  // use the existing dropdown box
+  let select = nodes.item(0) as HTMLSelectElement;
+  select.value = kernel;
+  changeStyleOnKernel(cell, kernel, info);
+}
+
+
 export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookInfo) {
   // Note: JupyterLab does not yet support tags
   if (cell.model.metadata.get('tags') && (cell.model.metadata.get('tags') as Array<string>).indexOf("report_output") >= 0) {

@@ -32,6 +32,7 @@ import {
 import {
   addLanSelector,
   updateCellStyles,
+  changeCellKernel,
   changeStyleOnKernel,
   saveKernelInfo
 } from './selectors';
@@ -107,16 +108,13 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     console.log("kernel list updated");
   } else if (msg_type === "cell-kernel") {
     // jupyter lab does not yet handle panel cell
-    if (data[0] === -1)
+    if (data[0] === "")
       return;
     let cell = panel.notebook.widgets.find(x => x.model.id == data[0]);
     if (cell.model.metadata.get('kernel') !== info.DisplayName[data[1]]) {
-      cell.model.metadata.set('kernel', info.DisplayName[data[1]]);
-      // set meta information
-      changeStyleOnKernel(cell, info.DisplayName[data[1]], info);
+      changeCellKernel(cell, info.DisplayName[data[1]], info);
       saveKernelInfo();
-    }
-  } else if (cell.model.metadata.get('tags') &&
+    } else if (cell.model.metadata.get('tags') &&
       (cell.model.metadata.get('tags') as Array<string>).indexOf("report_output") >= 0) {
       // #639
       // if kernel is different, changeStyleOnKernel would set report_output.
@@ -125,6 +123,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       for (let i = 0; i < op.length; ++i) {
         op.item(i).classList.add('report-output');
       }
+    }
     /* } else if (msg_type === "preview-input") {
      cell = window.my_panel.cell;
      cell.clear_input();
