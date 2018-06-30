@@ -414,9 +414,9 @@ export
                 'kernels': [['SoS', 'sos', '', '']]
               })
           }
-          connectSoSComm(panel);
-          wrapExecutor(panel);
-          updateCellStyles(panel, info);
+          // connectSoSComm(panel);
+          // wrapExecutor(panel);
+          // updateCellStyles(panel, info);
           showSoSWidgets(panel.node);
         } else {
           hideSoSWidgets(panel.node);
@@ -434,9 +434,9 @@ export
               'kernels': [['SoS', 'sos', '', '']]
             })
         }
-        connectSoSComm(panel);
-        wrapExecutor(panel);
-        updateCellStyles(panel, info);
+        // connectSoSComm(panel);
+        // wrapExecutor(panel);
+        // updateCellStyles(panel, info);
         showSoSWidgets(panel.node);
       } else {
         // in this case, the .sos_widget should be hidden
@@ -446,7 +446,7 @@ export
 
     context.session.statusChanged.connect((sender, status) => {
       // if a sos notebook is restarted
-      if (status === 'connected' && panel.notebook.model.metadata.has('sos')) {
+      if (status === 'connected' && panel.context.session.kernelDisplayName === "SoS") {
         connectSoSComm(panel, true);
         wrapExecutor(panel);
       }
@@ -487,7 +487,7 @@ export
     panel.notebook.activeCellChanged.connect((sender, cell) => {
       // this event is triggered both when a cell gets focus, and
       // also when a new notebook is created etc when cell does not exist
-      if (cell && cell.model.type === 'code') {
+      if (cell && cell.model.type === 'code' && info.sos_comm) {
         let cell_kernel = cell.model.metadata.get('kernel');
         info.sos_comm.send({
           'set-editor-kernel': cell_kernel
