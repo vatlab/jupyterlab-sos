@@ -29,23 +29,20 @@ export function wrapExecutor(panel: NotebookPanel) {
   }
 }
 
-// detect if the code contains notebook-involved magics such as %sosrun, sossave, preview
-function hasWorkflowMagic(code: string) {
-  let lines = code.split("\n");
-  for (let l = 0; l < lines.length; ++l) {
-    // ignore starting comment, new line and ! lines
-    if (lines[l].startsWith("#") || lines[l].trim() === "" || lines[l].startsWith("!")) {
-      continue;
-    }
-    // other magic
-    if (lines[l].startsWith("%")) {
-      if (lines[l].match(/^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/)) {
-        return true;
+function scanHeaderLines(cells) {
+  let TOC = ''
+  for (let i = 0; i < cells.length; ++i) {
+    let cell = cells[i].model;
+    if (cell.type === "markdown") {
+      var lines = cell.value.text.split("\n");
+      for (let l = 0; l < lines.length; ++l) {
+        if (lines[l].match('^#+ ')) {
+          TOC += lines[l] + '\n';
+        }
       }
-    } else {
-      return false;
     }
   }
+  return TOC;
 }
 
 // get the workflow part of text from a cell
@@ -92,15 +89,21 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
 
   content.sos = {};
   let panel = Manager.currentNotebook;
-  if (hasWorkflowMagic(code)) {
+  if (code.match(/^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/m)) {
     content.sos['workflow'] = getNotebookWorkflow(panel);
   }
   content.sos['path'] = panel.context.path;
+  content.sos['use_panel'] = false
 
   let info = Manager.manager.get_info(panel);
 
   // find the cell that is being executed...
   let cells = panel.notebook.widgets;
+
+  if (code.match(/^%toc/m)) {
+    content.sos['toc'] = scanHeaderLines(cells);
+  }
+
   for (let i = cells.length - 1; i >= 0; --i) {
     // this is the cell that is being executed...
     // according to this.set_input_prompt("*") before execute is called.

@@ -116,3 +116,18 @@ pre.section-header.CodeMirror-line {
 
 /* jp-NotebooklanguageDropDown */
 /* jp-CelllanguageDropDown */
+
+/* sos generated static TOC */
+
+.jp-OutputArea .toc {
+  padding: 0px;
+  overflow-y: auto;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.jp-OutputArea .toc ul.toc-item {
+    list-style-type: none;
+    padding-left: 1em;
+}
