@@ -485,7 +485,9 @@ export
     });
 
     panel.notebook.activeCellChanged.connect((sender, cell) => {
-      if (cell.model.type === 'code') {
+      // this event is triggered both when a cell gets focus, and
+      // also when a new notebook is created etc when cell does not exist
+      if (cell && cell.model.type === 'code') {
         let cell_kernel = cell.model.metadata.get('kernel');
         info.sos_comm.send({
           'set-editor-kernel': cell_kernel
