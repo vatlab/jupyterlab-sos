@@ -142,7 +142,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
   }
 }
 
-export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) {
+export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) : Array<string> {
   var cells = panel.notebook.widgets;
 
   // setting up background color and selection according to notebook metadata
@@ -153,14 +153,17 @@ export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) {
     }
   }
 
-  // $("[id^=status_]").removeAttr("onClick").removeAttr("onmouseover").removeAttr("onmouseleave");
-  // var tasks = $("[id^=status_]");
-  // info.unknown_tasks = [];
-  // for (i = 0; i < tasks.length; ++i) {
-  //     // status_localhost_5ea9232779ca1959
-  //     if (tasks[i].id.match("^status_[^_]+_[0-9a-f]{16,32}$")) {
-  //         tasks[i].className = "fa fa-fw fa-2x fa-refresh fa-spin";
-  //         info.unknown_tasks.push(tasks[i].id);
-  //     }
-  // }
+  let tasks = document.querySelectorAll('[id^="status_"]');
+  let unknownTasks = [];
+  for (let i = 0; i < tasks.length; ++i) {
+    tasks[i].removeAttribute("onClick");
+    tasks[i].removeAttribute("onmouseover");
+    tasks[i].removeAttribute("onmouseleave");
+    // status_localhost_5ea9232779ca1959
+    if (tasks[i].id.match("^status_[^_]+_[0-9a-f]{16,32}$")) {
+        tasks[i].className = "fa fa-fw fa-2x fa-refresh fa-spin";
+        unknownTasks.push(tasks[i].id);
+    }
+  }
+  return unknownTasks;
 }

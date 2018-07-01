@@ -104,7 +104,12 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
   if (msg_type === "kernel-list") {
     info.updateLanguages(data);
-    updateCellStyles(panel, info);
+    let unknownTasks = updateCellStyles(panel, info);
+    if (unknownTasks) {
+      info.sos_comm.send({
+        "update-task-status": unknownTasks
+      })
+    }
     console.log("kernel list updated");
   } else if (msg_type === "cell-kernel") {
     // jupyter lab does not yet handle panel cell
@@ -331,14 +336,14 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean=false) {
       Manager.manager.register_comm(sos_comm, panel);
       sos_comm.open('initial');
       sos_comm.onMsg = on_frontend_msg;
-
-      let kernels = panel.notebook.model.metadata.has('sos') ? panel.notebook.model.metadata.get('sos')['kernels'] : [];
-      sos_comm.send({
-        "list-kernel": kernels,
-        /* "update-task-status": window.unknown_tasks,
-        "notebook-version": nb.metadata["sos"]["version"] || "undefined",
-        */
-      });
+      let msg = {}
+      let kernels = []
+      if (panel.notebook.model.metadata.has('sos')) {
+        kernels = panel.notebook.model.metadata.get('sos')['kernels'];
+        msg['notebook-version'] = panel.notebook.model.metadata.get('sos')['version'];
+      }
+      msg["list-kernel"] = kernels;
+      sos_comm.send(msg);
     }
   ).catch((error) => {
       console.log(error);
