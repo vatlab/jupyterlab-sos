@@ -337,17 +337,18 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean=false) {
       Manager.manager.register_comm(sos_comm, panel);
       sos_comm.open('initial');
       sos_comm.onMsg = on_frontend_msg;
-      let kernels = []
-      let version = null;
+
       if (panel.notebook.model.metadata.has('sos')) {
-        kernels = panel.notebook.model.metadata.get('sos')['kernels'];
-        version = panel.notebook.model.metadata.get('sos')['version'];
+        sos_comm.send({
+          "notebook-version": panel.notebook.model.metadata.get('sos')['version'],
+          "list-kernel": panel.notebook.model.metadata.get('sos')['kernels']
+        });
+      } else {
+        sos_comm.send({
+          "notebook-version": "",
+          "list-kernel": []
+        });
       }
-      let msg = {
-        "notebook-version": version,
-        "list-kernel": kernels
-      }
-      sos_comm.send(msg);
     }
   ).catch((error) => {
       console.log(error);
@@ -421,7 +422,8 @@ export
           } else {
             panel.notebook.model.metadata.set('sos',
               {
-                'kernels': [['SoS', 'sos', '', '']]
+                'kernels': [['SoS', 'sos', '', '']],
+                'version': ''
               })
           }
           // connectSoSComm(panel);
@@ -442,7 +444,8 @@ export
         } else {
           panel.notebook.model.metadata.set('sos',
             {
-              'kernels': [['SoS', 'sos', '', '']]
+              'kernels': [['SoS', 'sos', '', '']],
+              'version': ''
             })
         }
         // connectSoSComm(panel);
