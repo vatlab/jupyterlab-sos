@@ -369,21 +369,24 @@ function showSoSWidgets(element) {
     sos_elements[i].style.display = '';
 }
 
-export function kill_task(task_id : string, task_queue:string) {
+(<any>window).kill_task = function(task_id : string, task_queue:string) {
   console.log("Kill " + task_id);
   // send_kernel_msg({
   //   "kill-task": [task_id, task_queue],
   // });
 };
 
-export function resume_task(task_id: string, task_queue: string) {
+(<any>window).resume_task = function(task_id: string, task_queue: string) {
   console.log("Resume " + task_id);
   // send_kernel_msg({
   //   "resume-task": [task_id, task_queue],
   // });
 };
 
-export function task_info(task_id: string, task_queue: string) {
+(<any>window).task_info = function(task_id: string, task_queue: string) {
+  // step 1: find the item with task_id, then the panel that contains the element
+  let panel = document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document');
+  // step 2: find the notebook that contains this table
   console.log("Request info on " + task_id);
   // send_kernel_msg({
   //   "task-info": [task_id, task_queue],
