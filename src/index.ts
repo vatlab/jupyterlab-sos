@@ -101,6 +101,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
   let panel = Manager.manager.notebook_of_comm(msg.content.comm_id);
   let msg_type = msg.metadata.msg_type;
   let info = Manager.manager.get_info(panel);
+  console.log(`Received ${msg_type}`);
 
   if (msg_type === "kernel-list") {
     info.updateLanguages(data);
@@ -162,16 +163,16 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     if (item) {
       item.parentNode.removeChild(item);
     }
-    /*} else if (msg_type === "update-duration") {
-        if (!info._duration_updater) {
-            info._duration_updater = setInterval(function() {
-                $("[id^=duration_]").text(function() {
-                    if ($(this).attr("class") != "running")
-                        return $(this).text();
-                    return window.durationFormatter($(this).attr("datetime"));
-                });
-            }, 5000);
-        }*/
+  } else if (msg_type === "update-duration") {
+    setInterval(function() {
+      let tasks = document.querySelectorAll('[id^="duration_"]');
+      for (let i = 0; i < tasks.length; ++i) {
+        if (!tasks[i].classList.contains("running")) {
+          continue;
+        }
+        tasks[i].innerHTML = formatDuration(new Date(parseFloat(tasks[i].getAttribute("datetime"))));
+      }
+    }, 5000);
   } else if (msg_type === "task-status") {
     // console.log(data);
     let item = document.getElementById("status_" + data[0] + "_" + data[1]);
@@ -190,7 +191,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       // stop update and reset time ...
       if (data[2] != "running") {
         let curTime = new Date();
-        item.innerText = formatDuration(new Date(item.getAttribute("datetime")));
+        item.innerHTML = formatDuration(new Date(parseFloat(item.getAttribute("datetime"))));
         item.setAttribute('datetime', curTime.getTime().toString());
       }
     }
@@ -336,13 +337,16 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean=false) {
       Manager.manager.register_comm(sos_comm, panel);
       sos_comm.open('initial');
       sos_comm.onMsg = on_frontend_msg;
-      let msg = {}
       let kernels = []
+      let version = null;
       if (panel.notebook.model.metadata.has('sos')) {
         kernels = panel.notebook.model.metadata.get('sos')['kernels'];
-        msg['notebook-version'] = panel.notebook.model.metadata.get('sos')['version'];
+        version = panel.notebook.model.metadata.get('sos')['version'];
       }
-      msg["list-kernel"] = kernels;
+      let msg = {
+        "notebook-version": version,
+        "list-kernel": kernels
+      }
       sos_comm.send(msg);
     }
   ).catch((error) => {

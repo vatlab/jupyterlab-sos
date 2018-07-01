@@ -131,3 +131,40 @@ pre.section-header.CodeMirror-line {
     list-style-type: none;
     padding-left: 1em;
 }
+
+.jp-OutputArea .toc-item-highlight-select  {background-color: Gold}
+.jp-OutputArea .toc-item-highlight-execute  {background-color: red}
+.jp-OutputArea .lev1 {margin-left: 5px}
+.jp-OutputArea .lev2 {margin-left: 10px}
+.jp-OutputArea .lev3 {margin-left: 10px}
+.jp-OutputArea .lev4 {margin-left: 10px}
+.jp-OutputArea .lev5 {margin-left: 10px}
+.jp-OutputArea .lev6 {margin-left: 10px}
+.jp-OutputArea .lev7 {margin-left: 10px}
+.jp-OutputArea .lev8 {margin-left: 10px}
+
+
+time.pending, time.submitted, time.running  {
+  color: #cdb62c; /* yellow */
+}
+
+time.completed, time.result-ready {
+  color: #39aa56; /* green */
+}
+
+time.failed, time.signature-mismatch {
+  color: #db4545; /* red */
+}
+
+time.aborted, time.unknown {
+  color: #9d9d9d; /* gray */
+}
+
+.task_table a pre, .task_table i {
+  color: #666;
+}
+
+table.task_table {
+  border: 0px;
+  border-style: solid;
+}
