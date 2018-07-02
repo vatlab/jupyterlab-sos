@@ -136,12 +136,11 @@ export class Manager {
     return this._info.get(notebook);
   }
 
-  public info_of_node(elem: HTMLElement): NOtebookInfo {
+  public info_of_node(elem: Element): NotebookInfo {
     for (let [k, v] of this._info) {
       if (k.node == elem)
         return v;
     }
-    return null;
   }
 
   public register_comm(comm: Kernel.IComm, notebook: NotebookPanel) {

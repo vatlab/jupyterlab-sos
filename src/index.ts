@@ -371,30 +371,27 @@ function showSoSWidgets(element) {
 
 (<any>window).kill_task = function(task_id : string, task_queue:string) {
   console.log("Kill " + task_id);
-  // send_kernel_msg({
-  //   "kill-task": [task_id, task_queue],
-  // });
+  let info = Manager.manager.info_of_node(document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document'));
+  info.sos_comm.send({
+     "kill-task": [task_id, task_queue],
+  });
 };
 
 (<any>window).resume_task = function(task_id: string, task_queue: string) {
   console.log("Resume " + task_id);
-  // send_kernel_msg({
-  //   "resume-task": [task_id, task_queue],
-  // });
+  let info = Manager.manager.info_of_node(document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document'));
+  info.sos_comm.send({
+     "resume-task": [task_id, task_queue],
+  });
 };
 
 (<any>window).task_info = function(task_id: string, task_queue: string) {
   // step 1: find the item with task_id, then the panel that contains the element
+  console.log("Task info " + task_id);
   let info = Manager.manager.info_of_node(document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document'));
-  // step 2: find the notebook that contains this table
-  console.log("Request info on " + task_id);
-  // send_kernel_msg({
-  //   "task-info": [task_id, task_queue],
-  // });
-  // var cell = window.my_panel.cell;
-  // cell.clear_input();
-  // cell.set_text("%taskinfo " + task_id + " -q " + task_queue);
-  // cell.clear_output();
+  info.sos_comm.send({
+     "task-info": [task_id, task_queue],
+  });
 };
 
 export
