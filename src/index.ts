@@ -385,7 +385,7 @@ function showSoSWidgets(element) {
 
 (<any>window).task_info = function(task_id: string, task_queue: string) {
   // step 1: find the item with task_id, then the panel that contains the element
-  //let panel = document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document');
+  let info = Manager.manager.info_of_node(document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document'));
   // step 2: find the notebook that contains this table
   console.log("Request info on " + task_id);
   // send_kernel_msg({
