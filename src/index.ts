@@ -181,8 +181,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     } else {
       // id, status, status_class, action_class, action_func
       item.className = "fa fa-fw fa-2x " + data[3];
-      item.setAttribute("onmouseover", "$('#status_" + data[0] + "_" + data[1] + "').addClass('" + data[4] + " task_hover').removeClass('" + data[3] + "')");
-      item.setAttribute("onmouseleave", "$('#status_" + data[0] + "_" + data[1] + "').addClass('" + data[3] + "').removeClass('" + data[4] + " task_hover')");
+      item.setAttribute("onmouseover", `'${data[3]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[4]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
+      item.setAttribute("onmouseleave", `'${data[4]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[3]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
       item.setAttribute("onClick", data[5] + "('" + data[1] + "', '" + data[0] + "')");
     }
     item = document.getElementById("duration_" + data[0] + "_" + data[1]);
@@ -385,7 +385,7 @@ function showSoSWidgets(element) {
 
 (<any>window).task_info = function(task_id: string, task_queue: string) {
   // step 1: find the item with task_id, then the panel that contains the element
-  let panel = document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document');
+  //let panel = document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document');
   // step 2: find the notebook that contains this table
   console.log("Request info on " + task_id);
   // send_kernel_msg({
