@@ -26,7 +26,8 @@ import {
 
 import {
   NotebookPanel,
-  INotebookModel
+  INotebookModel,
+  INotebookTracker
 } from '@jupyterlab/notebook';
 
 import {
@@ -371,7 +372,7 @@ function showSoSWidgets(element) {
 
 (<any>window).kill_task = function(task_id : string, task_queue:string) {
   console.log("Kill " + task_id);
-  let info = Manager.manager.info_of_node(document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document'));
+  let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
      "kill-task": [task_id, task_queue],
   });
@@ -379,7 +380,7 @@ function showSoSWidgets(element) {
 
 (<any>window).resume_task = function(task_id: string, task_queue: string) {
   console.log("Resume " + task_id);
-  let info = Manager.manager.info_of_node(document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document'));
+  let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
      "resume-task": [task_id, task_queue],
   });
@@ -388,7 +389,7 @@ function showSoSWidgets(element) {
 (<any>window).task_info = function(task_id: string, task_queue: string) {
   // step 1: find the item with task_id, then the panel that contains the element
   console.log("Task info " + task_id);
-  let info = Manager.manager.info_of_node(document.getElementById('table_' + task_queue + '_' + task_id).closest('.jp-Document'));
+  let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
      "task-info": [task_id, task_queue],
   });
@@ -524,9 +525,11 @@ function registerSoSWidgets(app: JupyterLab) {
 const extension: JupyterLabPlugin<void> = {
   id: 'sos-extension',
   autoStart: true,
-  activate: (app: JupyterLab) => {
+  requires: [INotebookTracker],
+  activate: (app: JupyterLab, tracker: INotebookTracker) => {
     registerSoSFileType(app);
     registerSoSWidgets(app);
+    Manager.set_tracker(tracker);
     console.log('JupyterLab extension sos-extension is activated!');
   }
 };

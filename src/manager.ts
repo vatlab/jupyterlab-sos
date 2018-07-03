@@ -1,6 +1,6 @@
 import {
   NotebookPanel,
-  NotebookTracker
+  INotebookTracker
 } from '@jupyterlab/notebook';
 
 import {
@@ -102,7 +102,7 @@ export class Manager {
   // global registry for notebook info
   private static _instance: Manager;
   // used to track the current notebook widget
-  private static _tracker: NotebookTracker;
+  private static _tracker: INotebookTracker;
 
   private _info: Map<NotebookPanel, NotebookInfo>;
 
@@ -112,17 +112,17 @@ export class Manager {
     }
   }
 
+  public static set_tracker(tracker: INotebookTracker) {
+    this._tracker = tracker;
+  }
+
   static get currentNotebook() {
-    if (this._tracker === null || this._tracker === undefined)
-      this._tracker = new NotebookTracker({ namespace: 'notebook' });
     return this._tracker.currentWidget;
   }
 
   static get manager() {
     if (this._instance === null || this._instance === undefined)
       this._instance = new Manager();
-    if (this._tracker === null || this._tracker === undefined)
-      this._tracker = new NotebookTracker({ namespace: 'notebook' });
     return this._instance;
   }
 
@@ -131,16 +131,8 @@ export class Manager {
     if (!this._info.has(notebook)) {
       console.log("Creating a new notebook info")
       this._info.set(notebook, new NotebookInfo(notebook));
-      Manager._tracker.add(notebook);
     }
     return this._info.get(notebook);
-  }
-
-  public info_of_node(elem: Element): NotebookInfo {
-    for (let [k, v] of this._info) {
-      if (k.node == elem)
-        return v;
-    }
   }
 
   public register_comm(comm: Kernel.IComm, notebook: NotebookPanel) {
