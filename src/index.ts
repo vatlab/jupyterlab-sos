@@ -66,7 +66,7 @@ function registerSoSFileType(app: JupyterLab) {
   });
 }
 
-function formatDuration(start_date: Date): string {
+function formatDuration(start_date: Date, start_only: boolean = false): string {
   let ms: number = +new Date() - +start_date;
   let res = [];
   let seconds: number = Math.floor(ms / 1000);
@@ -86,11 +86,20 @@ function formatDuration(start_date: Date): string {
   if (ss > 0) {
     res.push(ss + " sec");
   }
-  let ret = res.join(" ");
-  if (ret === "") {
-    return "0 sec";
+  if (start_only) {
+    // we only take day, or hr..
+    if (res.length === 0) {
+      return "started just now"
+    }
+    // we only take day, or hr..
+    return `started ${res[0]} ago`;
   } else {
-    return ret;
+    let ret = res.join(" ");
+    if (ret === "") {
+      return "0 sec";
+    } else {
+      return ret;
+    }
   }
 }
 
@@ -168,10 +177,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     setInterval(function() {
       let tasks = document.querySelectorAll('[id^="duration_"]');
       for (let i = 0; i < tasks.length; ++i) {
-        if (!tasks[i].classList.contains("running")) {
-          continue;
-        }
-        tasks[i].innerHTML = formatDuration(new Date(parseFloat(tasks[i].getAttribute("datetime"))));
+        tasks[i].innerHTML = formatDuration(new Date(parseFloat(tasks[i].getAttribute("datetime"),
+          !tasks[i].classList.contains("running"))));
       }
     }, 5000);
   } else if (msg_type === "task-status") {
@@ -191,9 +198,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       item.className = data[2];
       // stop update and reset time ...
       if (data[2] != "running") {
-        let curTime = new Date();
-        item.innerHTML = formatDuration(new Date(parseFloat(item.getAttribute("datetime"))));
-        item.setAttribute('datetime', curTime.getTime().toString());
+        item.innerHTML = formatDuration(new Date(parseFloat(item.getAttribute("datetime"))), true);
       }
     }
     if (data[2] === "completed") {
@@ -329,7 +334,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
   }
 }
 
-function connectSoSComm(panel: NotebookPanel, renew: boolean=false) {
+function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   let info = Manager.manager.get_info(panel);
   if (info.sos_comm && !renew)
     return;
@@ -352,7 +357,7 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean=false) {
       }
     }
   ).catch((error) => {
-      console.log(error);
+    console.log(error);
   });
 
   console.log("sos comm registered");
@@ -370,11 +375,11 @@ function showSoSWidgets(element) {
     sos_elements[i].style.display = '';
 }
 
-(<any>window).kill_task = function(task_id : string, task_queue:string) {
+(<any>window).kill_task = function(task_id: string, task_queue: string) {
   console.log("Kill " + task_id);
   let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
-     "kill-task": [task_id, task_queue],
+    "kill-task": [task_id, task_queue],
   });
 };
 
@@ -382,7 +387,7 @@ function showSoSWidgets(element) {
   console.log("Resume " + task_id);
   let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
-     "resume-task": [task_id, task_queue],
+    "resume-task": [task_id, task_queue],
   });
 };
 
@@ -391,7 +396,7 @@ function showSoSWidgets(element) {
   console.log("Task info " + task_id);
   let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
-     "task-info": [task_id, task_queue],
+    "task-info": [task_id, task_queue],
   });
 };
 
