@@ -16,6 +16,8 @@ import {
   Cell, CodeCell
 } from '@jupyterlab/cells';
 
+import { Session } from '@jupyterlab/services';
+
 import {
   DocumentRegistry
 } from '@jupyterlab/docregistry';
@@ -126,9 +128,9 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     // jupyter lab does not yet handle panel cell
     if (data[0] === "")
       return;
-    let cell = panel.notebook.widgets.find(x => x.model.id == data[0]);
-    if (cell.model.metadata.get('kernel') !== info.DisplayName[data[1]]) {
-      changeCellKernel(cell, info.DisplayName[data[1]], info);
+    let cell = panel.content.widgets.find(x => x.model.id == data[0]);
+    if (cell.model.metadata.get('kernel') !== info.DisplayName.get(data[1])) {
+      changeCellKernel(cell, info.DisplayName.get(data[1]), info);
       saveKernelInfo();
     } else if (cell.model.metadata.get('tags') &&
       (cell.model.metadata.get('tags') as Array<string>).indexOf("report_output") >= 0) {
@@ -166,7 +168,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
      })
     */
   } else if (msg_type === "tasks-pending") {
-    let cell = panel.notebook.widgets[data[0]];
+    let cell = panel.content.widgets[data[0]];
     info.pendingCells.set(cell.model.id, data[1]);
   } else if (msg_type === "remove-task") {
     let item = document.getElementById("table_" + data[0] + "_" + data[1]);
@@ -204,16 +206,16 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     if (data[2] === "completed") {
       for (let cell in info.pendingCells) {
         // remove task from pendingCells
-        for (let idx = 0; idx < info.pendingCells[cell].length; ++idx) {
-          if (info.pendingCells[cell][idx][0] !== data[0] ||
-            info.pendingCells[cell][idx][1] !== data[1]) {
+        for (let idx = 0; idx < info.pendingCells.get(cell).length; ++idx) {
+          if (info.pendingCells.get(cell)[idx][0] !== data[0] ||
+            info.pendingCells.get(cell)[idx][1] !== data[1]) {
             continue;
           }
-          info.pendingCells[cell].splice(idx, 1);
-          if (info.pendingCells[cell].length === 0) {
-            delete info.pendingCells[cell];
+          info.pendingCells.get(cell).splice(idx, 1);
+          if (info.pendingCells.get(cell).length === 0) {
+            info.pendingCells.delete(cell);
             // if the does not have any pending one, re-run it.
-            let cells = panel.notebook.widgets;
+            let cells = panel.content.widgets;
             let rerun = null;
             for (let i = 0; i < cells.length; ++i) {
               if (cells[i].id === cell) {
@@ -223,7 +225,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
             }
             if (rerun) {
               info.autoResume = true;
-              rerun.execute();
+              CodeCell.execute(rerun as CodeCell, panel.context.session);
             }
             break;
           }
@@ -234,34 +236,34 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     show_toc();
     */
   } else if (msg_type === "paste-table") {
-    //let idx = panel.notebook.activeCellIndex;
-    //let cm = panel.notebook.widgets[idx].editor;
+    //let idx = panel.content.activeCellIndex;
+    //let cm = panel.content.widgets[idx].editor;
     // cm.replaceRange(data, cm.getCursor());
   } else if (msg_type === 'alert') {
     alert(data);
   } else if (msg_type === 'notebook-version') {
     // right now no upgrade, just save version to notebook
-    panel.notebook.model.metadata.get("sos")["version"] = data;
+    (panel.content.model.metadata.get("sos") as any)["version"] = data;
   } else if (msg_type === 'clear-output') {
     // console.log(data)
     let active: Cell[] = [];
-    each(panel.notebook.widgets, child => {
-      if (panel.notebook.isSelectedOrActive(child)) {
+    each(panel.content.widgets, child => {
+      if (panel.content.isSelectedOrActive(child)) {
         active.push(child);
       }
     });
 
-    let clear_task = function(cell, status) {
+    let clear_task = function(cell: Cell, status: string) {
       let status_element = cell.node.getElementsByClassName(status);
       while (status_element.length > 0) {
-        let table_element = status_element[0].parentNode.parentNode.parentNode.parentNode;
+        let table_element = status_element[0].parentNode.parentNode.parentNode.parentElement;
         // remove the table
         if (table_element.className == 'task_table') {
-          table_element.parentElement.remove(table_element);
+          table_element.parentElement.removeChild(table_element);
         }
       }
     }
-    let clear_class = function(cell, element_class) {
+    let clear_class = function(cell: Cell, element_class: string) {
       let elements = cell.node.getElementsByClassName(element_class);
       while (elements.length > 0) {
         elements[0].parentNode.removeChild(elements[0]);
@@ -270,7 +272,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     }
     // if remove all
     if (data[1]) {
-      let cells = panel.notebook.widgets;
+      let cells = panel.content.widgets;
       let i;
       let j;
       for (i = 0; i < cells.length; ++i) {
@@ -307,19 +309,19 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
           (active[i] as CodeCell).outputArea.model.clear();
         }
       }
-    } else if (panel.notebook.widgets[data[0]].model.type === "code") {
+    } else if (panel.content.widgets[data[0]].model.type === "code") {
       // clear current cell
       let j;
       if (data[2]) {
         for (j = 0; j < data[2].length; ++j) {
-          clear_task(panel.notebook.widgets[data[0]], data[2][j]);
+          clear_task(panel.content.widgets[data[0]], data[2][j]);
         }
       } else if (data[3]) {
         for (j = 0; j < data[3].length; ++j) {
-          clear_class(panel.notebook.widgets[data[0]], data[3][j]);
+          clear_class(panel.content.widgets[data[0]], data[3][j]);
         }
       } else {
-        (panel.notebook.widgets[data[0]] as CodeCell).outputArea.model.clear();
+        (panel.content.widgets[data[0]] as CodeCell).outputArea.model.clear();
       }
     }
     /*
@@ -338,38 +340,35 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   let info = Manager.manager.get_info(panel);
   if (info.sos_comm && !renew)
     return;
-  panel.context.session.kernel.connectToComm("sos_comm").then(
-    sos_comm => {
-      Manager.manager.register_comm(sos_comm, panel);
-      sos_comm.open('initial');
-      sos_comm.onMsg = on_frontend_msg;
 
-      if (panel.notebook.model.metadata.has('sos')) {
-        sos_comm.send({
-          "notebook-version": panel.notebook.model.metadata.get('sos')['version'],
-          "list-kernel": panel.notebook.model.metadata.get('sos')['kernels']
-        });
-      } else {
-        sos_comm.send({
-          "notebook-version": "",
-          "list-kernel": []
-        });
-      }
-    }
-  ).catch((error) => {
-    console.log(error);
-  });
+  let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
+
+  Manager.manager.register_comm(sos_comm, panel);
+  sos_comm.open('initial');
+  sos_comm.onMsg = on_frontend_msg;
+
+  if (panel.content.model.metadata.has('sos')) {
+    sos_comm.send({
+      "notebook-version": (panel.content.model.metadata.get('sos') as any)['version'],
+      "list-kernel": (panel.content.model.metadata.get('sos') as any)['kernels']
+    });
+  } else {
+    sos_comm.send({
+      "notebook-version": "",
+      "list-kernel": []
+    });
+  }
 
   console.log("sos comm registered");
 }
 
-function hideSoSWidgets(element) {
+function hideSoSWidgets(element: HTMLElement) {
   let sos_elements = element.getElementsByClassName('sos-widget') as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < sos_elements.length; ++i)
     sos_elements[i].style.display = 'none';
 }
 
-function showSoSWidgets(element) {
+function showSoSWidgets(element: HTMLElement) {
   let sos_elements = element.getElementsByClassName('sos-widget') as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < sos_elements.length; ++i)
     sos_elements[i].style.display = '';
@@ -423,10 +422,10 @@ export
         if (cur_kernel.toLowerCase() === 'sos') {
           console.log(`session ready with kernel sos`)
           // if this is not a sos kernel, remove all buttons
-          if (panel.notebook.model.metadata.has('sos')) {
-            info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
+          if (panel.content.model.metadata.has('sos')) {
+            info.updateLanguages((panel.content.model.metadata.get('sos') as any)['kernels']);
           } else {
-            panel.notebook.model.metadata.set('sos',
+            panel.content.model.metadata.set('sos',
               {
                 'kernels': [['SoS', 'sos', '', '']],
                 'version': ''
@@ -442,13 +441,13 @@ export
       }
     );
 
-    context.session.kernelChanged.connect((sender, kernel) => {
-      console.log(`kernel changed to ${kernel.name}`)
-      if (kernel.name === 'sos') {
-        if (panel.notebook.model.metadata.has('sos')) {
-          info.updateLanguages(panel.notebook.model.metadata.get('sos')['kernels']);
+    context.session.kernelChanged.connect((sender: any, args: Session.IKernelChangedArgs) => {
+      console.log(`kernel changed to ${args.newValue.name}`)
+      if (args.newValue.name === 'sos') {
+        if (panel.content.model.metadata.has('sos')) {
+          info.updateLanguages((panel.content.model.metadata.get('sos') as any)['kernels']);
         } else {
-          panel.notebook.model.metadata.set('sos',
+          panel.content.model.metadata.set('sos',
             {
               'kernels': [['SoS', 'sos', '', '']],
               'version': ''
@@ -473,12 +472,12 @@ export
       }
     });
 
-    panel.notebook.model.cells.changed.connect((list, changed) => {
+    panel.content.model.cells.changed.connect((list, changed) => {
       let cur_kernel = panel.context.session.kernelPreference.name || panel.context.session.kernelDisplayName;
       if (cur_kernel.toLowerCase() === 'sos') {
         each(changed.newValues, cellmodel => {
-          let idx = changed.newIndex; // panel.notebook.widgets.findIndex(x => x.model.id == cellmodel.id);
-          let cell = panel.notebook.widgets[idx];
+          let idx = changed.newIndex; // panel.content.widgets.findIndex(x => x.model.id == cellmodel.id);
+          let cell = panel.content.widgets[idx];
 
           if (changed.type !== 'add' && changed.type !== 'set') {
             return;
@@ -491,8 +490,8 @@ export
             // kernel of a new cell #18
             if (idx > 0) {
               for (idx = idx - 1; idx >= 0; --idx) {
-                if (panel.notebook.widgets[idx].model.type === 'code') {
-                  kernel = panel.notebook.widgets[idx].model.metadata.get('kernel') as string;
+                if (panel.content.widgets[idx].model.type === 'code') {
+                  kernel = panel.content.widgets[idx].model.metadata.get('kernel') as string;
                   break;
                 }
               }
@@ -505,7 +504,7 @@ export
       }
     });
 
-    panel.notebook.activeCellChanged.connect((sender, cell) => {
+    panel.content.activeCellChanged.connect((sender: any, cell: Cell) => {
       // this event is triggered both when a cell gets focus, and
       // also when a new notebook is created etc when cell does not exist
       if (cell && cell.model.type === 'code' && info.sos_comm) {

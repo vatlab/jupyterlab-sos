@@ -1,4 +1,4 @@
-import * as CodeMirror from 'codemirror';
+import CodeMirror from 'codemirror';
 
 import 'codemirror/lib/codemirror';
 import 'codemirror/mode/python/python';
@@ -35,60 +35,58 @@ var sosMagics = sosMagicWords.map(x => '%' + x);
 
 // hint word for SoS mode
 CodeMirror.registerHelper("hintWords", "sos", hintWords);
-
-var modeMap = {
-  'sos': null,
-  'python': {
+let modeMap: Map<string, any> = new Map();
+modeMap.set('sos', null);
+modeMap.set('python', {
     name: 'python',
     version: 3
-  },
-  'python2': {
+  })
+modeMap.set('python2',  {
     name: 'python',
     version: 2
-  },
-  'python3': {
+  },)
+modeMap.set('python3',  {
     name: 'python',
     version: 3
-  },
-  'r': 'r',
-  'report': 'markdown',
-  'pandoc': 'markdown',
-  'download': 'markdown',
-  'markdown': 'markdown',
-  'ruby': 'ruby',
-  'sas': 'sas',
-  'bash': 'shell',
-  'sh': 'shell',
-  'julia': 'julia',
-  'run': 'shell',
-  'javascript': 'javascript',
-  'typescript': {
+  })
+modeMap.set('r', 'r')
+modeMap.set('report', 'markdown')
+modeMap.set('pandoc', 'markdown')
+modeMap.set('download', 'markdown')
+modeMap.set('markdown', 'markdown')
+modeMap.set('ruby', 'ruby')
+modeMap.set('sas', 'sas')
+modeMap.set('bash', 'shell')
+modeMap.set('sh', 'shell')
+modeMap.set('julia', 'julia')
+modeMap.set('run', 'shell')
+modeMap.set('javascript', 'javascript')
+modeMap.set('typescript', {
     name: "javascript",
     typescript: true
-  },
-  'octave': 'octave',
-  'matlab': 'octave',
-}
+  })
+modeMap.set('octave', 'octave')
+modeMap.set('matlab', 'octave')
 
-function findMode(mode) {
-  if (mode in modeMap) {
-    return modeMap[mode];
+function findMode(mode: string) : any {
+  if (modeMap.has(mode)) {
+    return modeMap.get(mode);
   }
   return null;
 }
 
-function markExpr(python_mode) {
+function markExpr(python_mode: any) {
   return {
     startState: function() {
       return {
         in_python: false,
-        sigil: null,
+        sigil: false,
         matched: true,
         python_state: CodeMirror.startState(python_mode),
       };
     },
 
-    copyState: function(state) {
+    copyState: function(state : any) {
       return {
         in_python: state.in_python,
         sigil: state.sigil,
@@ -97,7 +95,7 @@ function markExpr(python_mode) {
       };
     },
 
-    token: function(stream, state) {
+    token: function(stream: any, state : any) {
       if (state.in_python) {
         if (stream.match(state.sigil.right)) {
           state.in_python = false;
@@ -160,17 +158,10 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
   sosPythonConf.version = 3;
   sosPythonConf.extra_keywords = sosActionWords.concat(sosFunctionWords);
   // this is the SoS flavored python mode with more identifiers
-  var base_mode = null;
+  let base_mode : any = null;
   if ('base_mode' in parserConf && parserConf.base_mode) {
 
     let mode = findMode(parserConf.base_mode.toLowerCase());
-    if (mode) {
-      base_mode = CodeMirror.getMode(conf, mode);
-    } else {
-      console.log(`No base mode is found for ${parserConf.base_mode}. Python mode used.`);
-    }
-  } else if ('base_mode' in conf && conf.base_mode) {
-    let mode = findMode(conf.base_mode.toLowerCase());
     if (mode) {
       base_mode = CodeMirror.getMode(conf, mode);
     } else {
@@ -242,7 +233,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
                         'right': found[2]
                       }
                     } else {
-                      state.overlay_state.sigil = null;
+                      state.overlay_state.sigil = false;
                     }
                   }
                 }
@@ -295,7 +286,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
         }
       },
 
-      innerMode: function(state) {
+      innerMode: function(state: any) {
         return state.sos_mode ? {
           state: state.base_state,
           mode: base_mode
@@ -397,13 +388,13 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
               } else {
                 state.sos_state = 'start ' + stream.current().slice(0, -1);
               }
-              state.overlay_state.sigil = null;
+              state.overlay_state.sigil = false;
               return "builtin strong";
             }
           }
           // if unknown action
           if (stream.match(/\w+:/)) {
-            state.overlay_state.sigil = null;
+            state.overlay_state.sigil = false;
             state.sos_state = 'start ' + stream.current().slice(0, -1);
             return "builtin strong";
           }
@@ -528,7 +519,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
         }
       },
 
-      innerMode: function(state) {
+      innerMode: function(state: any) {
         return state.inner_mode ? null : {
           state: state.base_state,
           mode: base_mode

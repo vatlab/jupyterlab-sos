@@ -39,7 +39,7 @@ export class NotebookInfo {
 
     let data = [['SoS', 'sos', '', '']];
     if (notebook.model.metadata.has('sos'))
-      data = notebook.model.metadata.get('sos')['kernels'];
+      data = (notebook.model.metadata.get('sos') as any)['kernels'];
     // fill the look up tables with language list passed from the kernel
     for (let i = 0; i < data.length; i++) {
       // BackgroundColor is color
@@ -62,30 +62,30 @@ export class NotebookInfo {
   updateLanguages(data: Array<Array<string>>) {
     for (let i = 0; i < data.length; i++) {
       // BackgroundColor is color
-      this.BackgroundColor[data[i][0]] = data[i][3];
+      this.BackgroundColor.set(data[i][0], data[i][3]);
       // by kernel name? For compatibility ...
       if (!(data[i][1] in this.BackgroundColor)) {
-        this.BackgroundColor[data[i][1]] = data[i][3];
+        this.BackgroundColor.set(data[i][1], data[i][3]);
       }
       // DisplayName
-      this.DisplayName[data[i][0]] = data[i][0];
+      this.DisplayName.set(data[i][0], data[i][0]);
       if (!(data[i][1] in this.DisplayName)) {
-        this.DisplayName[data[i][1]] = data[i][0];
+        this.DisplayName.set(data[i][1], data[i][0]);
       }
       // Name
-      this.KernelName[data[i][0]] = data[i][1];
+      this.KernelName.set(data[i][0], data[i][1]);
       if (!(data[i][1] in this.KernelName)) {
-        this.KernelName[data[i][1]] = data[i][1];
+        this.KernelName.set(data[i][1], data[i][1]);
       }
       // Language Name
-      this.LanguageName[data[i][0]] = data[i][2];
+      this.LanguageName.set(data[i][0], data[i][2]);
       if (!(data[i][2] in this.LanguageName)) {
-        this.LanguageName[data[i][2]] = data[i][2];
+        this.LanguageName.set(data[i][2], data[i][2]);
       }
 
       // if options ...
       if (data[i].length > 4) {
-        this.KernelOptions[data[i][0]] = data[i][4];
+        this.KernelOptions.set(data[i][0], data[i][4]);
       }
 
       if (this.KernelList.indexOf(data[i][0]) === -1)
