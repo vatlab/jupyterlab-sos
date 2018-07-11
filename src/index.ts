@@ -177,8 +177,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     setInterval(function() {
       let tasks = document.querySelectorAll('[id^="duration_"]');
       for (let i = 0; i < tasks.length; ++i) {
-        tasks[i].innerHTML = formatDuration(new Date(parseFloat(tasks[i].getAttribute("datetime"),
-          !tasks[i].classList.contains("running"))));
+        tasks[i].innerHTML = formatDuration(new Date(parseFloat(tasks[i].getAttribute("datetime"))),
+          !tasks[i].classList.contains("running"));
       }
     }, 5000);
   } else if (msg_type === "task-status") {
