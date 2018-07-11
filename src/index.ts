@@ -40,6 +40,7 @@ import {
   saveKernelInfo
 } from './selectors';
 
+
 import {
   wrapExecutor
 } from './execute'
@@ -52,6 +53,10 @@ import '../style/index.css';
 import {
   Manager
 } from "./manager"
+
+import {
+  InfoHandler
+} from '@jupyterlab/inspector';
 
 /*
  * Define SoS File msg_type
@@ -67,6 +72,8 @@ function registerSoSFileType(app: JupyterLab) {
     iconClass: 'jp-MaterialIcon sos_icon',
   });
 }
+
+const handler: InfoHandler = new InfoHandler();
 
 function formatDuration(start_date: Date, start_only: boolean = false): string {
   let ms: number = +new Date() - +start_date;
@@ -324,15 +331,22 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
         (panel.content.widgets[data[0]] as CodeCell).outputArea.model.clear();
       }
     }
-    /*
-    if (active.length > 0) {
-        nb.select(active[0]);
-     } else {
-        // this is preview output
-        cell = window.my_panel.cell;
-        data.output_type = msg_type;
-        cell.output_area.append_output(data);
-    } */
+  } else {
+    // this is preview output
+    // create a transient_display_data message
+    let transient_msg = KernelMessage.createMessage({
+      msgType: 'transient_display_data',
+      channel: 'iopub',
+      session: msg.header.session,
+      },
+      {
+        title: 'something',
+        data: data,
+        meta: {}
+      }
+    )
+    transient_msg.parent_header = data.header;
+    handler.displayTransientMessage(transient_msg as KernelMessage.IIOPubMessage);
   }
 }
 
