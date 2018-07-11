@@ -25,17 +25,17 @@ export function saveKernelInfo() {
   let info = Manager.manager.get_info(panel);
 
   let used_kernels = new Set();
-  let cells = panel.notebook.model.cells;
+  let cells = panel.content.model.cells;
   for (var i = cells.length - 1; i >= 0; --i) {
     let cell = cells.get(i);
     if (cell.type === "code" && cell.metadata.get('kernel')) {
       used_kernels.add(cell.metadata.get('kernel'));
     }
   }
-  panel.notebook.model.metadata.get("sos")["kernels"] = Array.from(used_kernels).sort().map(
+  (panel.content.model.metadata.get("sos") as any)["kernels"] = Array.from(used_kernels).sort().map(
     function(x) {
-      return [info.DisplayName[x], info.KernelName[x],
-      info.LanguageName[x] || "", info.BackgroundColor[x] || ""
+      return [info.DisplayName.get(x), info.KernelName.get(x),
+      info.LanguageName.get(x) || "", info.BackgroundColor.get(x) || ""
       ]
     }
   );
@@ -116,8 +116,8 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
 
   // cell in panel does not have prompt area
   var col = "";
-  if (kernel && info.BackgroundColor[kernel]) {
-    col = info.BackgroundColor[kernel];
+  if (kernel && info.BackgroundColor.get(kernel)) {
+    col = info.BackgroundColor.get(kernel);
   }
   let prompt = cell.node.getElementsByClassName("jp-InputPrompt") as HTMLCollectionOf<HTMLElement>;
   if (prompt.length > 0)
@@ -131,7 +131,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
   //     base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
   // };
   // //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
-  let base_mode = info.LanguageName[kernel] || info.KernelName[kernel] || kernel;
+  let base_mode : string = info.LanguageName.get(kernel) || info.KernelName.get(kernel) || kernel;
   if (!base_mode || base_mode.toLowerCase() === 'sos') {
     (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', 'sos');
   } else {
@@ -143,7 +143,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
 }
 
 export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) : Array<string> {
-  var cells = panel.notebook.widgets;
+  var cells = panel.content.widgets;
 
   // setting up background color and selection according to notebook metadata
   for (let i = 0; i < cells.length; ++i) {

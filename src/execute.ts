@@ -9,7 +9,7 @@ import {
 } from '@jupyterlab/services';
 
 import {
-  ICellModel
+  ICellModel, Cell
 } from '@jupyterlab/cells';
 
 import {
@@ -23,13 +23,13 @@ export function wrapExecutor(panel: NotebookPanel) {
   // however, this function can be called multiple times for kernel
   // restart etc, so we should be careful
   if (!kernel.hasOwnProperty('orig_execute')) {
-    kernel['orig_execute'] = kernel.requestExecute;
+    (kernel as any)['orig_execute'] = kernel.requestExecute;
     kernel.requestExecute = my_execute;
     console.log("executor patched");
   }
 }
 
-function scanHeaderLines(cells) {
+function scanHeaderLines(cells: ReadonlyArray<Cell>) {
   let TOC = ''
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
@@ -73,7 +73,7 @@ function getCellWorkflow(cell: ICellModel) {
 
 // get workflow from notebook
 function getNotebookWorkflow(panel: NotebookPanel) {
-  let cells = panel.notebook.widgets;
+  let cells = panel.content.widgets;
   let workflow = '#!/usr/bin/env sos-runner\n#fileformat=SOS1.0\n\n';
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
@@ -98,7 +98,7 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
   let info = Manager.manager.get_info(panel);
 
   // find the cell that is being executed...
-  let cells = panel.notebook.widgets;
+  let cells = panel.content.widgets;
 
   if (code.match(/^%toc/m)) {
     content.sos['toc'] = scanHeaderLines(cells);

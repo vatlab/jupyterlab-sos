@@ -35,7 +35,6 @@ var sosMagics = sosMagicWords.map(x => '%' + x);
 
 // hint word for SoS mode
 CodeMirror.registerHelper("hintWords", "sos", hintWords);
-
 var modeMap = {
   'sos': null,
   'python': {
@@ -70,14 +69,14 @@ var modeMap = {
   'matlab': 'octave',
 }
 
-function findMode(mode) {
+function findMode(mode: string) {
   if (mode in modeMap) {
-    return modeMap[mode];
+    return modeMap.get(mode);
   }
   return null;
 }
 
-function markExpr(python_mode) {
+function markExpr(python_mode: any) {
   return {
     startState: function() {
       return {
@@ -88,7 +87,7 @@ function markExpr(python_mode) {
       };
     },
 
-    copyState: function(state) {
+    copyState: function(state : any) {
       return {
         in_python: state.in_python,
         sigil: state.sigil,
@@ -97,7 +96,7 @@ function markExpr(python_mode) {
       };
     },
 
-    token: function(stream, state) {
+    token: function(stream: any, state : any) {
       if (state.in_python) {
         if (stream.match(state.sigil.right)) {
           state.in_python = false;
@@ -160,17 +159,10 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
   sosPythonConf.version = 3;
   sosPythonConf.extra_keywords = sosActionWords.concat(sosFunctionWords);
   // this is the SoS flavored python mode with more identifiers
-  var base_mode = null;
+  let base_mode : any = null;
   if ('base_mode' in parserConf && parserConf.base_mode) {
 
     let mode = findMode(parserConf.base_mode.toLowerCase());
-    if (mode) {
-      base_mode = CodeMirror.getMode(conf, mode);
-    } else {
-      console.log(`No base mode is found for ${parserConf.base_mode}. Python mode used.`);
-    }
-  } else if ('base_mode' in conf && conf.base_mode) {
-    let mode = findMode(conf.base_mode.toLowerCase());
     if (mode) {
       base_mode = CodeMirror.getMode(conf, mode);
     } else {
@@ -295,7 +287,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
         }
       },
 
-      innerMode: function(state) {
+      innerMode: function(state: any) {
         return state.sos_mode ? {
           state: state.base_state,
           mode: base_mode
@@ -528,7 +520,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
         }
       },
 
-      innerMode: function(state) {
+      innerMode: function(state: any) {
         return state.inner_mode ? null : {
           state: state.base_state,
           mode: base_mode
