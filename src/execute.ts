@@ -93,7 +93,7 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
     content.sos['workflow'] = getNotebookWorkflow(panel);
   }
   content.sos['path'] = panel.context.path;
-  content.sos['use_panel'] = false
+  content.sos['use_panel'] = true
 
   let info = Manager.manager.get_info(panel);
 

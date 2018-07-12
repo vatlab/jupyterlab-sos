@@ -7,6 +7,14 @@ import {
   Kernel
 } from '@jupyterlab/services';
 //
+import {
+    InfoHandler
+} from '@jupyterlab/inspector';
+
+import {
+  KernelMessage
+} from '@jupyterlab/services';
+
 export class NotebookInfo {
   notebook: NotebookPanel;
   KernelList: Array<string>;
@@ -104,6 +112,8 @@ export class Manager {
   // used to track the current notebook widget
   private static _tracker: INotebookTracker;
 
+  private static _infoHandler: InfoHandler;
+
   private _info: Map<NotebookPanel, NotebookInfo>;
 
   private constructor() {
@@ -114,6 +124,14 @@ export class Manager {
 
   public static set_tracker(tracker: INotebookTracker) {
     this._tracker = tracker;
+  }
+
+  public static set_infoHandler(handler: InfoHandler) {
+    this._infoHandler = handler;
+  }
+
+  static displayTransientMessage(msg: KernelMessage.IIOPubMessage) {
+    this._infoHandler.displayTransientMessage(msg);
   }
 
   static get currentNotebook() {

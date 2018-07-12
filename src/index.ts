@@ -33,6 +33,10 @@ import {
 } from '@jupyterlab/notebook';
 
 import {
+    IInspector
+} from '@jupyterlab/inspector';
+
+import {
   addLanSelector,
   updateCellStyles,
   changeCellKernel,
@@ -72,8 +76,6 @@ function registerSoSFileType(app: JupyterLab) {
     iconClass: 'jp-MaterialIcon sos_icon',
   });
 }
-
-const handler: InfoHandler = new InfoHandler();
 
 function formatDuration(start_date: Date, start_only: boolean = false): string {
   let ms: number = +new Date() - +start_date;
@@ -331,22 +333,16 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
         (panel.content.widgets[data[0]] as CodeCell).outputArea.model.clear();
       }
     }
-  } else {
+  } else if (msg_type === 'transient_display_data') {
     // this is preview output
     // create a transient_display_data message
     let transient_msg = KernelMessage.createMessage({
       msgType: 'transient_display_data',
       channel: 'iopub',
       session: msg.header.session,
-      },
-      {
-        title: 'something',
-        data: data,
-        meta: {}
-      }
-    )
-    transient_msg.parent_header = data.header;
-    handler.displayTransientMessage(transient_msg as KernelMessage.IIOPubMessage);
+    }, data)
+    //transient_msg.parent_header = msg.header;
+    Manager.displayTransientMessage(transient_msg as KernelMessage.IIOPubMessage);
   }
 }
 
@@ -543,11 +539,16 @@ function registerSoSWidgets(app: JupyterLab) {
 const extension: JupyterLabPlugin<void> = {
   id: 'sos-extension',
   autoStart: true,
-  requires: [INotebookTracker],
-  activate: (app: JupyterLab, tracker: INotebookTracker) => {
+  requires: [IInspector, INotebookTracker],
+  activate: (
+    app: JupyterLab,
+    inspector: IInspector,
+    tracker: INotebookTracker
+  ) => {
     registerSoSFileType(app);
     registerSoSWidgets(app);
     Manager.set_tracker(tracker);
+    Manager.set_infoHandler(new InfoHandler({inspector}));
     console.log('JupyterLab extension sos-extension is activated!');
   }
 };
