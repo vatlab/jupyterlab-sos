@@ -1,4 +1,4 @@
-import CodeMirror from 'codemirror';
+import * as CodeMirror from 'codemirror';
 
 import 'codemirror/lib/codemirror';
 import 'codemirror/mode/python/python';

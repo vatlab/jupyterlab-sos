@@ -68,8 +68,7 @@ function registerSoSFileType(app: JupyterLab) {
   });
 }
 
-function formatDuration(start_date: Date, start_only: boolean = false): string {
-  let ms: number = +new Date() - +start_date;
+function formatDuration(ms: number): string {
   let res = [];
   let seconds: number = Math.floor(ms / 1000);
   let day: number = Math.floor(seconds / 86400);
@@ -88,20 +87,11 @@ function formatDuration(start_date: Date, start_only: boolean = false): string {
   if (ss > 0) {
     res.push(ss + " sec");
   }
-  if (start_only) {
-    // we only take day, or hr..
-    if (res.length === 0) {
-      return "started just now"
-    }
-    // we only take day, or hr..
-    return `started ${res[0]} ago`;
+  let ret = res.join(" ");
+  if (ret === "") {
+    return "0 sec";
   } else {
-    let ret = res.join(" ");
-    if (ret === "") {
-      return "0 sec";
-    } else {
-      return ret;
-    }
+    return ret;
   }
 }
 
@@ -179,8 +169,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     setInterval(function() {
       let tasks = document.querySelectorAll('[id^="duration_"]');
       for (let i = 0; i < tasks.length; ++i) {
-        tasks[i].innerHTML = formatDuration(new Date(parseFloat(tasks[i].getAttribute("datetime"))),
-          !tasks[i].classList.contains("running"));
+        tasks[i].innerHTML = formatDuration(+new Date() - +new Date(parseFloat(tasks[i].getAttribute("datetime"))));
       }
     }, 5000);
   } else if (msg_type === "task-status") {
@@ -190,20 +179,22 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       return;
     } else {
       // id, status, status_class, action_class, action_func
-      item.className = "fa fa-fw fa-2x " + data[3];
-      item.setAttribute("onmouseover", `'${data[3]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[4]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
-      item.setAttribute("onmouseleave", `'${data[4]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[3]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
-      item.setAttribute("onClick", data[5] + "('" + data[1] + "', '" + data[0] + "')");
+      item.className = "fa fa-fw fa-2x " + data[4];
+      item.setAttribute("onmouseover", `'${data[4]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[5]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
+      item.setAttribute("onmouseleave", `'${data[5]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[4]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
+      item.setAttribute("onClick", data[6] + "('" + data[1] + "', '" + data[0] + "')");
     }
     item = document.getElementById("duration_" + data[0] + "_" + data[1]);
-    if (item) {
-      item.className = data[2];
-      // stop update and reset time ...
-      if (data[2] != "running") {
-        item.innerHTML = formatDuration(new Date(parseFloat(item.getAttribute("datetime"))), true);
-      }
-    }
+
     if (data[2] === "completed") {
+      let item = document.getElementById("tagline_" + data[0] + "_" + data[1]);
+      if (item) {
+        console.log(data)
+        if (data[3][2]) {
+          // duration is specified
+          item.innerText = `Ran for ${formatDuration(data[3][2] * 1000)}`;
+        }
+      }
       for (let cell in info.pendingCells) {
         // remove task from pendingCells
         for (let idx = 0; idx < info.pendingCells.get(cell).length; ++idx) {
@@ -230,6 +221,30 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
             break;
           }
         }
+      }
+    } else if (data[2] === "running") {
+      let item = document.getElementById("duration_" + data[0] + "_" + data[1]);
+      if (item) {
+        item.className = data[2];
+        if (data[3][1]) {
+          item.setAttribute("datetime", `${data[3][1] * 1000}`);
+        }
+      } else {
+        // if the timer is not found, it was changed from a terminal status
+        // without this item, so we need to create one
+        item = document.getElementById("tagline_" + data[0] + "_" + data[1]);
+        if (item) {
+          item.innerHTML = `<time id="duration_${data[0]}_${data[1]}" class="running" datetime="${data[3][1] * 1000}">Ran for ${formatDuration(+new Date() - data[3][1] * 1000)}</time>`
+        }
+      }
+    } else {
+      // paused, aborted etc
+      let item = document.getElementById("duration_" + data[0] + "_" + data[1]);
+      if (item) {
+        if (data[3][1]) {
+          item.setAttribute("datetime", `${data[3][1] * 1000}`);
+        }
+        item.innerText = 'Ran for ' + formatDuration(+new Date() - +item.getAttribute("datetime"));
       }
     }
     /*  } else if (msg_type === "show_toc") {
