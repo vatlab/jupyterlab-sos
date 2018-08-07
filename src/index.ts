@@ -169,6 +169,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     setInterval(function() {
       let tasks = document.querySelectorAll('[id^="duration_"]');
       for (let i = 0; i < tasks.length; ++i) {
+        if (tasks[i].className != "running")
+          continue;
         tasks[i].innerHTML = formatDuration(+new Date() - +new Date(parseFloat(tasks[i].getAttribute("datetime"))));
       }
     }, 5000);
@@ -188,11 +190,16 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
     if (data[2] === "completed") {
       let item = document.getElementById("tagline_" + data[0] + "_" + data[1]);
+      item.className = 'completed'
       if (item) {
-        console.log(data)
         if (data[3][2]) {
           // duration is specified
           item.innerText = `Ran for ${formatDuration(data[3][2] * 1000)}`;
+        } else {
+          let item = document.getElementById("duration_" + data[0] + "_" + data[1]);
+          if (item) {
+            item.className = 'completed';
+          }
         }
       }
       for (let cell in info.pendingCells) {

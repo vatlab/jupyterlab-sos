@@ -148,11 +148,11 @@ time.pending, time.submitted, time.running  {
   color: #cdb62c; /* yellow */
 }
 
-time.completed, time.result-ready {
+time.completed {
   color: #39aa56; /* green */
 }
 
-time.failed, time.signature-mismatch {
+time.failed {
   color: #db4545; /* red */
 }
 
@@ -167,4 +167,8 @@ time.aborted, time.unknown {
 table.task_table {
   border: 0px;
   border-style: solid;
+}
+
+span.completed {
+  color: #39aa56; /* green */
 }
