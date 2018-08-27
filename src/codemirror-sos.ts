@@ -34,7 +34,11 @@ var sosActions = sosActionWords.map(x => x + ":");
 var sosMagics = sosMagicWords.map(x => '%' + x);
 
 // hint word for SoS mode
-CodeMirror.registerHelper("hintWords", "sos", hintWords);
+try {
+  CodeMirror.registerHelper("hintWords", "sos", hintWords);
+} catch(error) {
+  console.log(`Failed to register hintWords for sos mode. ${error}`);
+}
 let modeMap: Map<string, any> = new Map();
 modeMap.set('sos', null);
 modeMap.set('python', {
