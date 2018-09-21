@@ -27,7 +27,7 @@
 .cm-sos-option {
 	font-style: italic;
 } */
-.jp-CodeCell .jp-InputArea-editor .jp-CelllanguageDropDown
+.jp-CodeCell .jp-InputArea .jp-CelllanguageDropDown
  {
     width: 70pt;
     background: none;
