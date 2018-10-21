@@ -95,6 +95,264 @@ function formatDuration(ms: number): string {
   }
 }
 
+function update_duration() {
+  setInterval(function() {
+    document.querySelectorAll("[id^='status_duration_']").forEach(
+      (item: HTMLElement) => {
+        if (item.className != 'running') {
+          return
+        }
+        item.innerText = 'Ran for ' + formatDuration(+new Date() - +new Date(parseFloat(item.getAttribute("datetime"))));
+      }
+    );
+  }, 5000);
+}
+
+// add workflow status indicator table
+function update_workflow_status(info, panel) {
+    console.log(info);
+
+    // find the cell
+    let cell_id = info.cell_id
+    let cell = panel.content.widgets.find(x => x.model.id == cell_id);
+    if (!cell) {
+        console.log(`Cannot find cell by ID ${info.cell_id}`)
+        return;
+    }
+
+    // find the status table
+    let status_table = document.getElementById(`workflow_${cell_id}`);
+    // if there is no status table, create one
+    // the easiest method seems to be adding display_data
+    if (!status_table) {
+        let data = {
+            'output_type': 'display_data',
+            'metadata': {},
+            'data': {
+                'text/html': `
+<table id="workflow_${cell_id}" class="workflow_table  ${info.status}">
+  <tr>
+        <td class="workflow_icon">
+          <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw fa-square-o"></i>
+        </td>
+        <td class="workflow_name">
+          <pre><span id="workflow_name_${cell_id}">${info.workflow_name}</span></pre>
+        </td>
+        <td class="workflow_id">
+          <span>Workflow ID</span></br>
+          <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${info.workflow_id}</span></pre>
+        </td>
+        <td class="workflow_index">
+          <span>Index</span></br>
+          <pre>#<span id="workflow_index_${cell_id}">${info.index}</span></pre>
+        </td>
+        <td class="workflow_status">
+          <span id="status_text_${cell_id}">${info.status}</span></br>
+          <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${info.status}" datetime="${info.start_time}"></time></pre>
+        </td>
+  </tr>
+</table>
+` }
+        }
+        cell.outputArea.model.add(data);
+    } else {
+      // existing table ...
+      let table = document.getElementById(`workflow_${cell_id}`);
+      if (table) {
+          table.className = `workflow_table ${info.status}`;
+      }
+      let timer = document.getElementById(`status_duration_${cell_id}`);
+      if (timer) {
+          timer.className = info.status;
+          if (info.start_time) {
+            timer.setAttribute('datetime', (info.start_time * 1000).toString());
+          }
+          if (timer.innerText === '' && (info.status === 'completed' || info.status === 'failed' || info.status === 'aborted')) {
+            timer.innerText = 'Ran for < 5 seconds'
+          }
+      }
+      let text = document.getElementById(`status_text_${cell_id}`);
+      if (text) {
+          text.innerText = info.status;
+      }
+      // if new id is specified
+      if (info.workflow_id) {
+        let wid = document.getElementById(`workflow_id_${cell_id}`);
+        if (wid) {
+            wid.innerText = info.workflow_id;
+        }
+      }
+      if (info.workflow_name) {
+        let wname = document.getElementById(`workflow_name_${cell_id}`);
+        if (wname) {
+            wname.innerText = info.workflow_name;
+        }
+      }
+      // if there is additional message, put it under timer.
+      if (info.index) {
+        let index = document.getElementById(`workflow_index_${cell_id}`);
+        if (index) {
+            index.innerText = info.index;
+        }
+      }
+    }
+
+    // new and existing, check icon
+    let status_class = {
+        'pending': 'fa-square-o',
+        'running': 'fa-spinner fa-pulse fa-spin',
+        'completed': 'fa-check-square-o',
+        'failed': 'fa-times-circle-o',
+        'aborted': 'fa-frown-o',
+    }
+
+    // look for status etc and update them.
+    let icon = document.getElementById(`workflow_status_icon_${cell_id}`);
+    if (icon) {
+      icon.className = `fa fa-2x fa-fw ${status_class[info.status]}`;
+
+      if (info.status === 'running') {
+          icon.onmouseover = function(e) {
+            e.srcElement.className = `fa fa-2x fa-fw fa-stop`;
+          };
+          icon.onmouseleave = function(e) {
+            e.srcElement.className = `fa fa-2x fa-fw ${status_class["running"]}`;
+          };
+          icon.onclick = function(e) {
+              (<any>window).cancel_workflow(e.srcElement.id.substring(21));
+          };
+      } else {
+        icon.onmouseover = function() {};
+        icon.onmouseleave = function() {};
+        icon.onclick = function() {};
+      }
+    }
+}
+
+
+function update_task_status(info, panel) {
+  // find the cell
+  //console.log(info);
+
+  let elem_id = `${info.queue}_${info.task_id}`
+
+  // find the status table
+  let status_table = document.getElementById(`task_${elem_id}`);
+
+  if (!status_table) {
+      let cell_id = info.cell_id
+      if (!cell_id) {
+        return;
+      }
+      let cell = panel.content.widgets.find(x => x.model.id == cell_id);
+      if (!cell) {
+        console.log(`Cannot find cell by ID ${info.cell_id}`)
+        return;
+      }
+
+      let data = {
+          'output_type': 'display_data',
+          'metadata': {},
+          'data': {
+              'text/html': `
+<table id="task_${elem_id}" class="task_table  ${info.status}">
+  <tr>
+        <td class="task_icon">
+          <i id="task_status_icon_${elem_id}" class="fa fa-2x fa-fw fa-square-o"></i>
+        </td>
+        <td class="task_id">
+          <a href='#' onclick="task_info('${info.task_id}', '${info.queue}')">
+          <pre><i class="fa fa-fw fa-sitemap"></i>${info.task_id}</pre>
+          </a>
+        </td>
+        <td class="task_timer">
+          <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}" class="${info.status}" datetime="${info.start_time}"></time></pre>
+        </td>
+        <td class="task_status">
+          <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}">${info.status}</span></pre>
+        </td>
+  </tr>
+</table>
+`
+          }
+      }
+      cell.outputArea.model.add(data);
+  } else {
+    // existing table ...
+    let table = document.getElementById(`task_${elem_id}`);
+    if (table) {
+        table.className = `task_table ${info.status}`;
+    }
+    let timer = document.getElementById(`status_duration_${elem_id}`);
+    if (timer) {
+        timer.className = info.status;
+        if (info.start_time) {
+          timer.setAttribute('datetime', (info.start_time * 1000).toString());
+        }
+        if (timer.innerText === '' && (info.status === 'completed' || info.status === 'failed' || info.status === 'aborted')) {
+          timer.innerText = 'Ran for < 5 seconds'
+        }
+    }
+    let text = document.getElementById(`status_text_${elem_id}`);
+    if (text) {
+        text.innerText = info.status;
+    }
+  }
+
+  let action_class = {
+      'pending': 'fa-stop',
+      'submitted': 'fa-stop',
+      'running': 'fa-stop',
+      'completed': 'fa-play',
+      'failed': 'fa-play',
+      'aborted': 'fa-play',
+      'missing': 'fa-question',
+  }
+
+  let status_class = {
+      'pending': 'fa-square-o',
+      'submitted': 'fa-spinner',
+      'running': 'fa-spinner fa-pulse fa-spin',
+      'completed': 'fa-check-square-o',
+      'failed': 'fa-times-circle-o',
+      'aborted': 'fa-frown-o',
+      'missing': 'fa-question',
+  }
+
+  let action_func = {
+      'pending': (<any>window).kill_task,
+      'submitted': (<any>window).kill_task,
+      'running': (<any>window).kill_task,
+      'completed': (<any>window).resume_task,
+      'failed': (<any>window).resume_task,
+      'aborted': (<any>window).resume_task,
+      'missing': function(){},
+  }
+
+  // look for status etc and update them.
+  let icon = document.getElementById(`task_status_icon_${elem_id}`);
+  if (icon) {
+    icon.className = `fa fa-2x fa-fw ${status_class[info.status]}`;
+
+    icon.onmouseover = function(e) {
+      let status = document.getElementById('status_duration_' + e.srcElement.id.substring(17)).className;
+      e.srcElement.className = `fa fa-2x fa-fw ${action_class[status]}`;
+    };
+    icon.onmouseleave = function(e) {
+      let status = document.getElementById('status_duration_' + e.srcElement.id.substring(17)).className;
+      console.log(`laving ${status}`)
+      e.srcElement.className = `fa fa-2x fa-fw ${status_class[status]}`;
+    };
+    icon.onclick = function(e) {
+      let status = document.getElementById('status_duration_' + e.srcElement.id.substring(17)).className;
+      let elem_id = e.srcElement.id.substring(17)
+      let task_id = elem_id.split('_').pop()
+      let task_queue = elem_id.split('_').slice(0, -1).join('_');
+      action_func[status](task_id, task_queue);
+    };
+  }
+}
+
 /*
  * SoS frontend Comm
  */
@@ -165,98 +423,32 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     if (item) {
       item.parentNode.removeChild(item);
     }
-  } else if (msg_type === "update-duration") {
-    setInterval(function() {
-      let tasks = document.querySelectorAll('[id^="duration_"]');
-      for (let i = 0; i < tasks.length; ++i) {
-        if (tasks[i].className != "running")
-          continue;
-        tasks[i].innerHTML = formatDuration(+new Date() - +new Date(parseFloat(tasks[i].getAttribute("datetime"))));
-      }
-    }, 5000);
-  } else if (msg_type === "task-status") {
-    // console.log(data);
-    let item = document.getElementById("status_" + data[0] + "_" + data[1]);
-    if (!item) {
-      return;
-    } else {
-      // id, status, status_class, action_class, action_func
-      item.className = "fa fa-fw fa-2x " + data[4];
-      item.setAttribute("onmouseover", `'${data[4]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[5]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
-      item.setAttribute("onmouseleave", `'${data[5]} task_hover'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.remove(x));'${data[4]}'.split(' ').map(x => document.getElementById('status_${data[0]}_${data[1]}').classList.add(x));`);
-      item.setAttribute("onClick", data[6] + "('" + data[1] + "', '" + data[0] + "')");
+  } else if (msg_type === "task_status") {
+    update_task_status(data, panel);
+    if (data.status === 'running') {
+      update_duration();
     }
-    item = document.getElementById("duration_" + data[0] + "_" + data[1]);
-
-    if (data[2] === "completed") {
-      let item = document.getElementById("tagline_" + data[0] + "_" + data[1]);
-      item.className = 'completed'
-      if (item) {
-        if (data[3][2]) {
-          // duration is specified
-          item.innerText = `Ran for ${formatDuration(data[3][2] * 1000)}`;
-        } else {
-          let item = document.getElementById("duration_" + data[0] + "_" + data[1]);
-          if (item) {
-            item.className = 'completed';
-          }
+  } else if (msg_type == 'workflow_status') {
+    update_workflow_status(data, panel);
+    if (data.status === 'running') {
+      update_duration();
+    }
+    // if this is a terminal status, try to execute the
+    // next pending workflow
+    if (data.status === 'completed' || data.status === 'canceled' || data.status === 'failed') {
+      // find all cell_ids with pending workflows
+      let elems = document.querySelectorAll("[id^='status_duration_']");
+      let pending = Array.from(elems).filter(
+        (item) => {
+          return  item.className == 'pending' && !   item.id.substring(16).includes('_');
         }
-      }
-      for (let cell in info.pendingCells) {
-        // remove task from pendingCells
-        for (let idx = 0; idx < info.pendingCells.get(cell).length; ++idx) {
-          if (info.pendingCells.get(cell)[idx][0] !== data[0] ||
-            info.pendingCells.get(cell)[idx][1] !== data[1]) {
-            continue;
-          }
-          info.pendingCells.get(cell).splice(idx, 1);
-          if (info.pendingCells.get(cell).length === 0) {
-            info.pendingCells.delete(cell);
-            // if the does not have any pending one, re-run it.
-            let cells = panel.content.widgets;
-            let rerun = null;
-            for (let i = 0; i < cells.length; ++i) {
-              if (cells[i].id === cell) {
-                rerun = cells[i];
-                break;
-              }
-            }
-            if (rerun) {
-              info.autoResume = true;
-              CodeCell.execute(rerun as CodeCell, panel.context.session);
-            }
-            break;
-          }
-        }
-      }
-    } else if (data[2] === "running") {
-      let item = document.getElementById("duration_" + data[0] + "_" + data[1]);
-      if (item) {
-        item.className = data[2];
-        if (data[3][1]) {
-          item.setAttribute("datetime", `${data[3][1] * 1000}`);
-        }
-      } else {
-        // if the timer is not found, it was changed from a terminal status
-        // without this item, so we need to create one
-        item = document.getElementById("tagline_" + data[0] + "_" + data[1]);
-        if (item) {
-          item.innerHTML = `<time id="duration_${data[0]}_${data[1]}" class="running" datetime="${data[3][1] * 1000}">Ran for ${formatDuration(+new Date() - data[3][1] * 1000)}</time>`
-        }
-      }
-    } else {
-      // paused, aborted etc
-      let item = document.getElementById("duration_" + data[0] + "_" + data[1]);
-      if (item) {
-        if (data[3][1]) {
-          item.setAttribute("datetime", `${data[3][1] * 1000}`);
-        }
-        item.innerText = 'Ran for ' + formatDuration(+new Date() - +item.getAttribute("datetime"));
+      ).map( (item) => {
+        return item.id.substring(16);
+      } )
+      if (pending) {
+        (<any>window).execute_workflow(pending);
       }
     }
-    /*  } else if (msg_type === "show_toc") {
-    show_toc();
-    */
   } else if (msg_type === "paste-table") {
     //let idx = panel.content.activeCellIndex;
     //let cm = panel.content.widgets[idx].editor;
@@ -420,6 +612,23 @@ function showSoSWidgets(element: HTMLElement) {
     "task-info": [task_id, task_queue],
   });
 };
+
+
+(<any>window).cancel_workflow = function(cell_id) {
+    console.log("Cancel workflow " + cell_id);
+    let info = Manager.manager.get_info(Manager.currentNotebook);
+    info.sos_comm.send({
+      "cancel-workflow": [cell_id],
+    });
+  };
+
+(<any>window).execute_workflow = function(cell_ids) {
+    console.log("Run workflows " + cell_ids);
+    let info = Manager.manager.get_info(Manager.currentNotebook);
+    info.sos_comm.send({
+      "execute-workflow": cell_ids,
+    });
+  };
 
 export
   class SoSWidgets implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
