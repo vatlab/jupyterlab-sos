@@ -110,123 +110,95 @@ function update_duration() {
 
 // add workflow status indicator table
 function update_workflow_status(info, panel) {
-    console.log(info);
+// find the cell
+  let cell_id = info.cell_id
+  let cell = panel.content.widgets.find(x => x.model.id == cell_id);
+  if (!cell) {
+      console.log(`Cannot find cell by ID ${info.cell_id}`)
+      return;
+  }
 
-    // find the cell
-    let cell_id = info.cell_id
-    let cell = panel.content.widgets.find(x => x.model.id == cell_id);
-    if (!cell) {
-        console.log(`Cannot find cell by ID ${info.cell_id}`)
-        return;
+  // if there is an existing status table, try to retrieve its information
+  // if the new data does not have it
+  let has_status_table = document.getElementById(`workflow_${cell_id}`);
+  let timer_text = '';
+  if (info.start_time) {
+    // convert from python time to JS time.
+    info.start_time = info.start_time * 1000;
+  }
+  if (has_status_table) {
+    // if we already have timer, let us try to "fix" it in the notebook
+    let timer = document.getElementById(`status_duration_${cell_id}`);
+    timer_text = timer.innerText;
+    if (timer_text === '' && (info.status === 'completed' || info.status === 'failed' || info.status === 'aborted')) {
+      timer_text = 'Ran for < 5 seconds'
     }
+    if (!info.start_time) {
+      info.start_time = timer.getAttribute('datetime');
+    }
+    //
+    if (!info.workflow_id) {
+      info.workflow_id = document.getElementById(`workflow_id_${cell_id}`).innerText;
+    }
+    if (!info.workflow_name) {
+      info.workflow_name = document.getElementById(`workflow_name_${cell_id}`).innerText;
+    }
+    if (!info.index) {
+      info.index = document.getElementById(`workflow_index_${cell_id}`).innerText;
+    }
+  }
+  // new and existing, check icon
+  let status_class = {
+      'pending': 'fa-square-o',
+      'running': 'fa-spinner fa-pulse fa-spin',
+      'completed': 'fa-check-square-o',
+      'failed': 'fa-times-circle-o',
+      'aborted': 'fa-frown-o',
+  }
 
-    // find the status table
-    let status_table = document.getElementById(`workflow_${cell_id}`);
-    // if there is no status table, create one
-    // the easiest method seems to be adding display_data
-    if (!status_table) {
-        let data = {
-            'output_type': 'display_data',
-            'metadata': {},
-            'data': {
-                'text/html': `
+  // look for status etc and update them.
+  let onmouseover = ''
+  let onmouseleave = ''
+  let onclick = ''
+  if (info.status === 'running') {
+    onmouseover = `onmouseover='this.classList="fa fa-2x fa-fw fa-stop"'`;
+    onmouseleave = `onmouseover='this.classList="fa fa-2x fa-fw ${status_class.running}"'`;
+    onclick = `onclick="cancel_workflow(this.id.substring(21))"`;
+  }
+
+  let data = {
+    'output_type': has_status_table ? 'update_display_data': 'display_data',
+    'transient': {'display_id': `workflow_${cell_id}`},
+    'metadata': {},
+    'data': {
+        'text/html': `
 <table id="workflow_${cell_id}" class="workflow_table  ${info.status}">
-  <tr>
-        <td class="workflow_icon">
-          <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw fa-square-o"></i>
-        </td>
-        <td class="workflow_name">
-          <pre><span id="workflow_name_${cell_id}">${info.workflow_name}</span></pre>
-        </td>
-        <td class="workflow_id">
-          <span>Workflow ID</span></br>
-          <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${info.workflow_id}</span></pre>
-        </td>
-        <td class="workflow_index">
-          <span>Index</span></br>
-          <pre>#<span id="workflow_index_${cell_id}">${info.index}</span></pre>
-        </td>
-        <td class="workflow_status">
-          <span id="status_text_${cell_id}">${info.status}</span></br>
-          <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${info.status}" datetime="${info.start_time}"></time></pre>
-        </td>
-  </tr>
+<tr>
+      <td class="workflow_icon">
+        <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${status_class[info.status]}"
+        ${onmouseover} ${onmouseleave} ${onclick}></i>
+      </td>
+      <td class="workflow_name">
+        <pre><span id="workflow_name_${cell_id}">${info.workflow_name}</span></pre>
+      </td>
+      <td class="workflow_id">
+        <span>Workflow ID</span></br>
+        <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${info.workflow_id}</span></pre>
+      </td>
+      <td class="workflow_index">
+        <span>Index</span></br>
+        <pre>#<span id="workflow_index_${cell_id}">${info.index}</span></pre>
+      </td>
+      <td class="workflow_status">
+        <span id="status_text_${cell_id}">${info.status}</span></br>
+        <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${info.status}" datetime="${info.start_time}">${timer_text}</time></pre>
+      </td>
+</tr>
 </table>
-` }
-        }
-        cell.outputArea.model.add(data);
-    } else {
-      // existing table ...
-      let table = document.getElementById(`workflow_${cell_id}`);
-      if (table) {
-          table.className = `workflow_table ${info.status}`;
-      }
-      let timer = document.getElementById(`status_duration_${cell_id}`);
-      if (timer) {
-          timer.className = info.status;
-          if (info.start_time) {
-            timer.setAttribute('datetime', (info.start_time * 1000).toString());
-          }
-          if (timer.innerText === '' && (info.status === 'completed' || info.status === 'failed' || info.status === 'aborted')) {
-            timer.innerText = 'Ran for < 5 seconds'
-          }
-      }
-      let text = document.getElementById(`status_text_${cell_id}`);
-      if (text) {
-          text.innerText = info.status;
-      }
-      // if new id is specified
-      if (info.workflow_id) {
-        let wid = document.getElementById(`workflow_id_${cell_id}`);
-        if (wid) {
-            wid.innerText = info.workflow_id;
-        }
-      }
-      if (info.workflow_name) {
-        let wname = document.getElementById(`workflow_name_${cell_id}`);
-        if (wname) {
-            wname.innerText = info.workflow_name;
-        }
-      }
-      // if there is additional message, put it under timer.
-      if (info.index) {
-        let index = document.getElementById(`workflow_index_${cell_id}`);
-        if (index) {
-            index.innerText = info.index;
-        }
-      }
-    }
-
-    // new and existing, check icon
-    let status_class = {
-        'pending': 'fa-square-o',
-        'running': 'fa-spinner fa-pulse fa-spin',
-        'completed': 'fa-check-square-o',
-        'failed': 'fa-times-circle-o',
-        'aborted': 'fa-frown-o',
-    }
-
-    // look for status etc and update them.
-    let icon = document.getElementById(`workflow_status_icon_${cell_id}`);
-    if (icon) {
-      icon.className = `fa fa-2x fa-fw ${status_class[info.status]}`;
-
-      if (info.status === 'running') {
-          icon.onmouseover = function(e) {
-            e.srcElement.className = `fa fa-2x fa-fw fa-stop`;
-          };
-          icon.onmouseleave = function(e) {
-            e.srcElement.className = `fa fa-2x fa-fw ${status_class["running"]}`;
-          };
-          icon.onclick = function(e) {
-              (<any>window).cancel_workflow(e.srcElement.id.substring(21));
-          };
-      } else {
-        icon.onmouseover = function() {};
-        icon.onmouseleave = function() {};
-        icon.onclick = function() {};
-      }
-    }
+`   }
+  }
+  // find the status table
+  cell.outputArea.model.add(data);
 }
 
 
@@ -235,67 +207,30 @@ function update_task_status(info, panel) {
   //console.log(info);
 
   let elem_id = `${info.queue}_${info.task_id}`
-
+  let cell_id = info.cell_id
+  let cell = panel.content.widgets.find(x => x.model.id == cell_id);
+  if (!cell) {
+    console.log(`Cannot find cell by ID ${info.cell_id}`)
+    return;
+  }
+  // convert between Python and JS float time
+  if (info.start_time) {
+    info.start_time = info.start_time * 1000;
+  }
   // find the status table
-  let status_table = document.getElementById(`task_${elem_id}`);
-
-  if (!status_table) {
-      let cell_id = info.cell_id
-      if (!cell_id) {
-        return;
-      }
-      let cell = panel.content.widgets.find(x => x.model.id == cell_id);
-      if (!cell) {
-        console.log(`Cannot find cell by ID ${info.cell_id}`)
-        return;
-      }
-
-      let data = {
-          'output_type': 'display_data',
-          'metadata': {},
-          'data': {
-              'text/html': `
-<table id="task_${elem_id}" class="task_table  ${info.status}">
-  <tr>
-        <td class="task_icon">
-          <i id="task_status_icon_${elem_id}" class="fa fa-2x fa-fw fa-square-o"></i>
-        </td>
-        <td class="task_id">
-          <a href='#' onclick="task_info('${info.task_id}', '${info.queue}')">
-          <pre><i class="fa fa-fw fa-sitemap"></i>${info.task_id}</pre>
-          </a>
-        </td>
-        <td class="task_timer">
-          <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}" class="${info.status}" datetime="${info.start_time}"></time></pre>
-        </td>
-        <td class="task_status">
-          <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}">${info.status}</span></pre>
-        </td>
-  </tr>
-</table>
-`
-          }
-      }
-      cell.outputArea.model.add(data);
-  } else {
-    // existing table ...
-    let table = document.getElementById(`task_${elem_id}`);
-    if (table) {
-        table.className = `task_table ${info.status}`;
-    }
+  let has_status_table = document.getElementById(`task_${elem_id}`);
+  // if there is an existing status table, try to retrieve its information
+  // the new data does not have it
+  let timer_text = '';
+  if (has_status_table) {
+    // if we already have timer, let us try to "fix" it in the notebook
     let timer = document.getElementById(`status_duration_${elem_id}`);
-    if (timer) {
-        timer.className = info.status;
-        if (info.start_time) {
-          timer.setAttribute('datetime', (info.start_time * 1000).toString());
-        }
-        if (timer.innerText === '' && (info.status === 'completed' || info.status === 'failed' || info.status === 'aborted')) {
-          timer.innerText = 'Ran for < 5 seconds'
-        }
+    timer_text = timer.innerText;
+    if (timer_text === '' && (info.status === 'completed' || info.status === 'failed' || info.status === 'aborted')) {
+      timer_text = 'Ran for < 5 seconds'
     }
-    let text = document.getElementById(`status_text_${elem_id}`);
-    if (text) {
-        text.innerText = info.status;
+    if (!info.start_time) {
+      info.start_time = timer.getAttribute('datetime');
     }
   }
 
@@ -320,37 +255,48 @@ function update_task_status(info, panel) {
   }
 
   let action_func = {
-      'pending': (<any>window).kill_task,
-      'submitted': (<any>window).kill_task,
-      'running': (<any>window).kill_task,
-      'completed': (<any>window).resume_task,
-      'failed': (<any>window).resume_task,
-      'aborted': (<any>window).resume_task,
-      'missing': function(){},
+      'pending': "kill_task",
+      'submitted': "kill_task",
+      'running': "kill_task",
+      'completed': "resume_task",
+      'failed': "resume_task",
+      'aborted': "resume_task",
+      'missing': "function(){}",
   }
 
   // look for status etc and update them.
-  let icon = document.getElementById(`task_status_icon_${elem_id}`);
-  if (icon) {
-    icon.className = `fa fa-2x fa-fw ${status_class[info.status]}`;
-
-    icon.onmouseover = function(e) {
-      let status = document.getElementById('status_duration_' + e.srcElement.id.substring(17)).className;
-      e.srcElement.className = `fa fa-2x fa-fw ${action_class[status]}`;
-    };
-    icon.onmouseleave = function(e) {
-      let status = document.getElementById('status_duration_' + e.srcElement.id.substring(17)).className;
-      console.log(`laving ${status}`)
-      e.srcElement.className = `fa fa-2x fa-fw ${status_class[status]}`;
-    };
-    icon.onclick = function(e) {
-      let status = document.getElementById('status_duration_' + e.srcElement.id.substring(17)).className;
-      let elem_id = e.srcElement.id.substring(17)
-      let task_id = elem_id.split('_').pop()
-      let task_queue = elem_id.split('_').slice(0, -1).join('_');
-      action_func[status](task_id, task_queue);
-    };
+  let onmouseover = `onmouseover="this.classList='fa fa-2x fa-fw ${action_class[info.status]}'"`;
+  let onmouseleave = `onmouseleave="this.classList='fa fa-2x fa-fw ${status_class[info.status]}'"`;
+  let onclick = `onclick="${action_func[info.status]}('${info.task_id}', '${info.queue}');"`;
+  let data = {
+    'output_type': has_status_table ? 'update_display_data': 'display_data',
+    'transient': {'display_id': `task_${elem_id}`},
+    'metadata': {},
+    'data': {
+        'text/html': `
+<table id="task_${elem_id}" class="task_table ${info.status}">
+<tr>
+  <td class="task_icon">
+    <i id="task_status_icon_${elem_id}" class="fa fa-2x fa-fw ${status_class[info.status]}"
+    ${onmouseover} ${onmouseleave} ${onclick}></i>
+  </td>
+  <td class="task_id">
+    <a href='#' onclick="task_info('${info.task_id}', '${info.queue}')">
+    <pre><i class="fa fa-fw fa-sitemap"></i>${info.task_id}</pre>
+    </a>
+  </td>
+  <td class="task_timer">
+    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}" class="${info.status}" datetime="${info.start_time}">${timer_text}</time></pre>
+  </td>
+  <td class="task_status">
+    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}">${info.status}</span></pre>
+  </td>
+</tr>
+</table>
+`
+    }
   }
+  cell.outputArea.model.add(data);
 }
 
 /*
