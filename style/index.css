@@ -154,7 +154,7 @@ table.task_table i  {
   margin-right: 5px;
 }
 
-td.workflow_name
+table.workflow_table td.workflow_name
 {
   width: 10em;
   text-align: left;
@@ -165,21 +165,21 @@ td.task_name pre {
   font-size: 1.2em;
 }
 
-td.workflow_id,
-td.task_id
+table.workflow_table td.workflow_id,
+table.task_table td.task_id
 {
   width: 15em;
   text-align: left;
 }
 
-td.workflow_index
+table.workflow_table td.workflow_index
 {
   width: 5em;
   text-align: left;
 }
 
-td.workflow_status,
-td.task_timer
+table.workflow_table td.workflow_status,
+table.task_table td.task_timer
 {
   width: 20em;
   text-align: left;
@@ -189,7 +189,7 @@ td.task_icon {
     font-size: 0.75em;
 }
 
-td.task_status,
+table.task_table td.task_status,
 {
   width: 15em;
   text-align: left;
