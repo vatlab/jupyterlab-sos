@@ -3,6 +3,8 @@ import {
   INotebookTracker
 } from '@jupyterlab/notebook';
 
+import { CommandRegistry } from '@phosphor/commands';
+
 import {
   Kernel
 } from '@jupyterlab/services';
@@ -103,7 +105,7 @@ export class Manager {
   private static _instance: Manager;
   // used to track the current notebook widget
   private static _tracker: INotebookTracker;
-
+  private static _commands: CommandRegistry;
   private _info: Map<NotebookPanel, NotebookInfo>;
 
   private constructor() {
@@ -116,8 +118,16 @@ export class Manager {
     this._tracker = tracker;
   }
 
+  public static set_commands(commands: CommandRegistry) {
+    this._commands = commands;
+  }
+
   static get currentNotebook() {
     return this._tracker.currentWidget;
+  }
+
+  static get commands() {
+    return this._commands;
   }
 
   static get manager() {

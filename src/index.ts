@@ -207,18 +207,44 @@ function update_task_status(info, panel) {
   //console.log(info);
 
   let elem_id = `${info.queue}_${info.task_id}`
-  let cell_id = info.cell_id
-  let cell = panel.content.widgets.find(x => x.model.id == cell_id);
-  if (!cell) {
-    console.log(`Cannot find cell by ID ${info.cell_id}`)
-    return;
-  }
   // convert between Python and JS float time
   if (info.start_time) {
     info.start_time = info.start_time * 1000;
   }
   // find the status table
   let has_status_table = document.getElementById(`task_${elem_id}`);
+  if (info.update_only && !has_status_table) {
+    return;
+  }
+  let cell_id = info.cell_id
+  let cell = null;
+  if (cell_id) {
+    cell = panel.content.widgets.find(x => x.model.id == cell_id);
+  } else if (has_status_table) {
+    cell = panel.content.widgets.find(x => x.element[0] == has_status_table.closest('.code_cell'));
+  }
+
+  if (cell) {
+    // fix_display_id(cell);
+  } else {
+    console.log(`Cannot find cell by ID ${info.cell_id}`)
+    return;
+  }
+
+  if (info.status == 'purged') {
+    if (has_status_table) {
+      let data = {
+        'output_type': 'update_display_data',
+        'transient': {'display_id': `task_${elem_id}`},
+        'metadata': {},
+        'data': {
+            'text/html': ''
+        }
+      }
+      cell.output_area.append_output(data);
+    }
+    return;
+  }
   // if there is an existing status table, try to retrieve its information
   // the new data does not have it
   let timer_text = '';
@@ -232,16 +258,9 @@ function update_task_status(info, panel) {
     if (!info.start_time) {
       info.start_time = timer.getAttribute('datetime');
     }
-  }
-
-  let action_class = {
-      'pending': 'fa-stop',
-      'submitted': 'fa-stop',
-      'running': 'fa-stop',
-      'completed': 'fa-play',
-      'failed': 'fa-play',
-      'aborted': 'fa-play',
-      'missing': 'fa-question',
+    if (!info.tags) {
+      info.tags = document.getElementById(`status_tags_${elem_id}`).innerText;
+    }
   }
 
   let status_class = {
@@ -254,20 +273,31 @@ function update_task_status(info, panel) {
       'missing': 'fa-question',
   }
 
-  let action_func = {
-      'pending': "kill_task",
-      'submitted': "kill_task",
-      'running': "kill_task",
-      'completed': "resume_task",
-      'failed': "resume_task",
-      'aborted': "resume_task",
-      'missing': "function(){}",
+  // look for status etc and update them.
+  let id_elems = `<pre>${info.task_id}` +
+    `<div class="task_id_actions">` +
+    `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
+    `<i class="fa fa-fw fa-play" onclick="task_action({action:'execute', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
+    `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
+    `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
+    `</div></pre>`;
+
+  let tags = info.tags.split(/\s+/g);
+  let tags_elems = ''
+  for (let ti=0; ti < tags.length; ++ti) {
+    let tag = tags[ti];
+    if (!tag) {
+      continue;
+    }
+    tags_elems += `<pre class="task_tags task_tag_${tag}">${tag}` +
+      `<div class="task_tag_actions">` +
+      `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', tag:'${tag}', queue: '${info.queue}'})"></i>` +
+      `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', tag:'${tag}', queue: '${info.queue}'})"></i>` +
+      `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', tag:'${tag}', queue: '${info.queue}'})"></i>` +
+      `</div></pre>`;
   }
 
-  // look for status etc and update them.
-  let onmouseover = `onmouseover="this.classList='fa fa-2x fa-fw ${action_class[info.status]}'"`;
-  let onmouseleave = `onmouseleave="this.classList='fa fa-2x fa-fw ${status_class[info.status]}'"`;
-  let onclick = `onclick="${action_func[info.status]}('${info.task_id}', '${info.queue}');"`;
+
   let data = {
     'output_type': has_status_table ? 'update_display_data': 'display_data',
     'transient': {'display_id': `task_${elem_id}`},
@@ -281,9 +311,10 @@ function update_task_status(info, panel) {
     ${onmouseover} ${onmouseleave} ${onclick}></i>
   </td>
   <td class="task_id">
-    <a href='#' onclick="task_info('${info.task_id}', '${info.queue}')">
-    <pre><i class="fa fa-fw fa-sitemap"></i>${info.task_id}</pre>
-    </a>
+    <span><pre><i class="fa fa-fw fa-sitemap"></i></pre>${id_elems}</span>
+  </td>
+  <td class="task_tags">
+    <span id="status_tags_${elem_id}"><pre><i class="fa fa-fw fa-info-circle"></i></pre>${tags_elems}</span>
   </td>
   <td class="task_timer">
     <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}" class="${info.status}" datetime="${info.start_time}">${timer_text}</time></pre>
@@ -534,31 +565,31 @@ function showSoSWidgets(element: HTMLElement) {
     sos_elements[i].style.display = '';
 }
 
-(<any>window).kill_task = function(task_id: string, task_queue: string) {
-  console.log("Kill " + task_id);
-  let info = Manager.manager.get_info(Manager.currentNotebook);
-  info.sos_comm.send({
-    "kill-task": [task_id, task_queue],
-  });
-};
+(<any>window).task_action = async function(param) {
+  if (!param.action) {
+    return;
+  }
 
-(<any>window).resume_task = function(task_id: string, task_queue: string) {
-  console.log("Resume " + task_id);
-  let info = Manager.manager.get_info(Manager.currentNotebook);
-  info.sos_comm.send({
-    "resume-task": [task_id, task_queue],
-  });
-};
+  let commands = Manager.commands;
+  let path = Manager.currentNotebook.context.path;
 
-(<any>window).task_info = function(task_id: string, task_queue: string) {
-  // step 1: find the item with task_id, then the panel that contains the element
-  console.log("Task info " + task_id);
-  let info = Manager.manager.get_info(Manager.currentNotebook);
-  info.sos_comm.send({
-    "task-info": [task_id, task_queue],
-  });
-};
+  let code = `%task ${param.action}` +
+    (param.task ? ` ${param.task}` : '') +
+    (param.tag ? ` -t ${param.tag}` : '') +
+    (param.queue ? ` -q ${param.queue}` : '');
 
+  await commands.execute('console:open', {
+    activate: false,
+    insertMode: 'split-bottom',
+    path
+  });
+  await commands.execute('console:inject', {
+    activate: false,
+    code,
+    path
+  });
+
+};
 
 (<any>window).cancel_workflow = function(cell_id) {
     console.log("Cancel workflow " + cell_id);
@@ -711,6 +742,7 @@ const extension: JupyterLabPlugin<void> = {
     registerSoSFileType(app);
     registerSoSWidgets(app);
     Manager.set_tracker(tracker);
+    Manager.set_commands(app.commands);
     console.log('JupyterLab extension sos-extension is activated!');
   }
 };

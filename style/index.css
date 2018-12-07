@@ -149,12 +149,13 @@ table.task_table {
   border: 0px;
 }
 
+
 table.workflow_table i,
 table.task_table i  {
   margin-right: 5px;
 }
 
-table.workflow_table td.workflow_name
+td.workflow_name
 {
   width: 10em;
   text-align: left;
@@ -165,46 +166,98 @@ td.task_name pre {
   font-size: 1.2em;
 }
 
-table.workflow_table td.workflow_id,
-table.task_table td.task_id
+td.workflow_id,
+td.task_id
 {
   width: 15em;
   text-align: left;
 }
 
-table.workflow_table td.workflow_index
+td.task_tags
+{
+  text-align: left;
+  max-width: 33em;
+}
+
+td.task_id
+{
+  text-align: left;
+}
+
+td.task_id span,
+td.task_tags span {
+  display: inline-flex;
+}
+
+td.task_tags span pre {
+  padding-right: 0.5em;
+}
+
+td.task_tags i  {
+  margin-right: 0px;
+}
+
+.task_id_actions,
+.task_tag_actions {
+  display: none;
+}
+
+.task_id_actions .fa:hover,
+.task_tag_actions .fa:hover {
+  color: blue;
+}
+
+.task_id:hover .task_id_actions,
+.task_tags:hover .task_tag_actions {
+  display: flex;
+  flex-direction: row;
+}
+
+td.workflow_index
 {
   width: 5em;
   text-align: left;
 }
 
-table.workflow_table td.workflow_status,
-table.task_table td.task_timer
+td.workflow_status
 {
   width: 20em;
   text-align: left;
 }
 
+td.task_timer
+{
+  width: 15em;
+  text-align: left;
+}
+
+td.task_timer pre
+{
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+
 td.task_icon {
     font-size: 0.75em;
 }
 
-table.task_table td.task_status,
+td.task_status,
 {
   width: 15em;
   text-align: left;
 }
 
 table.workflow_table span {
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   font-family: monospace;
 }
 
 table.task_table span {
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   font-family: monospace;
 }
-
 table.workflow_table.pending pre,
 table.task_table.pending pre,
 table.task_table.submitted pre,
