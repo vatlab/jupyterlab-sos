@@ -108,6 +108,67 @@ function update_duration() {
   }, 5000);
 }
 
+
+/* When a notebook is opened with multiple workflow or task tables,
+ * the tables have display_id but the ID maps will not be properly
+ * setup so that the tables cannot be updated with another
+ * update_display_data message. To fix this problem, we will have
+ * to manually populate the
+ *   output_area._display_id_targets
+ * structure.
+*/
+function isEmpty(map) {
+  for(var key in map) {
+    if (map.hasOwnProperty(key)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function fix_display_id(cell) {
+  if (! isEmpty(cell.outputArea._displayIdMap)) {
+    return;
+  }
+  for (let idx=0; idx < cell.outputArea.model.length; ++idx ) {
+    let output = cell.outputArea.model.get(idx);
+    if (output.type != 'display_data' || !output.data['text/html']) {
+      continue;
+    }
+    // the HTML should look like
+    // <table id="task_macpro_90775d4e30583c18" class="task_table running">
+    let id = output.data['text/html'].match(/id="([^"]*)"/)[1];
+    if (!id) {
+      continue;
+    }
+    let targets = cell.outputArea._displayIdMap.get(id) || [];
+    targets.push(idx);
+    cell.outputArea._displayIdMap.set(id, targets);
+  }
+}
+
+
+function add_data_to_cell(cell, data, display_id) {
+  if (data.output_type === 'update_display_data') {
+    fix_display_id(cell);
+    let targets = cell.outputArea._displayIdMap.get(display_id);
+    if (!targets) {
+      // something wrong
+      console.log('Failed to rebuild displayIdMap')
+      return
+    }
+    data.output_type = 'display_data'
+    for (let index of targets) {
+      cell.outputArea.model.set(index, data);
+    }
+  } else {
+    cell.outputArea.model.add(data);
+    let targets = cell.outputArea._displayIdMap.get(display_id) || [];
+    targets.push(cell.outputArea.model.length - 1);
+    cell.outputArea._displayIdMap.set(display_id, targets);
+  }
+}
+
 // add workflow status indicator table
 function update_workflow_status(info, panel) {
 // find the cell
@@ -197,8 +258,7 @@ function update_workflow_status(info, panel) {
 </table>
 `   }
   }
-  // find the status table
-  cell.outputArea.model.add(data);
+  add_data_to_cell(cell, data, `workflow_${cell_id}`);
 }
 
 
@@ -221,12 +281,11 @@ function update_task_status(info, panel) {
   if (cell_id) {
     cell = panel.content.widgets.find(x => x.model.id == cell_id);
   } else if (has_status_table) {
-    cell = panel.content.widgets.find(x => x.element[0] == has_status_table.closest('.code_cell'));
+    let elem = has_status_table.closest('.code_cell');
+    cell = panel.content.widgets.find(x => x.node[0] == elem);
   }
 
-  if (cell) {
-    // fix_display_id(cell);
-  } else {
+  if (!cell) {
     console.log(`Cannot find cell by ID ${info.cell_id}`)
     return;
   }
@@ -241,7 +300,7 @@ function update_task_status(info, panel) {
             'text/html': ''
         }
       }
-      cell.output_area.append_output(data);
+      add_data_to_cell(cell, data, `task_${elem_id}`);
     }
     return;
   }
@@ -327,7 +386,7 @@ function update_task_status(info, panel) {
 `
     }
   }
-  cell.outputArea.model.add(data);
+  add_data_to_cell(cell, data, `task_${elem_id}`);
 }
 
 /*
@@ -351,9 +410,13 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     console.log("kernel list updated");
   } else if (msg_type === "cell-kernel") {
     // jupyter lab does not yet handle panel cell
-    if (data[0] === "")
+    if (data[0] === "") {
       return;
+    }
     let cell = panel.content.widgets.find(x => x.model.id == data[0]);
+    if (!cell) {
+      return;
+    }
     if (cell.model.metadata.get('kernel') !== info.DisplayName.get(data[1])) {
       changeCellKernel(cell, info.DisplayName.get(data[1]), info);
       saveKernelInfo();

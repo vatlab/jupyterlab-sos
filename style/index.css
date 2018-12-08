@@ -228,7 +228,7 @@ td.workflow_status
 td.task_timer
 {
   width: 15em;
-  text-align: left;
+  text-align: left !important;
 }
 
 td.task_timer pre
@@ -238,6 +238,11 @@ td.task_timer pre
   white-space: nowrap;
 }
 
+.workflow_table pre,
+.task_table pre
+{
+	background: unset;
+}
 
 td.task_icon {
     font-size: 0.75em;
