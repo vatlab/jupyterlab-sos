@@ -113,19 +113,12 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
     for (let i = 0; i < op.length; ++i)
       op.item(i).classList.remove('report-output');
   }
-
-  // cell in panel does not have prompt area
-  var col = "";
-  if (kernel && info.BackgroundColor.get(kernel)) {
-    col = info.BackgroundColor.get(kernel);
+  for (let className of Array.from(cell.node.classList)) {
+    if (className.startsWith("sos_lan_")) {
+      cell.node.classList.remove(className);
+    }
   }
-  let prompt = cell.node.getElementsByClassName("jp-InputPrompt") as HTMLCollectionOf<HTMLElement>;
-  if (prompt.length > 0)
-    prompt[0].style.backgroundColor = col;
-  prompt = cell.node.getElementsByClassName("jp-OutputPrompt") as HTMLCollectionOf<HTMLElement>;
-  for (let i = 0; i < prompt.length; ++i) {
-    prompt.item(i).style.backgroundColor = col;
-  }
+  cell.node.classList.add(`sos_lan_${kernel}`);
   // cell.user_highlight = {
   //     name: 'sos',
   //     base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
@@ -156,9 +149,6 @@ export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) : Arr
   let tasks = document.querySelectorAll('[id^="status_"]');
   let unknownTasks = [];
   for (let i = 0; i < tasks.length; ++i) {
-    tasks[i].removeAttribute("onClick");
-    tasks[i].removeAttribute("onmouseover");
-    tasks[i].removeAttribute("onmouseleave");
     // status_localhost_5ea9232779ca1959
     if (tasks[i].id.match("^status_[^_]+_[0-9a-f]{16,32}$")) {
         tasks[i].className = "fa fa-fw fa-2x fa-refresh fa-spin";

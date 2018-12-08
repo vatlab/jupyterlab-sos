@@ -93,6 +93,26 @@ export class NotebookInfo {
       if (this.KernelList.indexOf(data[i][0]) === -1)
         this.KernelList.push(data[i][0]);
     }
+
+    // add css to window
+    let css_text = this.KernelList.map(
+      // add language specific css
+      (lan: string) => {
+        if (this.BackgroundColor.get(lan)) {
+          return `.jp-CodeCell.sos_lan_${lan} .jp-InputPrompt,
+            .jp-CodeCell.sos_lan_${lan} .jp-OutputPrompt {
+              background: ${this.BackgroundColor.get(lan)};
+            }
+          `;
+        } else {
+          return null;
+        }
+      }
+      ).filter(Boolean).join('\n');
+    var css = document.createElement("style");
+    css.type = "text/css";
+    css.innerHTML = css_text;
+    document.body.appendChild(css);
   }
 
   public show() {
