@@ -342,16 +342,14 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
           if (sl == '[') {
             // header, move to the end
             if (stream.match(/^\[.*\]$/, false)) {
-              // if there is no :, the easy case
-              if (stream.match(/^\[[^:]*\]$/)) {
+              // if there is :
+              if (stream.match(/^\[[\s\w,]*:/)) {
+                state.sos_state = 'header_option';
+                return "header line-section-header";
+              } else if (stream.match(/^\[\s\w,\]$/)) {
                 // reset state
                 state.sos_state = null;
                 state.inner_mode = null;
-                return "header line-section-header";
-              } else {
-                // match up to :
-                stream.match(/^\[[^:]*:/);
-                state.sos_state = 'header_option';
                 return "header line-section-header";
               }
             }
