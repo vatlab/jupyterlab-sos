@@ -19,6 +19,9 @@
     display: none;
 }
 
+.jp-OutputArea-prompt:empty {
+	padding: 0px;
+}
 /*
 .cm-sos-script {
 	font-style: normal;

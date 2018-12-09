@@ -117,17 +117,8 @@ function update_duration() {
  *   output_area._display_id_targets
  * structure.
 */
-function isEmpty(map) {
-  for(var key in map) {
-    if (map.hasOwnProperty(key)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 function fix_display_id(cell) {
-  if (! isEmpty(cell.outputArea._displayIdMap)) {
+  if (cell.outputArea._displayIdMap.size > 0) {
     return;
   }
   for (let idx=0; idx < cell.outputArea.model.length; ++idx ) {
@@ -137,13 +128,16 @@ function fix_display_id(cell) {
     }
     // the HTML should look like
     // <table id="task_macpro_90775d4e30583c18" class="task_table running">
-    let id = output.data['text/html'].match(/id="([^"]*)"/)[1];
-    if (!id) {
+    if (!output.data || !output.data['text/html']) {
       continue;
     }
-    let targets = cell.outputArea._displayIdMap.get(id) || [];
+    let id = output.data['text/html'].match(/id="([^"]*)"/);
+    if (!id || !id[1]) {
+      continue;
+    }
+    let targets = cell.outputArea._displayIdMap.get(id[1]) || [];
     targets.push(idx);
-    cell.outputArea._displayIdMap.set(id, targets);
+    cell.outputArea._displayIdMap.set(id[1], targets);
   }
 }
 
@@ -268,23 +262,24 @@ function update_task_status(info, panel) {
   // special case, purge by tag, there is no task_id
   if (!info.task_id && info.tag && info.status == 'purged') {
     // find all elements by tag
-    while(true) {
-      let elems = document.getElementsByClassName(`task_tag_${info.tag}`);
-      if (!elems) {
-        break;
-      }
-      let cell_elem = elems[0].closest('.code_cell');
-      let cell = panel.content.widgets.find(x => x.node[0] == cell_elem);
-      let display_id = elems[0].closest('.task_table').id;
+    let elems = document.getElementsByClassName(`task_tag_${info.tag}`);
+    if (!elems) {
+      return;
+    }
+    let cell_elems = Array.from(elems).map(x => x.closest('.code_cell'));
+    let cells = cell_elems.map(cell_elem => panel.content.widgets.find(x => x.node[0] == cell_elem));
+    let display_ids = Array.from(elems).map(x => x.closest('.task_table').id);
+
+    for (let i = 0; i < cells.length; ++i) {
       let data = {
         'output_type': 'update_display_data',
-        'transient': {'display_id': display_id},
+        'transient': {'display_id': display_ids[i]},
         'metadata': {},
         'data': {
             'text/html': ''
         }
       }
-      add_data_to_cell(cell, data, display_id);
+      add_data_to_cell(cells[i], data, display_ids[i]);
     }
     return;
   }
