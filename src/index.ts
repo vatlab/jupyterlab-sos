@@ -265,6 +265,29 @@ function update_workflow_status(info, panel) {
 function update_task_status(info, panel) {
   // find the cell
   //console.log(info);
+  // special case, purge by tag, there is no task_id
+  if (!info.task_id && info.tag && info.status == 'purged') {
+    // find all elements by tag
+    while(true) {
+      let elems = document.getElementsByClassName(`task_tag_${info.tag}`);
+      if (!elems) {
+        break;
+      }
+      let cell_elem = elems[0].closest('.code_cell');
+      let cell = panel.content.widgets.find(x => x.node[0] == cell_elem);
+      let display_id = elems[0].closest('.task_table').id;
+      let data = {
+        'output_type': 'update_display_data',
+        'transient': {'display_id': display_id},
+        'metadata': {},
+        'data': {
+            'text/html': ''
+        }
+      }
+      add_data_to_cell(cell, data, display_id);
+    }
+    return;
+  }
 
   let elem_id = `${info.queue}_${info.task_id}`
   // convert between Python and JS float time
