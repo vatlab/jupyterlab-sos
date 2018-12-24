@@ -520,6 +520,15 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     //let idx = panel.content.activeCellIndex;
     //let cm = panel.content.widgets[idx].editor;
     // cm.replaceRange(data, cm.getCursor());
+  } else if (msg_type == 'print') {
+
+    let cell = panel.content.widgets.find(x => x.model.id == data[0]);
+
+    (cell as CodeCell).outputArea.model.add({
+      'output_type': 'stream',
+      'name': 'stdout',
+      'text': data[1]
+    })
   } else if (msg_type === 'alert') {
     alert(data);
   } else if (msg_type === 'notebook-version') {
