@@ -150,7 +150,7 @@ export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) : Arr
   let unknownTasks = [];
   for (let i = 0; i < tasks.length; ++i) {
     // status_localhost_5ea9232779ca1959
-    if (tasks[i].id.match("^status_[^_]+_[0-9a-f]{16,32}$")) {
+    if (tasks[i].id.match("^task_status_icon_.+_[0-9a-f]{16,32}$")) {
         tasks[i].className = "fa fa-fw fa-2x fa-refresh fa-spin";
         unknownTasks.push(tasks[i].id);
     }
