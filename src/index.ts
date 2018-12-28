@@ -32,6 +32,8 @@ import {
   INotebookTracker
 } from '@jupyterlab/notebook';
 
+import * as CodeMirror from 'codemirror';
+
 import {
   addLanSelector,
   updateCellStyles,
@@ -464,24 +466,28 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
      cell.clear_output();
    } else if (msg_type === "preview-kernel") {
      changeStyleOnKernel(window.my_panel.cell, data);
-   } else if (msg_type === "highlight-workflow") {
-     //cell = window.my_panel.cell;
-     //cell.clear_input();
-     //cell.set_text("%preview --workflow");
-     //cell.clear_output();
-     //cell.output_area.append_output({
-     //    "output_type": "display_data",
-     //    "metadata": {},
-     //    "data": {
-     //             "text/html": "<textarea id='panel_preview_workflow'>" + data + "</textarea>"
-     //    }
-     //});
-     // <textarea id="side_panel_code">{}</textarea>'
-     CodeMirror.fromTextArea(document.getElementById(data), {
-       "mode": "sos",
-       "theme": "ipython"
-     })
-    */
+   */
+  } else if (msg_type === "highlight-workflow") {
+    let elem = document.getElementById(data[1]);
+    CodeMirror.fromTextArea(elem, {
+      "mode": "sos"
+    })
+    // if in a regular notebook, we use static version of the HTML
+    // to replace the codemirror js version.
+    if (data[0]) {
+      let cell = panel.content.widgets.find(x => x.model.id == data[0]);
+
+      let cm_node = elem.parentElement.lastElementChild;
+      add_data_to_cell(cell, {
+        'output_type': 'update_display_data',
+        'transient': {'display_id': data[1]},
+        'metadata': {},
+        'data': {
+            'text/html': cm_node.outerHTML
+        }
+      }, data[1]);
+      cm_node.remove();
+    }
   } else if (msg_type === "tasks-pending") {
     let cell = panel.content.widgets[data[0]];
     info.pendingCells.set(cell.model.id, data[1]);
