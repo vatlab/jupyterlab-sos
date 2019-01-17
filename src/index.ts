@@ -178,6 +178,9 @@ function update_workflow_status(info, panel) {
   // if there is an existing status table, try to retrieve its information
   // if the new data does not have it
   let has_status_table = document.getElementById(`workflow_${cell_id}`);
+  if (!has_status_table && info.status != 'pending') {
+    return;
+  }
   let timer_text = '';
   if (info.start_time) {
     // convert from python time to JS time.
