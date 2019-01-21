@@ -35,7 +35,8 @@ export function saveKernelInfo() {
   (panel.content.model.metadata.get("sos") as any)["kernels"] = Array.from(used_kernels).sort().map(
     function(x) {
       return [info.DisplayName.get(x), info.KernelName.get(x),
-      info.LanguageName.get(x) || "", info.BackgroundColor.get(x) || ""
+      info.LanguageName.get(x) || "", info.BackgroundColor.get(x) || "",
+      info.CodeMirrorMode.get(x) || ""
       ]
     }
   );
@@ -124,7 +125,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
   //     base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
   // };
   // //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
-  let base_mode : string = info.LanguageName.get(kernel) || info.KernelName.get(kernel) || kernel;
+  let base_mode : string = info.CodeMirrorMode.get(kernel) || info.LanguageName.get(kernel) || info.KernelName.get(kernel) || kernel;
   if (!base_mode || base_mode.toLowerCase() === 'sos') {
     (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', 'sos');
   } else {

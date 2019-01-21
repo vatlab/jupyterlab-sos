@@ -19,6 +19,7 @@ export class NotebookInfo {
   DisplayName: Map<string, string>;
   KernelName: Map<string, string>;
   LanguageName: Map<string, string>;
+  CodeMirrorMode: Map<string, any>;
   KernelOptions: Map<string, string>;
 
   autoResume: boolean;
@@ -36,6 +37,7 @@ export class NotebookInfo {
     this.KernelName = new Map<string, string>();
     this.LanguageName = new Map<string, string>();
     this.KernelOptions = new Map<string, any>();
+    this.CodeMirrorMode = new Map<string, any>();
 
     this.pendingCells = new Map<any, any>();
 
@@ -56,6 +58,11 @@ export class NotebookInfo {
       // LanguageName
       this.LanguageName.set(data[i][0], data[i][2]);
       this.LanguageName.set(data[i][1], data[i][2]);
+
+      // if codemirror mode ...
+      if (data[i].length >= 5 && data[i][4]) {
+        this.CodeMirrorMode.set(data[i][0], data[i][4]);
+      }
 
       this.KernelList.push(data[i][0]);
     }
@@ -84,11 +91,15 @@ export class NotebookInfo {
       if (!(data[i][2] in this.LanguageName)) {
         this.LanguageName.set(data[i][2], data[i][2]);
       }
-
-      // if options ...
-      if (data[i].length > 4) {
-        this.KernelOptions.set(data[i][0], data[i][4]);
+      // if codemirror mode ...
+      if (data[i].length > 4 && data[i][4]) {
+        this.CodeMirrorMode.set(data[i][0], data[i][4]);
       }
+      // if options ...
+      if (data[i].length > 5) {
+        this.KernelOptions.set(data[i][0], data[i][5]);
+      }
+
 
       if (this.KernelList.indexOf(data[i][0]) === -1)
         this.KernelList.push(data[i][0]);
