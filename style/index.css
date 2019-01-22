@@ -50,7 +50,7 @@
 }
 
 .sos_hint {
-    color: rgba(0,0,0,.4);
+    color: gray;
     font-family: monospace;
 }
 
