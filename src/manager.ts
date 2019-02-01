@@ -110,8 +110,9 @@ export class NotebookInfo {
       // add language specific css
       (lan: string) => {
         if (this.BackgroundColor.get(lan)) {
-          return `.jp-CodeCell.sos_lan_${lan} .jp-InputPrompt,
-            .jp-CodeCell.sos_lan_${lan} .jp-OutputPrompt {
+          let css_name = safe_css_name(`sos_lan_${lan}`);
+          return `.jp-CodeCell.${css_name} .jp-InputPrompt,
+            .jp-CodeCell.${css_name} .jp-OutputPrompt {
               background: ${this.BackgroundColor.get(lan)};
             }
           `;
@@ -129,6 +130,15 @@ export class NotebookInfo {
   public show() {
     console.log(this.KernelList);
   }
+}
+
+export function safe_css_name(name) {
+  return name.replace(/[^a-z0-9_]/g, function(s) {
+    var c = s.charCodeAt(0);
+    if (c == 32) return '-';
+    if (c >= 65 && c <= 90) return '_' + s.toLowerCase();
+    return '__' + ('000' + c.toString(16)).slice(-4);
+  });
 }
 
 export class Manager {

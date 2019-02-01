@@ -15,7 +15,8 @@ import {
 } from "./manager"
 
 import {
-  Manager
+  Manager,
+  safe_css_name
 } from "./manager"
 
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
@@ -119,7 +120,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
       cell.node.classList.remove(className);
     }
   }
-  cell.node.classList.add(`sos_lan_${kernel}`);
+  cell.node.classList.add(safe_css_name(`sos_lan_${kernel}`));
   // cell.user_highlight = {
   //     name: 'sos',
   //     base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
