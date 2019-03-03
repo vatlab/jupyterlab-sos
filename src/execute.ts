@@ -93,7 +93,8 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
     content.sos['workflow'] = getNotebookWorkflow(panel);
   }
   content.sos['path'] = panel.context.path;
-  content.sos['use_panel'] = false
+  content.sos['send_transient_message_to_iopub'] = true;
+  content.sos['use_panel'] = Manager.hasOpenConsole();
 
   let info = Manager.manager.get_info(panel);
 

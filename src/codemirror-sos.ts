@@ -86,7 +86,7 @@ function markExpr(python_mode: any) {
         in_python: false,
         sigil: false,
         matched: true,
-        python_state: CodeMirror.startState(python_mode),
+        python_state: (CodeMirror as any).startState(python_mode),
       };
     },
 
@@ -95,7 +95,7 @@ function markExpr(python_mode: any) {
         in_python: state.in_python,
         sigil: state.sigil,
         matched: state.matched,
-        python_state: CodeMirror.copyState(python_mode, state.python_state)
+        python_state: (CodeMirror as any).copyState(python_mode, state.python_state)
       };
     },
 
@@ -103,7 +103,7 @@ function markExpr(python_mode: any) {
       if (state.in_python) {
         if (stream.match(state.sigil.right)) {
           state.in_python = false;
-          state.python_state = CodeMirror.startState(python_mode);
+          state.python_state = (CodeMirror as any).startState(python_mode);
           return "sos-sigil";
         }
         let it = null;
@@ -151,7 +151,7 @@ function markExpr(python_mode: any) {
   }
 }
 
-CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, parserConf: any) {
+(CodeMirror as any).defineMode("sos", function(conf: CodeMirror.EditorConfiguration, parserConf: any) {
   let sosPythonConf: any = {};
   for (let prop in parserConf) {
     if (parserConf.hasOwnProperty(prop)) {
@@ -176,7 +176,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
 
   // if there is a user specified base mode, this is the single cell mode
   if (base_mode) {
-    var python_mode = CodeMirror.getMode({}, {
+    var python_mode = (CodeMirror as any).getMode({}, {
       name: 'python',
       version: 3
     });
@@ -185,8 +185,8 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
       startState: function() {
         return {
           sos_mode: true,
-          base_state: CodeMirror.startState(base_mode),
-          overlay_state: CodeMirror.startState(overlay_mode),
+          base_state: (CodeMirror as any).startState(base_mode),
+          overlay_state: (CodeMirror as any).startState(overlay_mode),
           // for overlay
           basePos: 0,
           baseCur: null,
@@ -199,8 +199,8 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
       copyState: function(state) {
         return {
           sos_mode: state.sos_mode,
-          base_state: CodeMirror.copyState(base_mode, state.base_state),
-          overlay_state: CodeMirror.copyState(overlay_mode, state.overlay_state),
+          base_state: (CodeMirror as any).copyState(base_mode, state.base_state),
+          overlay_state: (CodeMirror as any).copyState(overlay_mode, state.overlay_state),
           // for overlay
           basePos: state.basePos,
           baseCur: null,
@@ -302,14 +302,14 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
     };
   } else {
     // this is SoS mode
-    base_mode = CodeMirror.getMode(conf, sosPythonConf);
+    base_mode = (CodeMirror as any).getMode(conf, sosPythonConf);
     overlay_mode = markExpr(base_mode);
     return {
       startState: function() {
         return {
           sos_state: null,
-          base_state: CodeMirror.startState(base_mode),
-          overlay_state: CodeMirror.startState(overlay_mode),
+          base_state: (CodeMirror as any).startState(base_mode),
+          overlay_state: (CodeMirror as any).startState(overlay_mode),
           inner_mode: null,
           inner_state: null,
           // for overlay
@@ -324,10 +324,10 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
       copyState: function(state) {
         return {
           sos_state: state.sos_state,
-          base_state: CodeMirror.copyState(base_mode, state.base_state),
-          overlay_state: CodeMirror.copyState(overlay_mode, state.overlay_state),
+          base_state: (CodeMirror as any).copyState(base_mode, state.base_state),
+          overlay_state: (CodeMirror as any).copyState(overlay_mode, state.overlay_state),
           inner_mode: state.inner_mode,
-          inner_state: state.inner_mode && CodeMirror.copyState(state.inner_mode, state.inner_state),
+          inner_state: state.inner_mode && (CodeMirror as any).copyState(state.inner_mode, state.inner_state),
           // for overlay
           basePos: state.basePos,
           baseCur: null,
@@ -366,7 +366,7 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
             // the second parameter is starting column
             let mode = findMode(state.sos_state.slice(9).toLowerCase());
             state.inner_mode = CodeMirror.getMode(conf, mode);
-            state.inner_state = CodeMirror.startState(state.inner_mode, stream.indentation());
+            state.inner_state = (CodeMirror as any).startState(state.inner_mode, stream.indentation());
             state.sos_state = null;
           }
           for (var i = 0; i < sosDirectives.length; i++) {
@@ -535,9 +535,9 @@ CodeMirror.defineMode("sos", function(conf: CodeMirror.EditorConfiguration, pars
   };
 }, "python");
 
-CodeMirror.defineMIME("text/x-sos", "sos");
+(CodeMirror as any).defineMIME("text/x-sos", "sos");
 
-CodeMirror.modeInfo.push({
+(CodeMirror as any).modeInfo.push({
   ext: ['sos'],
   mime: "text/x-sos",
   mode: 'sos',

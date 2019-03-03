@@ -1,6 +1,6 @@
 import {
-  JupyterLab,
-  JupyterLabPlugin
+  JupyterFrontEnd,
+  JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
 import {
@@ -32,6 +32,10 @@ import {
   INotebookTracker
 } from '@jupyterlab/notebook';
 
+import {
+  IConsoleTracker
+} from '@jupyterlab/console';
+
 import * as CodeMirror from 'codemirror';
 
 import {
@@ -60,7 +64,7 @@ import {
  */
 const SOS_MIME_TYPE = 'text/x-sos'
 
-function registerSoSFileType(app: JupyterLab) {
+function registerSoSFileType(app: JupyterFrontEnd) {
   app.docRegistry.addFileType({
     name: 'SoS',
     displayName: 'SoS File',
@@ -471,7 +475,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
      changeStyleOnKernel(window.my_panel.cell, data);
    */
   } else if (msg_type === "highlight-workflow") {
-    let elem = document.getElementById(data[1]);
+    let elem = document.getElementById(data[1]) as HTMLTextAreaElement;
     CodeMirror.fromTextArea(elem, {
       "mode": "sos"
     })
@@ -835,21 +839,21 @@ export
   }
 }
 
-function registerSoSWidgets(app: JupyterLab) {
+function registerSoSWidgets(app: JupyterFrontEnd) {
   app.docRegistry.addWidgetExtension('Notebook', new SoSWidgets());
 }
 
 /**
  * Initialization data for the sos-extension extension.
  */
-const extension: JupyterLabPlugin<void> = {
-  id: 'sos-extension',
+const extension: JupyterFrontEndPlugin<void> = {
+  id: 'vatlab/jupyterlab-extension:sos',
   autoStart: true,
-  requires: [INotebookTracker],
-  activate: (app: JupyterLab, tracker: INotebookTracker) => {
+  requires: [INotebookTracker, IConsoleTracker],
+  activate: (app: JupyterFrontEnd, notebook_tracker: INotebookTracker, console_tracker: IConsoleTracker) => {
     registerSoSFileType(app);
     registerSoSWidgets(app);
-    Manager.set_tracker(tracker);
+    Manager.set_trackers(notebook_tracker, console_tracker);
     Manager.set_commands(app.commands);
     console.log('JupyterLab extension sos-extension is activated!');
   }

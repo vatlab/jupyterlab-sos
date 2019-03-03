@@ -3,6 +3,10 @@ import {
   INotebookTracker
 } from '@jupyterlab/notebook';
 
+import {
+  IConsoleTracker
+} from '@jupyterlab/console';
+
 import { CommandRegistry } from '@phosphor/commands';
 
 import {
@@ -145,7 +149,8 @@ export class Manager {
   // global registry for notebook info
   private static _instance: Manager;
   // used to track the current notebook widget
-  private static _tracker: INotebookTracker;
+  private static _notebook_tracker: INotebookTracker;
+  private static _console_tracker: IConsoleTracker;
   private static _commands: CommandRegistry;
   private _info: Map<NotebookPanel, NotebookInfo>;
 
@@ -155,8 +160,9 @@ export class Manager {
     }
   }
 
-  public static set_tracker(tracker: INotebookTracker) {
-    this._tracker = tracker;
+  public static set_trackers(notebook_tracker: INotebookTracker, console_tracker: IConsoleTracker) {
+    this._notebook_tracker = notebook_tracker;
+    this._console_tracker = console_tracker;
   }
 
   public static set_commands(commands: CommandRegistry) {
@@ -164,7 +170,13 @@ export class Manager {
   }
 
   static get currentNotebook() {
-    return this._tracker.currentWidget;
+    return this._notebook_tracker.currentWidget;
+  }
+
+  public static  hasOpenConsole() : boolean {
+    return !! this._console_tracker.find(value => {
+        return value.console.session.path === this._notebook_tracker.currentWidget.context.path;
+      });
   }
 
   static get commands() {

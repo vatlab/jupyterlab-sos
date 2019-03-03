@@ -8,6 +8,7 @@
     "moduleResolution": "node",
     "target": "es2015",
     "outDir": "./lib",
+    "allowSyntheticDefaultImports": true,
     "lib": ["ES6", "ES2015.Promise", "es2015.collection", "DOM"],
     "types": []
   },
