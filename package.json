@@ -1,6 +1,6 @@
 {
   "name": "jupyterlab-sos",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "JupyterLab extension for SoS workflow engine and polyglot notebook",
   "keywords": [
     "jupyter",
@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "codemirror": "^5.42.0",
+    "transient-display-data": "^0.2.0",
     "@jupyterlab/application": "^1.0.0-alpha.3",
     "@jupyterlab/apputils": "^1.0.0-alpha.3",
     "@jupyterlab/codemirror": "^1.0.0-alpha.3",
