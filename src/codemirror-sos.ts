@@ -165,7 +165,7 @@ function markExpr(python_mode: any) {
   let base_mode : any = null;
   if ('base_mode' in parserConf && parserConf.base_mode) {
 
-    let mode = findMode(parserConf.base_mode.toLowerCase());
+    let mode = findMode(parserConf.base_mode);
     if (mode) {
       base_mode = CodeMirror.getMode(conf, mode);
     } else {
@@ -381,7 +381,7 @@ function markExpr(python_mode: any) {
               // switch to submode?
               if (stream.eol()) {
                 // really
-                let mode = findMode(stream.current().slice(0, -1).toLowerCase());
+                let mode = findMode(stream.current().slice(0, -1));
                 if (mode) {
                   state.sos_state = "entering " + stream.current().slice(0, -1);
                 } else {

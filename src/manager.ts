@@ -4,6 +4,7 @@ import {
 } from '@jupyterlab/notebook';
 
 import {
+  ConsolePanel,
   IConsoleTracker
 } from '@jupyterlab/console';
 
@@ -177,6 +178,10 @@ export class Manager {
     return !! this._console_tracker.find(value => {
         return value.console.session.path === this._notebook_tracker.currentWidget.context.path;
       });
+  }
+
+  static get currentConsole() : ConsolePanel {
+    return this._console_tracker.currentWidget;
   }
 
   static get commands() {

@@ -20,6 +20,7 @@ import {
 import {
   Manager
 } from "./manager"
+import { changeCellKernel } from './selectors';
 
 export function wrapExecutor(panel: NotebookPanel) {
   let kernel = panel.session.kernel;
@@ -146,7 +147,14 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
   }
 
   // not sure how to handle console cell yet
-  content.sos['cell_kernel'] = 'SoS';
+  let labconsole = Manager.currentConsole.console;
+  let last_cell = labconsole.cells.get(labconsole.cells.length - 1);
+  let kernel = last_cell.model.metadata.get('kernel').toString();
+  // use this kernel to set new one.
+  if (kernel != 'SoS') {
+    changeCellKernel(labconsole.promptCell, kernel, info);
+  }
+  content.sos['cell_kernel'] = kernel;
   content.sos['cell_id'] = -1;
   content.silent = false;
   content.store_history = false;

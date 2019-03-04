@@ -127,7 +127,7 @@ export function changeStyleOnKernel(cell: Cell, kernel: string, info: NotebookIn
   // };
   // //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
   let base_mode : string = info.CodeMirrorMode.get(kernel) || info.LanguageName.get(kernel) || info.KernelName.get(kernel) || kernel;
-  if (!base_mode || base_mode.toLowerCase() === 'sos') {
+  if (!base_mode || base_mode === 'sos') {
     (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', 'sos');
   } else {
     (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', {
