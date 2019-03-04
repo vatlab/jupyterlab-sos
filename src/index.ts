@@ -47,7 +47,8 @@ import {
 } from './selectors';
 
 import {
-  wrapExecutor
+  wrapExecutor,
+  wrapConsoleExecutor
 } from './execute'
 
 // define and register SoS CodeMirror mode
@@ -855,6 +856,19 @@ const extension: JupyterFrontEndPlugin<void> = {
     registerSoSWidgets(app);
     Manager.set_trackers(notebook_tracker, console_tracker);
     Manager.set_commands(app.commands);
+
+    console_tracker.widgetAdded.connect((sender, panel) => {
+      const labconsole = panel.console;
+      labconsole.session.statusChanged.connect((sender, status) => {
+        if (status === 'connected' && panel.console.session.kernelDisplayName === "SoS") {
+          console.log(`connected to sos kernel`)
+          // connectSoSComm(panel, true);
+          wrapConsoleExecutor(panel);
+        }
+      });
+
+    });
+
     console.log('JupyterLab extension sos-extension is activated!');
   }
 };

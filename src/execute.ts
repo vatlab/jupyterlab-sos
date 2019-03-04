@@ -12,6 +12,11 @@ import {
   ICellModel, Cell
 } from '@jupyterlab/cells';
 
+
+import {
+  ConsolePanel
+} from '@jupyterlab/console';
+
 import {
   Manager
 } from "./manager"
@@ -26,6 +31,19 @@ export function wrapExecutor(panel: NotebookPanel) {
     (kernel as any)['orig_execute'] = kernel.requestExecute;
     kernel.requestExecute = my_execute;
     console.log("executor patched");
+  }
+}
+
+export function wrapConsoleExecutor(panel: ConsolePanel) {
+  let kernel = panel.session.kernel;
+
+  // override kernel execute with the wrapper.
+  // however, this function can be called multiple times for kernel
+  // restart etc, so we should be careful
+  if (!kernel.hasOwnProperty('orig_execute')) {
+    (kernel as any)['orig_execute'] = kernel.requestExecute;
+    kernel.requestExecute = my_execute;
+    console.log("console executor patched");
   }
 }
 
