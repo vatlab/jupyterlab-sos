@@ -5,6 +5,7 @@
     "noEmitOnError": true,
     "noUnusedLocals": true,
     "module": "commonjs",
+    "rootDir": "src",
     "moduleResolution": "node",
     "target": "es2015",
     "outDir": "./lib",
