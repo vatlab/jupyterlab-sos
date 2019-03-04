@@ -16,7 +16,7 @@ codes from subkernels directly to console window, which depends on a
 
 ```bash
 jupyter labextension install transient-display-data
-jupyter labextension install jupyterlab-sos```
+jupyter labextension install jupyterlab-sos
 ```
 or install these two extensions from the extension manager.
 
