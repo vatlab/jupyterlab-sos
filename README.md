@@ -1,24 +1,24 @@
 # JupyterLab extension for SoS workflow engine and polyglot notebook
 
-## Progress
+## Status
 
-Already Working:
-* 03/20/2018 SoS file type (`.sos`) and syntax highlighting (edit a `.sos` file in JupyterLab)
-* 04/03/2018 SoS Notebook UIs. SoS Notebooks can be properly displayed with notebook and cell level language selector
-* 04/04/2018 Events, namely effects of language dropdown and frontend message.
-
-Working on:
-* Magics
+This extension currently builds upon JupyterLab 1.0.0 alpha, and will evolve as the 
+JupyterLab API continues to evolve. It is currently feature complete except for sending
+codes from subkernels directly to console window, which depends on a 
+[PR](https://github.com/jupyterlab/jupyterlab/pull/6063) that is still under review.
 
 ## Prerequisites
 
-* JupyterLab
+* JupyterLab 1.0.0 alpha
+* transient-display-data
 
 ## Installation
 
 ```bash
-jupyter labextension install jupyterlab-sos
+jupyter labextension install transient-display-data
+jupyter labextension install jupyterlab-sos```
 ```
+or install these two extensions from the extension manager.
 
 ## Development
 
