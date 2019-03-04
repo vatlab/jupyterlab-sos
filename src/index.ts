@@ -859,6 +859,11 @@ const extension: JupyterFrontEndPlugin<void> = {
 
     console_tracker.widgetAdded.connect((sender, panel) => {
       const labconsole = panel.console;
+
+      labconsole.promptCellCreated.connect( panel => {
+        let info = Manager.manager.get_info(Manager.currentNotebook);
+        addLanSelector(panel.promptCell, info);
+      })
       labconsole.session.statusChanged.connect((sender, status) => {
         if (status === 'connected' && panel.console.session.kernelDisplayName === "SoS") {
           console.log(`connected to sos kernel`)
