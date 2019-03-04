@@ -45,8 +45,11 @@ export function saveKernelInfo() {
 
 export function hideLanSelector(cell) {
   let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
-  nodes[0].style.display = 'none';
+  if (nodes.length > 0) {
+    nodes[0].style.display = 'none';
+  }
 }
+
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
   if (!cell.model.metadata.has('kernel')) {
     cell.model.metadata.set('kernel', "SoS");
@@ -103,7 +106,9 @@ export function changeCellKernel(cell: Cell, kernel: string, info: NotebookInfo)
   let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
   // use the existing dropdown box
   let select = nodes.item(0) as HTMLSelectElement;
-  select.value = kernel;
+  if (select) {
+    select.value = kernel;
+  }
   changeStyleOnKernel(cell, kernel, info);
 }
 

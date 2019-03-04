@@ -149,13 +149,14 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
   // not sure how to handle console cell yet
   let labconsole = Manager.currentConsole.console;
   let last_cell = labconsole.cells.get(labconsole.cells.length - 1);
+  // the last_cell might be sent by C-S-Enter and are not styled
   let kernel = last_cell.model.metadata.get('kernel').toString();
+  // use this kernel to set new one.
+  changeCellKernel(last_cell, kernel, info);
+  changeCellKernel(labconsole.promptCell, kernel, info);
+
   // hide the drop down box
   hideLanSelector(last_cell);
-  // use this kernel to set new one.
-  if (kernel != 'SoS') {
-    changeCellKernel(labconsole.promptCell, kernel, info);
-  }
   content.sos['cell_kernel'] = kernel;
   content.sos['cell_id'] = -1;
   content.silent = false;
