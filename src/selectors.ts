@@ -43,6 +43,10 @@ export function saveKernelInfo() {
   );
 }
 
+export function hideLanSelector(cell) {
+  let nodes = cell.node.getElementsByClassName(CELL_LANGUAGE_DROPDOWN_CLASS) as HTMLCollectionOf<HTMLElement>;
+  nodes[0].style.display = 'none';
+}
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
   if (!cell.model.metadata.has('kernel')) {
     cell.model.metadata.set('kernel', "SoS");
