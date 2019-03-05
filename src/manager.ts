@@ -174,9 +174,9 @@ export class Manager {
     return this._notebook_tracker.currentWidget;
   }
 
-  public static  hasOpenConsole() : boolean {
-    return !! this._console_tracker.find(value => {
-        return value.console.session.path === this._notebook_tracker.currentWidget.context.path;
+  public static consolesOfNotebook(panel : NotebookPanel) : Array<ConsolePanel> {
+    return this._console_tracker.filter(value => {
+        return value.console.session.path === panel.context.path;
       });
   }
 

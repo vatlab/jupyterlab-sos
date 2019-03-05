@@ -157,6 +157,12 @@ export function updateCellStyles(panel: NotebookPanel, info: NotebookInfo) : Arr
     }
   }
 
+  let panels = Manager.consolesOfNotebook(panel);
+  for (let i = 0; i < panels.length; ++i) {
+    addLanSelector(panels[i].console.promptCell, info);
+    changeStyleOnKernel(panels[i].console.promptCell,
+      panels[i].console.promptCell.model.metadata.get('kernel') as string, info);
+  }
   let tasks = document.querySelectorAll('[id^="status_"]');
   let unknownTasks = [];
   for (let i = 0; i < tasks.length; ++i) {

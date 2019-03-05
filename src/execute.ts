@@ -112,7 +112,7 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
     content.sos['workflow'] = getNotebookWorkflow(panel);
   }
   content.sos['path'] = panel.context.path;
-  content.sos['use_panel'] = Manager.hasOpenConsole();
+  content.sos['use_panel'] = !! Manager.consolesOfNotebook(panel);
   content.sos['use_iopub'] = true;
 
   let info = Manager.manager.get_info(panel);
