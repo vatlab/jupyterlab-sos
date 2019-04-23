@@ -146,12 +146,12 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
     }
   }
 
-  // not sure how to handle console cell yet
   let labconsole = Manager.currentConsole.console;
   let last_cell = labconsole.cells.get(labconsole.cells.length - 1);
-  // the last_cell might be sent by C-S-Enter and are not styled
-  let kernel = last_cell.model.metadata.get('kernel').toString();
-  // use this kernel to set new one.
+  let kernel = last_cell.model.metadata.get('kernel');
+  kernel = kernel ? kernel.toString() : 'SoS';
+
+  // change the color of console cell
   changeCellKernel(last_cell, kernel, info);
   changeCellKernel(labconsole.promptCell, kernel, info);
 
