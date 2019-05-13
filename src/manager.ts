@@ -1,18 +1,10 @@
-import {
-  NotebookPanel,
-  INotebookTracker
-} from '@jupyterlab/notebook';
+import { NotebookPanel, INotebookTracker } from "@jupyterlab/notebook";
 
-import {
-  ConsolePanel,
-  IConsoleTracker
-} from '@jupyterlab/console';
+import { ConsolePanel, IConsoleTracker } from "@jupyterlab/console";
 
-import { CommandRegistry } from '@phosphor/commands';
+import { CommandRegistry } from "@phosphor/commands";
 
-import {
-  Kernel
-} from '@jupyterlab/services';
+import { Kernel } from "@jupyterlab/services";
 //
 export class NotebookInfo {
   notebook: NotebookPanel;
@@ -30,7 +22,7 @@ export class NotebookInfo {
   autoResume: boolean;
   pendingCells: Map<any, any>;
   /** create an info object from metadata of the notebook
-  */
+   */
   constructor(notebook: NotebookPanel) {
     this.notebook = notebook;
     this.KernelList = new Array<string>();
@@ -46,9 +38,9 @@ export class NotebookInfo {
 
     this.pendingCells = new Map<any, any>();
 
-    let data = [['SoS', 'sos', '', '']];
-    if (notebook.model.metadata.has('sos'))
-      data = (notebook.model.metadata.get('sos') as any)['kernels'];
+    let data = [["SoS", "sos", "", ""]];
+    if (notebook.model.metadata.has("sos"))
+      data = (notebook.model.metadata.get("sos") as any)["kernels"];
     // fill the look up tables with language list passed from the kernel
     for (let i = 0; i < data.length; i++) {
       // BackgroundColor is color
@@ -105,7 +97,6 @@ export class NotebookInfo {
         this.KernelOptions.set(data[i][0], data[i][5]);
       }
 
-
       if (this.KernelList.indexOf(data[i][0]) === -1)
         this.KernelList.push(data[i][0]);
     }
@@ -125,7 +116,9 @@ export class NotebookInfo {
           return null;
         }
       }
-      ).filter(Boolean).join('\n');
+    )
+      .filter(Boolean)
+      .join("\n");
     var css = document.createElement("style");
     css.type = "text/css";
     css.innerHTML = css_text;
@@ -140,9 +133,9 @@ export class NotebookInfo {
 export function safe_css_name(name) {
   return name.replace(/[^a-z0-9_]/g, function(s) {
     var c = s.charCodeAt(0);
-    if (c == 32) return '-';
-    if (c >= 65 && c <= 90) return '_' + s.toLowerCase();
-    return '__' + ('000' + c.toString(16)).slice(-4);
+    if (c == 32) return "-";
+    if (c >= 65 && c <= 90) return "_" + s.toLowerCase();
+    return "__" + ("000" + c.toString(16)).slice(-4);
   });
 }
 
@@ -161,7 +154,10 @@ export class Manager {
     }
   }
 
-  public static set_trackers(notebook_tracker: INotebookTracker, console_tracker: IConsoleTracker) {
+  public static set_trackers(
+    notebook_tracker: INotebookTracker,
+    console_tracker: IConsoleTracker
+  ) {
     this._notebook_tracker = notebook_tracker;
     this._console_tracker = console_tracker;
   }
@@ -174,13 +170,13 @@ export class Manager {
     return this._notebook_tracker.currentWidget;
   }
 
-  public static consolesOfNotebook(panel : NotebookPanel) : Array<ConsolePanel> {
+  public static consolesOfNotebook(panel: NotebookPanel): Array<ConsolePanel> {
     return this._console_tracker.filter(value => {
-        return value.console.session.path === panel.context.path;
-      });
+      return value.console.session.path === panel.context.path;
+    });
   }
 
-  static get currentConsole() : ConsolePanel {
+  static get currentConsole(): ConsolePanel {
     return this._console_tracker.currentWidget;
   }
 
@@ -197,7 +193,7 @@ export class Manager {
   // register notebook info to the global registry
   public get_info(notebook: NotebookPanel): NotebookInfo {
     if (!this._info.has(notebook)) {
-      console.log("Creating a new notebook info")
+      console.log("Creating a new notebook info");
       this._info.set(notebook, new NotebookInfo(notebook));
     }
     return this._info.get(notebook);
@@ -210,7 +206,6 @@ export class Manager {
   // this is the same as get_info,
   public notebook_of_comm(comm_id: string): NotebookPanel {
     for (let [panel, info] of Array.from(this._info.entries()))
-      if (info.sos_comm && info.sos_comm.commId === comm_id)
-        return panel;
+      if (info.sos_comm && info.sos_comm.commId === comm_id) return panel;
   }
 }

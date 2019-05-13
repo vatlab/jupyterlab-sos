@@ -1,26 +1,16 @@
 import {
   // Notebook,
   NotebookPanel
-} from '@jupyterlab/notebook';
+} from "@jupyterlab/notebook";
 
-import {
-  KernelMessage,
-  Kernel
-} from '@jupyterlab/services';
+import { KernelMessage, Kernel } from "@jupyterlab/services";
 
-import {
-  ICellModel, Cell
-} from '@jupyterlab/cells';
+import { ICellModel, Cell } from "@jupyterlab/cells";
 
+import { ConsolePanel } from "@jupyterlab/console";
 
-import {
-  ConsolePanel
-} from '@jupyterlab/console';
-
-import {
-  Manager
-} from "./manager"
-import { changeCellKernel, hideLanSelector } from './selectors';
+import { Manager } from "./manager";
+import { changeCellKernel, hideLanSelector } from "./selectors";
 
 export function wrapExecutor(panel: NotebookPanel) {
   let kernel = panel.session.kernel;
@@ -28,8 +18,8 @@ export function wrapExecutor(panel: NotebookPanel) {
   // override kernel execute with the wrapper.
   // however, this function can be called multiple times for kernel
   // restart etc, so we should be careful
-  if (!kernel.hasOwnProperty('orig_execute')) {
-    (kernel as any)['orig_execute'] = kernel.requestExecute;
+  if (!kernel.hasOwnProperty("orig_execute")) {
+    (kernel as any)["orig_execute"] = kernel.requestExecute;
     kernel.requestExecute = my_execute;
     console.log("executor patched");
   }
@@ -41,22 +31,22 @@ export function wrapConsoleExecutor(panel: ConsolePanel) {
   // override kernel execute with the wrapper.
   // however, this function can be called multiple times for kernel
   // restart etc, so we should be careful
-  if (!kernel.hasOwnProperty('orig_execute')) {
-    (kernel as any)['orig_execute'] = kernel.requestExecute;
+  if (!kernel.hasOwnProperty("orig_execute")) {
+    (kernel as any)["orig_execute"] = kernel.requestExecute;
     kernel.requestExecute = my_execute;
     console.log("console executor patched");
   }
 }
 
 function scanHeaderLines(cells: ReadonlyArray<Cell>) {
-  let TOC = ''
+  let TOC = "";
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
     if (cell.type === "markdown") {
       var lines = cell.value.text.split("\n");
       for (let l = 0; l < lines.length; ++l) {
-        if (lines[l].match('^#+ ')) {
-          TOC += lines[l] + '\n';
+        if (lines[l].match("^#+ ")) {
+          TOC += lines[l] + "\n";
         }
       }
     }
@@ -73,15 +63,20 @@ function getCellWorkflow(cell: ICellModel) {
     if (lines[l].startsWith("%include") || lines[l].startsWith("%from")) {
       workflow += lines[l] + "\n";
       continue;
-    } else if (lines[l].startsWith("#") || lines[l].startsWith("%") || lines[l].trim() === "" || lines[l].startsWith("!")) {
+    } else if (
+      lines[l].startsWith("#") ||
+      lines[l].startsWith("%") ||
+      lines[l].trim() === "" ||
+      lines[l].startsWith("!")
+    ) {
       continue;
     } else if (lines[l].startsWith("[") && lines[l].endsWith("]")) {
       // include comments before section header
-      let c = l - 1
-      let comment = ''
-      while (c >= 0 && lines[c].startsWith('#')) {
-          comment = lines[c] + '\n' + comment;
-          c -= 1;
+      let c = l - 1;
+      let comment = "";
+      while (c >= 0 && lines[c].startsWith("#")) {
+        comment = lines[c] + "\n" + comment;
+        c -= 1;
       }
       workflow += comment + lines.slice(l).join("\n") + "\n\n";
       break;
@@ -93,27 +88,37 @@ function getCellWorkflow(cell: ICellModel) {
 // get workflow from notebook
 function getNotebookWorkflow(panel: NotebookPanel) {
   let cells = panel.content.widgets;
-  let workflow = '#!/usr/bin/env sos-runner\n#fileformat=SOS1.0\n\n';
+  let workflow = "#!/usr/bin/env sos-runner\n#fileformat=SOS1.0\n\n";
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
-    if (cell.type === "code" && (!cell.metadata.get('kernel') || cell.metadata.get('kernel') === "SoS")) {
+    if (
+      cell.type === "code" &&
+      (!cell.metadata.get("kernel") || cell.metadata.get("kernel") === "SoS")
+    ) {
       workflow += getCellWorkflow(cell);
     }
   }
   return workflow;
 }
 
-function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boolean = true): Kernel.IFuture {
+function my_execute(
+  content: KernelMessage.IExecuteRequest,
+  disposeOnDone: boolean = true
+): Kernel.IFuture {
   let code = content.code;
 
   content.sos = {};
   let panel = Manager.currentNotebook;
-  if (code.match(/^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/m)) {
-    content.sos['workflow'] = getNotebookWorkflow(panel);
+  if (
+    code.match(
+      /^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/m
+    )
+  ) {
+    content.sos["workflow"] = getNotebookWorkflow(panel);
   }
-  content.sos['path'] = panel.context.path;
-  content.sos['use_panel'] = !! Manager.consolesOfNotebook(panel);
-  content.sos['use_iopub'] = true;
+  content.sos["path"] = panel.context.path;
+  content.sos["use_panel"] = !!Manager.consolesOfNotebook(panel);
+  content.sos["use_iopub"] = true;
 
   let info = Manager.manager.get_info(panel);
 
@@ -121,7 +126,7 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
   let cells = panel.content.widgets;
 
   if (code.match(/^%toc/m)) {
-    content.sos['toc'] = scanHeaderLines(cells);
+    content.sos["toc"] = scanHeaderLines(cells);
   }
 
   for (let i = cells.length - 1; i >= 0; --i) {
@@ -132,24 +137,23 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
     let cell = cells[i];
     if (code === cell.model.value.text) {
       // check *
-      let prompt = cell.node.querySelector('.jp-InputArea-prompt');
-      if (!prompt || prompt.textContent.indexOf("*") === -1)
-        continue;
+      let prompt = cell.node.querySelector(".jp-InputArea-prompt");
+      if (!prompt || prompt.textContent.indexOf("*") === -1) continue;
       // use cell kernel if meta exists, otherwise use nb.metadata["sos"].default_kernel
       if (info.autoResume) {
-        content.sos['rerun'] = true;
+        content.sos["rerun"] = true;
         info.autoResume = false;
       }
-      content.sos['cell_id'] = cell.model.id;
-      content.sos['cell_kernel'] = cell.model.metadata.get('kernel');
+      content.sos["cell_id"] = cell.model.id;
+      content.sos["cell_kernel"] = cell.model.metadata.get("kernel");
       return this.orig_execute(content, disposeOnDone);
     }
   }
 
   let labconsole = Manager.currentConsole.console;
   let last_cell = labconsole.cells.get(labconsole.cells.length - 1);
-  let kernel = last_cell.model.metadata.get('kernel');
-  kernel = kernel ? kernel.toString() : 'SoS';
+  let kernel = last_cell.model.metadata.get("kernel");
+  kernel = kernel ? kernel.toString() : "SoS";
 
   // change the color of console cell
   changeCellKernel(last_cell, kernel, info);
@@ -157,10 +161,10 @@ function my_execute(content: KernelMessage.IExecuteRequest, disposeOnDone: boole
 
   // hide the drop down box
   hideLanSelector(last_cell);
-  content.sos['cell_kernel'] = kernel;
-  content.sos['cell_id'] = -1;
+  content.sos["cell_kernel"] = kernel;
+  content.sos["cell_id"] = -1;
   content.silent = false;
   content.store_history = false;
 
   return this.orig_execute(content, disposeOnDone);
-};
+}
