@@ -956,9 +956,20 @@ const extension: JupyterFrontEndPlugin<void> = {
       label: "Toggle cell output tags",
       execute: () => {
         // get current notebook and toggle current cell
-        toggleDisplayOutput(notebook_tracker.activeCell)
+        toggleDisplayOutput(notebook_tracker.activeCell);
       }
     });
+
+    // app.commands.addKeyBinding({
+    //   keys: ["Ctrl Shift O"],
+    //   selector: ".jp-Notebook.jp-mod-editMode",
+    //   command: "sos:toggle_output"
+    // });
+    // app.commands.addKeyBinding({
+    //   keys: ["Ctrl Shift Enter"],
+    //   selector: ".jp-Notebook.jp-mod-editMode",
+    //   command: "notebook:run-in-console"
+    // });
 
     // Add the command to the palette.
     palette.addItem({ command, category: "Cell output" });

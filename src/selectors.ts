@@ -79,17 +79,36 @@ export function toggleDisplayOutput(cell) {
 }
 
 function remove_tag(cell, tag) {
+  let taglist = cell.model.metadata.get('tags') as string[];
+  let new_list: string[] = [];
+  for (let i=0; i < taglist.length; i++) {
+    if (taglist[i] != tag) {
+      new_list.push(taglist[i]);
+    }
+  }
+  cell.model.metadata.set('tags', new_list);
   let op = cell.node.getElementsByClassName(
     "jp-Cell-outputWrapper"
   ) as HTMLCollectionOf<HTMLElement>;
-  for (let i = 0; i < op.length; ++i) op.item(i).classList.remove(tag);
+  for (let i = 0; i < op.length; ++i) {
+    op.item(i).classList.remove(tag);
+  }
 }
 
 function add_tag(cell, tag) {
+  let taglist = cell.model.metadata.get('tags') as string[];
+  if (taglist) {
+    taglist.push(tag);
+  } else {
+    taglist = [tag];
+  }
+  cell.model.metadata.set('tags', taglist);
   let op = cell.node.getElementsByClassName(
     "jp-Cell-outputWrapper"
   ) as HTMLCollectionOf<HTMLElement>;
-  for (let i = 0; i < op.length; ++i) op.item(i).classList.add(tag);
+  for (let i = 0; i < op.length; ++i) {
+    op.item(i).classList.add(tag);
+  }
 }
 
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
