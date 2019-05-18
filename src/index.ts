@@ -297,7 +297,7 @@ function update_task_status(info, panel) {
     let cells = cell_elems.map(cell_elem =>
       panel.content.widgets.find(x => x.node[0] == cell_elem)
     );
-    let display_ids = Array.from(elems).map(x => x.closest(".task_table").id);
+    let display_ids = Array.from(elems).map(x => x.closest(".task_table").id.split('_').slice(0, -1).join('_'));
 
     for (let i = 0; i < cells.length; ++i) {
       let data = {
@@ -319,17 +319,30 @@ function update_task_status(info, panel) {
     info.start_time = info.start_time * 1000;
   }
   // find the status table
-  let has_status_table = document.getElementById(`task_${elem_id}`);
-  if (info.update_only && !has_status_table) {
-    return;
-  }
   let cell_id = info.cell_id;
   let cell = null;
+  let has_status_table;
+
   if (cell_id) {
     cell = panel.content.widgets.find(x => x.model.id == cell_id);
-  } else if (has_status_table) {
+    has_status_table = document.getElementById(`task_${elem_id}_${cell_id}`);
+    if (!has_status_table) {
+      // if there is already a table inside, with cell_id that is different from before...
+      has_status_table = cell.node.querySelector(
+        `[id^="task_${elem_id}"]`
+      );
+      if (has_status_table) {
+        cell_id = has_status_table.id.split("_").slice(-1)[0];
+      }
+    }
+    if (info.update_only && !has_status_table) {
+      return;
+    }
+  } else {
+    has_status_table = document.querySelector(`[id^="task_${elem_id}"]`);
     let elem = has_status_table.closest(".code_cell");
     cell = panel.content.widgets.find(x => x.node[0] == elem);
+    cell_id = cell.model.id;
   }
 
   if (!cell) {
@@ -356,7 +369,7 @@ function update_task_status(info, panel) {
   let timer_text = "";
   if (has_status_table) {
     // if we already have timer, let us try to "fix" it in the notebook
-    let timer = document.getElementById(`status_duration_${elem_id}`);
+    let timer = document.getElementById(`status_duration_${elem_id}_${cell_id}`);
     timer_text = timer.innerText;
     if (
       timer_text === "" &&
@@ -370,7 +383,7 @@ function update_task_status(info, panel) {
       info.start_time = timer.getAttribute("datetime");
     }
     if (!info.tags) {
-      info.tags = document.getElementById(`status_tags_${elem_id}`).innerText;
+      info.tags = document.getElementById(`status_tags_${elem_id}_${cell_id}`).innerText;
     }
   }
 
@@ -430,10 +443,10 @@ function update_task_status(info, panel) {
     metadata: {},
     data: {
       "text/html": `
-<table id="task_${elem_id}" class="task_table ${info.status}">
+<table id="task_${elem_id}_${cell_id}" class="task_table ${info.status}">
 <tr>
   <td class="task_icon">
-    <i id="task_status_icon_${elem_id}" class="fa fa-2x fa-fw ${
+    <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${
         status_class[info.status]
       }"
     ${onmouseover} ${onmouseleave} ${onclick}></i>
@@ -442,15 +455,15 @@ function update_task_status(info, panel) {
     <span><pre><i class="fa fa-fw fa-sitemap"></i></pre>${id_elems}</span>
   </td>
   <td class="task_tags">
-    <span id="status_tags_${elem_id}"><pre><i class="fa fa-fw fa-info-circle"></i></pre>${tags_elems}</span>
+    <span id="status_tags_${elem_id}_${cell_id}"><pre><i class="fa fa-fw fa-info-circle"></i></pre>${tags_elems}</span>
   </td>
   <td class="task_timer">
-    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}" class="${
+    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${
         info.status
       }" datetime="${info.start_time}">${timer_text}</time></pre>
   </td>
   <td class="task_status">
-    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}">${
+    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${
         info.status
       }</span></pre>
   </td>
@@ -546,7 +559,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     let cell = panel.content.widgets[data[0]];
     info.pendingCells.set(cell.model.id, data[1]);
   } else if (msg_type === "remove-task") {
-    let item = document.getElementById("table_" + data[0] + "_" + data[1]);
+    let item = document.querySelector(`[id^="table_${data[0]}_${data[1]}"]`);
     if (item) {
       item.parentNode.removeChild(item);
     }
