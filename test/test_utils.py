@@ -290,6 +290,9 @@ class Notebook:
     def __init__(self, browser):
         self.browser = browser
         self._disable_autosave_and_onbeforeunload()
+        # with open('./test/jquery-3.4.1.min.js', 'r') as jquery_js:
+        #     jquery=jquery_js.read()
+        #     self.browser.execute_script(jquery)
         wait_for_selector(
             browser, "div.jp-Notebook-cell", timeout=10, visible=False, single=True)
         # self.prompt_cell = list(
@@ -332,6 +335,15 @@ class Notebook:
         return list(
             self.browser.find_elements_by_xpath(
                 ".//div[contains(@class,'jp-Notebook-cell')]"))
+                # ".//div[contains(@class,'jp-InputArea-editor')]"))
+
+    @property
+    def inputCells(self):
+        return list(
+            self.browser.find_elements_by_xpath(
+                ".//div[contains(@class,'jp-InputArea-editor')]"))
+
+            
 
     @property
     def panel_cells(self):
@@ -364,13 +376,18 @@ class Notebook:
 
     def add_cell(self, index=-1, cell_type="code", content=""):
         self._focus_cell(index)
-        self._to_command_mode()
-        # ActionChains(self.browser).move_to_element(self.body).send_keys("b").perform()
+        # self._to_command_mode()
+       
+        # ActionChains(self.browser).send_keys("b").perform()
         addButton=self.browser.find_element_by_xpath('.//div[contains(@class,"jp-NotebookPanel-toolbar")]//button[contains(@title,"Insert a cell below")]')
         ActionChains(self.browser).move_to_element(addButton).click().perform()
+        print("click add button")   
+        time.sleep(5)
         new_index = index + 1 if index >= 0 else index 
         print("new_index ",new_index, index, self.body) 
-        self.current_cell=self.cells[new_index]
+        time.sleep(5)
+        # self.current_cell=self.cells[new_index]
+        self._focus_cell(new_index)
 
         if content:
             self.edit_cell(index=new_index, content=content)
@@ -393,23 +410,28 @@ class Notebook:
         """
         if cell is not None:
             index = self.index(cell)
-        print("begin edit cell")
+        print("begin edit cell",index,dedent(content))
         # Select & delete anything already in the cell
         # self.current_cell.send_keys(Keys.ENTER)
+        # ActionChains(self.browser).move_to_element(self.current_cell).send_keys(Keys.ENTER).perform()
+        # if platform == "darwin":
+        #     command(self.browser, 'a')
+        # else:
+        #     ctrl(self.browser, 'a')
+        # # self.current_cell.send_keys(Keys.DELETE)
+        # ActionChains(self.browser).send_keys_to_element(self.current_cell,Keys.DELETE).perform()
         
-        ActionChains(self.browser).move_to_element(self.current_cell).send_keys(Keys.ENTER).perform()
-        if platform == "darwin":
-            command(self.browser, 'a')
-        else:
-            ctrl(self.browser, 'a')
+        ActionChains(self.browser).move_to_element(self.current_cell).click().send_keys(content).perform()
+        # jsScript="$('div.jp-Notebook-cell').last().val('"+content+"');"
+        # print(jsScript)
 
-        # self.current_cell.send_keys(Keys.DELETE)
-        ActionChains(self.browser).move_to_element(self.current_cell).send_keys(Keys.DELETE).perform()
-        ActionChains(self.browser).send_keys_to_element(self.cells[index],dedent(content)).perform()
+        # self.browser.execute_script(jsScript);
+        # ActionChains(self.browser).send_keys_to_element(self.current_cell,content).perform()
         print("change content",index)
+        time.sleep(5)
         # self.browser.execute_script("IPython.notebook.get_cell(" + str(index) +
         #                             ").set_text(" + repr(dedent(content)) + ")")
-        self._focus_cell(index)
+        # self._focus_cell(index)
 
         if render:
             self.execute_cell(self.current_index)
@@ -611,9 +633,11 @@ class Notebook:
 
     def _focus_cell(self, index=0):
         cell = self.cells[index]
-        ActionChains(self.browser).move_to_element(cell).click()
+        inputCell=self.inputCells[index]
+        ActionChains(self.browser).move_to_element(cell).click().perform()
         self.current_cell = cell
-        print("focus cell")
+        self.current_inputCell=inputCell
+        print("focus cell",index)
         # print(self.current_cell)
 
     def _convert_cell_type(self, index=0, cell_type="code"):
