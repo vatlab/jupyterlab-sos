@@ -13,10 +13,10 @@ jupyterlab-sos is a JupyterLab extension for the [SoS Polyglot Notebook](https:/
 jupyter labextension install transient-display-data
 jupyter labextension install jupyterlab-sos
 ```
-or install these two extensions from the extension manager.
+or install these two extensions from the extension manager (`Enable Extension Manager` from `Settings` if needed).
 
 ## Development
-
+  
 For a development install (requires npm version 4 or later), do the following in the repository directory:
 
 ```bash
