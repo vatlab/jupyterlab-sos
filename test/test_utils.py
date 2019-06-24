@@ -335,15 +335,7 @@ class Notebook:
         return list(
             self.browser.find_elements_by_xpath(
                 ".//div[contains(@class,'jp-Notebook-cell')]"))
-                # ".//div[contains(@class,'jp-InputArea-editor')]"))
-
-    @property
-    def inputCells(self):
-        return list(
-            self.browser.find_elements_by_xpath(
-                ".//div[contains(@class,'jp-InputArea-editor')]"))
-
-            
+                # ".//div[contains(@class,'jp-InputArea-editor')]"))            
 
     @property
     def panel_cells(self):
@@ -377,18 +369,14 @@ class Notebook:
     def add_cell(self, index=-1, cell_type="code", content=""):
         self._focus_cell(index)
         # self._to_command_mode()
-       
-        # ActionChains(self.browser).send_keys("b").perform()
+    
         addButton=self.browser.find_element_by_xpath('.//div[contains(@class,"jp-NotebookPanel-toolbar")]//button[contains(@title,"Insert a cell below")]')
         ActionChains(self.browser).move_to_element(addButton).click().perform()
-        print("click add button")   
-        time.sleep(5)
+    
         new_index = index + 1 if index >= 0 else index 
-        print("new_index ",new_index, index, self.body) 
-        time.sleep(5)
+       
         # self.current_cell=self.cells[new_index]
         self._focus_cell(new_index)
-
         if content:
             self.edit_cell(index=new_index, content=content)
         if cell_type != 'code':
@@ -410,28 +398,12 @@ class Notebook:
         """
         if cell is not None:
             index = self.index(cell)
-        print("begin edit cell",index,dedent(content))
+        # print("begin edit cell",index,dedent(content))
         # Select & delete anything already in the cell
-        # self.current_cell.send_keys(Keys.ENTER)
         # ActionChains(self.browser).move_to_element(self.current_cell).send_keys(Keys.ENTER).perform()
-        # if platform == "darwin":
-        #     command(self.browser, 'a')
-        # else:
-        #     ctrl(self.browser, 'a')
-        # # self.current_cell.send_keys(Keys.DELETE)
-        # ActionChains(self.browser).send_keys_to_element(self.current_cell,Keys.DELETE).perform()
-        
-        ActionChains(self.browser).move_to_element(self.current_cell).click().send_keys(content).perform()
-        # jsScript="$('div.jp-Notebook-cell').last().val('"+content+"');"
-        # print(jsScript)
-
-        # self.browser.execute_script(jsScript);
-        # ActionChains(self.browser).send_keys_to_element(self.current_cell,content).perform()
-        print("change content",index)
-        time.sleep(5)
-        # self.browser.execute_script("IPython.notebook.get_cell(" + str(index) +
-        #                             ").set_text(" + repr(dedent(content)) + ")")
-        # self._focus_cell(index)
+        ActionChains(self.browser).send_keys_to_element(self.current_cell,Keys.DELETE).perform()
+        ActionChains(self.browser).move_to_element(self.current_cell).send_keys(content).perform()
+        # print("change content",index)
 
         if render:
             self.execute_cell(self.current_index)
@@ -477,7 +449,6 @@ class Notebook:
 
     def execute_cell(self,
                      cell_or_index=None,
-                     in_console=False,
                      expect_error=False):
         if isinstance(cell_or_index, int):
             index = cell_or_index
@@ -486,14 +457,13 @@ class Notebook:
         else:
             raise TypeError("execute_cell only accepts a WebElement or an int")
         self._focus_cell(index)
-        if in_console:
-            ActionChains(self.browser).move_to_element(self.current_cell).click().send_keys(Keys.CONTROL, Keys.SHIFT, Keys.ENTER).perform()
-            # self.current_cell.send_keys(Keys.CONTROL, Keys.SHIFT, Keys.ENTER)
-            self._wait_for_done(-1, expect_error)
-        else:
-            # self.current_cell.send_keys(Keys.CONTROL, Keys.ENTER)
-            ActionChains(self.browser).move_to_element(self.current_cell).click().send_keys(Keys.CONTROL, Keys.ENTER).perform()
-            self._wait_for_done(index, expect_error)
+        runButton=self.browser.find_element_by_xpath('.//div[contains(@class,"jp-NotebookPanel-toolbar")]//button[contains(@title,"Run the selected cells and advance")]')
+        ActionChains(self.browser).move_to_element(runButton).click().perform()
+        # self.current_cell.send_keys(Keys.CONTROL, Keys.ENTER)
+        # ActionChains(self.browser).move_to_element(self.current_cell).click().send_keys(Keys.CONTROL, Keys.ENTER).perform()
+        self._wait_for_done(index, expect_error)
+
+        
 
     def call(self, content="", kernel="SoS", expect_error=False):
         '''
@@ -509,11 +479,11 @@ class Notebook:
         print(index)
         self.add_cell(
             index=index - 1, cell_type="code", content=dedent(content))
-        print("after add cell")
+        # print("after add cell")
         self.select_kernel(index=index, kernel_name=kernel, by_click=True)
-        print("after select kernerl")
+        # print("after select kernerl")
         self.execute_cell(cell_or_index=index, expect_error=expect_error)
-        print("after execute cell")
+        # print("after execute cell")
         return index
 
     def check_output(self,
@@ -557,7 +527,7 @@ class Notebook:
                 except NoSuchElementException:
                     pass
             #
-            print(output.text)
+            # print(output.text)
             output_text += output.text + "\n"
         # if "Out" in output_text:
         #     output_text = "".join(output_text.split(":")[1:])
@@ -633,11 +603,10 @@ class Notebook:
 
     def _focus_cell(self, index=0):
         cell = self.cells[index]
-        inputCell=self.inputCells[index]
         ActionChains(self.browser).move_to_element(cell).click().perform()
         self.current_cell = cell
-        self.current_inputCell=inputCell
-        print("focus cell",index)
+        # print("focus cell",index)
+
         # print(self.current_cell)
 
     def _convert_cell_type(self, index=0, cell_type="code"):
