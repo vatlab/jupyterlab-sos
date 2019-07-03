@@ -402,8 +402,10 @@ class Notebook:
         # Select & delete anything already in the cell
         # ActionChains(self.browser).move_to_element(self.current_cell).send_keys(Keys.ENTER).perform()
         ActionChains(self.browser).send_keys_to_element(self.current_cell,Keys.DELETE).perform()
-        ActionChains(self.browser).move_to_element(self.current_cell).send_keys(content).perform()
+
+        ActionChains(self.browser).move_to_element(self.current_cell).send_keys(dedent(content)).perform()
         # print("change content",index)
+        
 
         if render:
             self.execute_cell(self.current_index)
@@ -479,11 +481,8 @@ class Notebook:
         print(index)
         self.add_cell(
             index=index - 1, cell_type="code", content=dedent(content))
-        # print("after add cell")
         self.select_kernel(index=index, kernel_name=kernel, by_click=True)
-        # print("after select kernerl")
         self.execute_cell(cell_or_index=index, expect_error=expect_error)
-        # print("after execute cell")
         return index
 
     def check_output(self,
@@ -526,8 +525,7 @@ class Notebook:
                     output_text += elem.get_attribute(attribute) + '\n'
                 except NoSuchElementException:
                     pass
-            #
-            # print(output.text)
+        
             output_text += output.text + "\n"
         # if "Out" in output_text:
         #     output_text = "".join(output_text.split(":")[1:])
@@ -631,7 +629,7 @@ class Notebook:
     def _wait_for_done(self, index, expect_error=False):
         #
         # index < 0 means console panel
-        print("wate_for_done", index)
+        print("wait_for_done", index)
         while True:
             # main notebook
             if index >= 0:
@@ -655,13 +653,14 @@ class Notebook:
         has_error = False
         for output in outputs:
             try:
-                errors = output.find_element_by_css_selector('.output_stderr')
-                if errors:
+                # errors = output.find_element_by_css_selector('.output_stderr')
+                mime = output.get_attribute('data-mime-type')
+                if mime=="application/vnd.jupyter.stderr":
                     if expect_error:
                         has_error = True
                     else:
                         raise ValueError(
-                            f'Cell produces error message: {errors.text}. Use expect_error=True to suppress this error if needed.'
+                            f'Cell produces error message: {output.text}. Use expect_error=True to suppress this error if needed.'
                         )
             except NoSuchElementException:
                 # if no error, ok
