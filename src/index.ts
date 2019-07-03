@@ -862,7 +862,7 @@ export class SoSWidgets
     context.session.statusChanged.connect((sender, status) => {
       // if a sos notebook is restarted
       if (
-        status === "connected" &&
+        (status === "connected" || status === "starting") &&
         panel.context.session.kernelDisplayName === "SoS"
       ) {
         console.log(`connected to sos kernel`);
