@@ -164,7 +164,7 @@ function my_execute(
   content.sos["cell_kernel"] = kernel;
   content.sos["cell_id"] = -1;
   content.silent = false;
-  content.store_history = false;
+  content.store_history = true;
 
   return this.orig_execute(content, disposeOnDone);
 }
