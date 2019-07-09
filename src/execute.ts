@@ -117,7 +117,8 @@ function my_execute(
     content.sos["workflow"] = getNotebookWorkflow(panel);
   }
   content.sos["path"] = panel.context.path;
-  content.sos["use_panel"] = !!Manager.consolesOfNotebook(panel);
+  content.sos["use_panel"] = Manager.consolesOfNotebook(panel).length > 0;
+
   content.sos["use_iopub"] = true;
 
   let info = Manager.manager.get_info(panel);
