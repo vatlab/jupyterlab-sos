@@ -29,11 +29,11 @@ class TestFrontEnd(NotebookTest):
         # the latest history cell
         assert "1" == notebook.get_cell_output(-1, in_console=True)
 
-        # if the cell is non-SoS, the console should also change kernel
-        # idx = notebook.call("cat(123)", kernel="R")
-        # notebook.execute_cell(idx, in_console=True)
-        # # the latest history cell
-        # assert "123" == notebook.get_cell_output(-1, in_console=True)
+        #if the cell is non-SoS, the console should also change kernel
+        idx = notebook.call("cat(123)", kernel="R")
+        notebook.execute_cell(idx, in_console=True)
+        # the latest history cell
+        assert "123" == notebook.get_cell_output(-1, in_console=True)
 
         idx = notebook.call("print(12345)", kernel="SoS")
         notebook.execute_cell(idx, in_console=True)

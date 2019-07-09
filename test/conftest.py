@@ -55,6 +55,7 @@ def notebook_server():
         }
         env = os.environ.copy()
         env.update(info['extra_env'])
+
         command = [
             sys.executable,
             '-m',

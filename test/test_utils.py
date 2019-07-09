@@ -854,9 +854,12 @@ def new_window(browser, selector=None):
 
     """
     initial_window_handles = browser.window_handles
-    yield
-    new_window_handle = next(window for window in browser.window_handles
-                             if window not in initial_window_handles)
+    try:
+        yield
+        new_window_handle = next(window for window in browser.window_handles
+                                 if window not in initial_window_handles)
+    except StopIteration:
+        return
     browser.switch_to.window(new_window_handle)
     if selector is not None:
         wait_for_selector(browser, selector)
