@@ -339,11 +339,17 @@ class Notebook:
 
     @property
     def panel_cells(self):
-        return list(self.browser.find_elements_by_xpath("//*[@id='panel']/div"))
+        return list(self.browser.find_elements_by_css_selector("div .jp-Console-cell"))
 
     @property
     def current_index(self):
         return self.index(self.current_cell)
+
+    @property
+    def menu_buttons(self):
+        return self.browser.find_elements_by_css_selector(
+            "div .p-MenuBar li")
+
 
     def index(self, cell):
         return self.cells.index(cell)
@@ -414,12 +420,15 @@ class Notebook:
     # Get info
     #
     def get_kernel_list(self):
-        kernelMenu = self.browser.find_element_by_id(
-            "menu-change-kernel-submenu")
-        kernelEntries = kernelMenu.find_elements_by_tag_name("a")
+        # kernelMenu = self.browser.find_element_by_id(
+        #     "menu-change-kernel-submenu")
+        wait_for_selector(self.browser,'div.jp-Toolbar-kernelStatus[title="Kernel Idle"]')
+        kernelMenu = self.cells[0].find_element_by_class_name(
+            "jp-CelllanguageDropDown")
+        kernelEntries = kernelMenu.find_elements_by_tag_name("option")
         kernels = []
         for kernelEntry in kernelEntries:
-            kernels.append(kernelEntry.get_attribute('innerHTML'))
+            kernels.append(kernelEntry.text)
         return kernels
 
     def get_input_backgroundColor(self, index=0, in_console=False):
@@ -449,22 +458,40 @@ class Notebook:
     # Execution of cells
     #
 
+
+    def click_on_run_menu(self,index,selector):
+
+        for button in self.menu_buttons:
+            if button.text=="Run":
+                if index!=-1:
+                    self._focus_cell(index)
+                ActionChains(self.browser).move_to_element(button).click().perform()
+                # time.sleep(5)
+                runButton=self.browser.find_element_by_css_selector(selector)
+                ActionChains(self.browser).move_to_element(runButton).click().perform()
+
+
+
     def execute_cell(self,
                      cell_or_index=None,
-                     expect_error=False):
-        if isinstance(cell_or_index, int):
-            index = cell_or_index
-        elif isinstance(cell_or_index, WebElement):
-            index = self.index(cell_or_index)
+                     expect_error=False,
+                     in_console=False):
+        if not in_console:
+            if isinstance(cell_or_index, int):
+                index = cell_or_index
+            elif isinstance(cell_or_index, WebElement):
+                index = self.index(cell_or_index)
+            else:
+                raise TypeError("execute_cell only accepts a WebElement or an int")
+            self._focus_cell(index)
+            runButton=self.browser.find_element_by_xpath('.//div[contains(@class,"jp-NotebookPanel-toolbar")]//button[contains(@title,"Run the selected cells and advance")]')
+            ActionChains(self.browser).move_to_element(runButton).click().perform()
+            # self.current_cell.send_keys(Keys.CONTROL, Keys.ENTER)
+            # ActionChains(self.browser).move_to_element(self.current_cell).click().send_keys(Keys.CONTROL, Keys.ENTER).perform()
+            self._wait_for_done(index, expect_error)
         else:
-            raise TypeError("execute_cell only accepts a WebElement or an int")
-        self._focus_cell(index)
-        runButton=self.browser.find_element_by_xpath('.//div[contains(@class,"jp-NotebookPanel-toolbar")]//button[contains(@title,"Run the selected cells and advance")]')
-        ActionChains(self.browser).move_to_element(runButton).click().perform()
-        # self.current_cell.send_keys(Keys.CONTROL, Keys.ENTER)
-        # ActionChains(self.browser).move_to_element(self.current_cell).click().send_keys(Keys.CONTROL, Keys.ENTER).perform()
-        self._wait_for_done(index, expect_error)
-
+            print("run in console")
+            self.click_on_run_menu(cell_or_index,'div.p-MenuBar-menu [data-command="notebook:run-in-console"]')
         
 
     def call(self, content="", kernel="SoS", expect_error=False):
@@ -478,7 +505,6 @@ class Notebook:
         '''
         # there will be at least a new cell from the new notebook.
         index = len(self.cells)
-        print(index)
         self.add_cell(
             index=index - 1, cell_type="code", content=dedent(content))
         self.select_kernel(index=index, kernel_name=kernel, by_click=True)
@@ -510,8 +536,9 @@ class Notebook:
                         attribute='src'):
         outputs = ""
         if in_console:
-            outputs = self.panel_cells[index].find_elements_by_css_selector(
-                "div .output_subarea")
+            wait_for_selector(self.browser, "div .jp-Console-cell")
+            outputs = self.browser.find_elements_by_css_selector(
+                "div .jp-Console-cell .jp-Cell-outputWrapper")[index].find_elements_by_css_selector("div .jp-OutputArea-output")
         else:
             outputs = self.cells[index].find_elements_by_css_selector(
                 ".jp-OutputArea-output")
@@ -536,32 +563,57 @@ class Notebook:
     # For console panel
     #
     def is_console_panel_open(self):
-        return bool(self.browser.find_element_by_id("panel").is_displayed())
+        try:
+            self.browser.find_element_by_css_selector("div .jp-ConsolePanel")
+            return True
+        except NoSuchElementException:
+            return False
+
+    def open_console(self):
+        if not self.is_console_panel_open():
+            ActionChains(self.browser).move_to_element(self.body).context_click().send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).click().perform()
+
 
     def toggle_console_panel(self):
-        panelButton = self.browser.find_element_by_id("panel_button")
-        panelButton.click()
+        if self.is_console_panel_open():
+            panelButton = self.browser.find_elements_by_css_selector("div .p-TabBar-tabCloseIcon")[-1]
+            ActionChains(self.browser).move_to_element(panelButton).click().perform()
+        else:
+            ActionChains(self.browser).move_to_element(self.body).context_click().send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).click().perform()
+
 
     def edit_prompt_cell(self,
                          content,
                          kernel='SoS',
                          execute=False,
                          expect_error=False):
-        # print("panel", self.prompt_cell.get_attribute("innerHTML"))
-        self.browser.execute_script("window.my_panel.cell.set_text(" +
-                                    repr(dedent(content)) + ")")
+        # # print("panel", self.prompt_cell.get_attribute("innerHTML"))
+        # self.browser.execute_script("window.my_panel.cell.set_text(" +
+        #                             repr(dedent(content)) + ")")
 
-        # the div is not clickable so I use send_key to get around it
-        self.prompt_cell.send_keys('\n')
+        # # the div is not clickable so I use send_key to get around it
+        # self.prompt_cell.send_keys('\n')
+        wait_for_selector(self.browser,"div.jp-CodeConsole-input")
+        self.prompt_cell=self.browser.find_element_by_css_selector("div.jp-CodeConsole-input")
+        ActionChains(self.browser).move_to_element(self.prompt_cell).click().send_keys(content).perform()
+
         self.select_console_kernel(kernel)
         #   self.prompt_cell.find_element_by_css_selector('.CodeMirror').click()
+
         if execute:
-            self.prompt_cell.send_keys(Keys.CONTROL, Keys.ENTER)
+            ActionChains(self.browser).move_to_element(self.prompt_cell).click().perform()
+            self.click_on_run_menu(-1,'div.p-MenuBar-menu [data-command="runmenu:run"]')
             self._wait_for_done(-1, expect_error=expect_error)
 
+    def send_keys_on_prompt_cell(self,*argv):
+        ActionChains(self.browser).move_to_element(self.prompt_cell).click().send_keys(argv).perform()
+
     def get_prompt_content(self):
-        JS = 'return window.my_panel.cell.get_text();'
-        return self.browser.execute_script(JS)
+        # JS = 'return window.my_panel.cell.get_text();'
+        # return self.browser.execute_script(JS)
+        promptText=self.prompt_cell.find_element_by_class_name("jp-InputArea-editor").text
+        print(promptText)
+        return promptText
 
     def select_console_kernel(self, kernel_name="SoS"):
         kernel_selector = 'option[value={}]'.format(kernel_name)
@@ -629,15 +681,17 @@ class Notebook:
     def _wait_for_done(self, index, expect_error=False):
         #
         # index < 0 means console panel
-        print("wait_for_done", index)
         while True:
             # main notebook
             if index >= 0:
                 prompt = self.cells[index].find_element_by_css_selector(
                     '.jp-InputArea-prompt').text
             else:
-                prompt = self.panel_cells[-1].find_element_by_css_selector(
-                    '.jp-InputArea-prompt').text
+                if len(self.panel_cells)>0:
+                    prompt = self.panel_cells[-1].find_element_by_css_selector(
+                        '.jp-InputArea-prompt').text
+                else:
+                    prompt=""
             if '*' not in prompt:
                 break
             else:
