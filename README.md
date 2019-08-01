@@ -4,6 +4,7 @@ jupyterlab-sos is a JupyterLab extension for the [SoS Polyglot Notebook](https:/
 
 ## Prerequisites
 
+* [sos-notebook](https://github.com/vatlab/sos-notebook) and language modules of interest (e.g. [sos-python](https://github.com/vatlab/sos-python) and [sos-r](https://github.com/vatlab/sos-notebook)). See [installation instruction](https://vatlab.github.io/sos-docs/running.html) for details.
 * JupyterLab >= 1.0.0
 * [transient-display-data](https://github.com/vatlab/transient-display-data)
 
