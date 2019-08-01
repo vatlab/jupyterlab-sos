@@ -120,6 +120,8 @@ modeMap.set("matlab", "octave");
 function findMode(mode: string): any {
   if (modeMap.has(mode)) {
     return modeMap.get(mode);
+  } else if (typeof mode === 'string' && modeMap.has(mode.toLowerCase())) {
+    return modeMap.get(mode.toLowerCase())
   }
   return null;
 }
