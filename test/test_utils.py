@@ -174,7 +174,7 @@ def get_std_output(iopub):
 
 def wait_for_selector(browser,
                       selector,
-                      timeout=10,
+                      timeout=60,
                       visible=False,
                       single=False):
     wait = WebDriverWait(browser, timeout)
