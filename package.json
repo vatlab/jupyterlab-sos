@@ -31,17 +31,17 @@
   },
   "dependencies": {
     "transient-display-data": "^0.2.0",
-    "@jupyterlab/application": "^1.0.0-alpha.3",
-    "@jupyterlab/apputils": "^1.0.0-alpha.3",
-    "@jupyterlab/codemirror": "^1.0.0-alpha.3",
-    "@jupyterlab/console": "^1.0.0-alpha.3",
-    "@jupyterlab/docregistry": "^1.0.0-alpha.3",
-    "@jupyterlab/notebook": "^1.0.0-alpha.3",
-    "@jupyterlab/services": "^4.0.0-alpha.3",
+    "@jupyterlab/application": "^1.0.5",
+    "@jupyterlab/apputils": "^1.0.5",
+    "@jupyterlab/codemirror": "^1.0.5",
+    "@jupyterlab/console": "^1.0.5",
+    "@jupyterlab/docregistry": "^1.0.5",
+    "@jupyterlab/notebook": "^1.0.5",
+    "@jupyterlab/services": "^4.0.5",
     "@phosphor/disposable": "^1.1.2"
   },
   "devDependencies": {
-    "@types/codemirror": "~0.0.70",
+    "@types/codemirror": "~0.0.76",
     "rimraf": "^2.6.1",
     "typescript": "~3.3.1"
   },
