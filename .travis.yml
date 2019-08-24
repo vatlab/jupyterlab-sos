@@ -45,7 +45,9 @@ before_install:
 sudo: required
 install:
     - jupyter labextension install transient-display-data
-    - jupyter labextension install jupyterlab-sos
+    - npm install
+    - npm run build
+    - jupyter labextension install
 script:
     - cd test && pytest test_frontend.py -v && pytest test_magics.py -v && pytest test_workflow.py -v
 after_success:
