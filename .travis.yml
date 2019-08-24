@@ -47,7 +47,7 @@ install:
     - jupyter labextension install transient-display-data
     - jupyter labextension install jupyterlab-sos
 script:
-    - cd test && pytest -v
+    - cd test && pytest test_frontend.py -v && pytest test_magics.py -v && pytest test_workflow.py -v
 after_success:
     - coverage combine
     - coveralls
