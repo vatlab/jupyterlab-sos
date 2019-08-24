@@ -153,7 +153,7 @@ function my_execute(
       }
       metadata.sos["cell_id"] = cell.model.id;
       metadata.sos["cell_kernel"] = cell.model.metadata.get("kernel");
-      return this.orig_execute(content, disposeOnDone);
+      return this.orig_execute(content, disposeOnDone, metadata);
     }
   }
 
