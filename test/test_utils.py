@@ -323,19 +323,19 @@ class Notebook:
     def body(self):
         # return self.browser.find_element_by_tag_name("body")
         return self.browser.find_element_by_xpath(".//*[@id='main']")
-        
+
 
     @property
     def cells(self):
         """Gets all cells once they are visible.
         """
         # For SOS note book, there are 2 extra cells, one is the selection box for kernel, the other is the preview panel
-       
+
 
         return list(
             self.browser.find_elements_by_xpath(
                 ".//div[contains(@class,'jp-Notebook-cell')]"))
-                # ".//div[contains(@class,'jp-InputArea-editor')]"))            
+                # ".//div[contains(@class,'jp-InputArea-editor')]"))
 
     @property
     def panel_cells(self):
@@ -375,12 +375,12 @@ class Notebook:
     def add_cell(self, index=-1, cell_type="code", content=""):
         self._focus_cell(index)
         # self._to_command_mode()
-    
+
         addButton=self.browser.find_element_by_xpath('.//div[contains(@class,"jp-NotebookPanel-toolbar")]//button[contains(@title,"Insert a cell below")]')
         ActionChains(self.browser).move_to_element(addButton).click().perform()
-    
-        new_index = index + 1 if index >= 0 else index 
-       
+
+        new_index = index + 1 if index >= 0 else index
+
         # self.current_cell=self.cells[new_index]
         self._focus_cell(new_index)
         if content:
@@ -411,7 +411,7 @@ class Notebook:
 
         ActionChains(self.browser).move_to_element(self.current_cell).send_keys(dedent(content)).perform()
         # print("change content",index)
-        
+
 
         if render:
             self.execute_cell(self.current_index)
@@ -492,7 +492,7 @@ class Notebook:
         else:
             print("run in console")
             self.click_on_run_menu(cell_or_index,'div.p-MenuBar-menu [data-command="notebook:run-in-console"]')
-        
+
 
     def call(self, content="", kernel="SoS", expect_error=False):
         '''
@@ -552,7 +552,7 @@ class Notebook:
                     output_text += elem.get_attribute(attribute) + '\n'
                 except NoSuchElementException:
                     pass
-        
+
             output_text += output.text + "\n"
         # if "Out" in output_text:
         #     output_text = "".join(output_text.split(":")[1:])
@@ -580,7 +580,7 @@ class Notebook:
             ActionChains(self.browser).move_to_element(panelButton).click().perform()
         else:
             ActionChains(self.browser).move_to_element(self.body).context_click().send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).send_keys(Keys.DOWN).click().perform()
-
+            wait_for_selector(self.browser, "div .jp-ConsolePanel")
 
     def edit_prompt_cell(self,
                          content,
@@ -645,7 +645,7 @@ class Notebook:
         """
         # self.body.send_keys(Keys.ESCAPE)
         ActionChains(self.browser).move_to_element(self.body).send_keys(Keys.ESCAPE).perform()
- 
+
         # self.browser.execute_script(
         #     "return Jupyter.notebook.handle_command_mode("
         #     "Jupyter.notebook.get_cell("
