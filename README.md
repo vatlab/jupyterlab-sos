@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/vatlab/jupyterlab-sos.svg?branch=master)](https://travis-ci.org/vatlab/jupyterlab-sos)
+[![npm version](https://badge.fury.io/js/jupyterlab-sos.svg)](https://badge.fury.io/js/jupyterlab-sos)
+
 # JupyterLab extension for SoS polyglot notebook and workflow system
 
 jupyterlab-sos is a JupyterLab extension for the [SoS Polyglot Notebook](https://vatlab.github.io/sos-docs/) that allows you to use multiple Jupyter kernels in one notebook. It is also a frontend to the [SoS Workflow Engine](https://github.com/vatlab/SoS) that is designed for daily computational research with both exploratory interactive data analysis and batch data processing.
