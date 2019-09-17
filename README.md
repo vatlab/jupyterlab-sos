@@ -13,11 +13,20 @@ jupyterlab-sos is a JupyterLab extension for the [SoS Polyglot Notebook](https:/
 
 ## Installation
 
-```bash
-jupyter labextension install transient-display-data
-jupyter labextension install jupyterlab-sos
-```
-or install these two extensions from the extension manager (`Enable Extension Manager` from `Settings` if needed).
+* If you are using conda, you can install `jupyterlab-sos` with command
+
+  ```bash
+  conda install jupyterlab-sos -c conda-forge
+  ```
+  This will automatically install the `transient-display-data` extension, even `jupyterlab`, `sos-notebook`, and `sos` if needed.
+
+* If you have a working jupyterlab installation with `sos-notebook`, you can install `jupyterlab-sos` from command line
+
+  ```bash
+  jupyter labextension install transient-display-data
+  jupyter labextension install jupyterlab-sos
+  ```
+  or install these two extensions from the extension manager (`Enable Extension Manager` from `Settings` if needed).
 
 ## Development
   
