@@ -25,7 +25,7 @@ before_install:
     - conda install -c conda-forge feather-format
     # SoS Notebook
     - pip install jedi notebook nbconvert nbformat pyyaml psutil tqdm scipy markdown matplotlib jupyterlab
-    - sudo apt-get install libmagickwand-dev libmagickcore5-extra graphviz
+    - sudo apt-get install libmagickwand-dev libmagickcore6.q16-2-extra graphviz
     - pip install pygments ipython wand graphviz
     - pip install git+https://github.com/vatlab/sos.git
     - pip install git+https://github.com/vatlab/sos-notebook.git
