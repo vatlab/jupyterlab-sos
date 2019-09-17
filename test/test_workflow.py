@@ -21,11 +21,10 @@ class TestWorkflow(NotebookTest):
     def test_task(self, notebook):
         '''Test the execution of tasks with -s force'''
         output = notebook.check_output('''\
-            %set -v1
             %run -s force
             [10]
             input: for_each={'i': range(1)}
-            task:
+            task: queue='localhost'
             python: expand=True
             import time
             print("this is {i}")
@@ -33,7 +32,7 @@ class TestWorkflow(NotebookTest):
 
             [20]
             input: for_each={'i': range(2)}
-            task:
+            task:  queue='localhost'
             python: expand=True
             import time
             print("this aa is {i}")
@@ -48,8 +47,7 @@ class TestWorkflow(NotebookTest):
             %run &
             import time
             for i in range(5):
-                print(f'output {i}')
-                time.sleep(1)
+                print('output {}'.format(i));time.sleep(1)
             ''', kernel='SoS')
         output = notebook.get_cell_output(idx)
         assert 'output 4' not in output

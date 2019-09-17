@@ -612,94 +612,6 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
   } else if (msg_type === "notebook-version") {
     // right now no upgrade, just save version to notebook
     (panel.content.model.metadata.get("sos") as any)["version"] = data;
-  } else if (msg_type === "clear-output") {
-    // console.log(data)
-    let active: Cell[] = [];
-    each(panel.content.widgets, child => {
-      if (panel.content.isSelectedOrActive(child)) {
-        active.push(child);
-      }
-    });
-
-    let clear_task = function(cell: Cell, status: string) {
-      let status_element = cell.node.getElementsByClassName(status);
-      while (status_element.length > 0) {
-        let table_element =
-          status_element[0].parentNode.parentNode.parentNode.parentElement;
-        // remove the table
-        if (table_element.className == "task_table") {
-          table_element.parentElement.removeChild(table_element);
-        }
-      }
-    };
-    let clear_class = function(cell: Cell, element_class: string) {
-      let elements = cell.node.getElementsByClassName(element_class);
-      while (elements.length > 0) {
-        elements[0].parentNode.removeChild(elements[0]);
-        elements = cell.node.getElementsByClassName(element_class);
-      }
-    };
-    // if remove all
-    if (data[1]) {
-      let cells = panel.content.widgets;
-      let i;
-      let j;
-      for (i = 0; i < cells.length; ++i) {
-        if (cells[i].model.type != "code") continue;
-        if (data[2]) {
-          for (j = 0; j < data[2].length; ++j) {
-            clear_task(cells[i], data[2][j]);
-          }
-        } else if (data[3]) {
-          for (j = 0; j < data[3].length; ++j) {
-            clear_class(cells[i], data[3][j]);
-          }
-        } else {
-          (cells[i] as CodeCell).outputArea.model.clear();
-        }
-      }
-    } else if (data[0] === -1) {
-      // clear output of selected cells
-      let i;
-      let j;
-      for (i = 0; i < active.length; ++i) {
-        if (active[i].model.type != "code") continue;
-        if (data[2]) {
-          for (j = 0; j < data[2].length; ++j) {
-            clear_task(active[i], data[2][j]);
-          }
-        } else if (data[3]) {
-          for (j = 0; j < data[3].length; ++j) {
-            clear_class(active[i], data[3][j]);
-          }
-        } else {
-          (active[i] as CodeCell).outputArea.model.clear();
-        }
-      }
-    } else if (panel.content.widgets[data[0]].model.type === "code") {
-      // clear current cell
-      let j;
-      if (data[2]) {
-        for (j = 0; j < data[2].length; ++j) {
-          clear_task(panel.content.widgets[data[0]], data[2][j]);
-        }
-      } else if (data[3]) {
-        for (j = 0; j < data[3].length; ++j) {
-          clear_class(panel.content.widgets[data[0]], data[3][j]);
-        }
-      } else {
-        (panel.content.widgets[data[0]] as CodeCell).outputArea.model.clear();
-      }
-    }
-    /*
-    if (active.length > 0) {
-        nb.select(active[0]);
-     } else {
-        // this is preview output
-        cell = window.my_panel.cell;
-        data.output_type = msg_type;
-        cell.output_area.append_output(data);
-    } */
   }
 }
 
@@ -925,6 +837,83 @@ export class SoSWidgets
 function registerSoSWidgets(app: JupyterFrontEnd) {
   app.docRegistry.addWidgetExtension("Notebook", new SoSWidgets());
 }
+
+
+(<any>window).filterDataFrame = function(id) {
+  var input = document.getElementById("search_" + id) as HTMLInputElement;;
+  var filter = input.value.toUpperCase();
+  var table = document.getElementById("dataframe_" + id) as HTMLTableElement;
+  var tr = table.getElementsByTagName("tr");
+
+  // Loop through all table rows, and hide those who do not match the search query
+  for (var i = 1; i < tr.length; i++) {
+    for (var j = 0; j < tr[i].cells.length; ++j) {
+      var matched = false;
+      if (tr[i].cells[j].innerHTML.toUpperCase().indexOf(filter) !== -1) {
+        tr[i].style.display = "";
+        matched = true;
+        break;
+      }
+      if (!matched) {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+};
+
+(<any>window).sortDataFrame = function(id, n, dtype) {
+  var table = document.getElementById("dataframe_" + id) as HTMLTableElement;
+
+  var tb = table.tBodies[0]; // use `<tbody>` to ignore `<thead>` and `<tfoot>` rows
+  var tr = Array.prototype.slice.call(tb.rows, 0); // put rows into array
+
+  var fn =
+    dtype === "numeric"
+      ? function(a, b) {
+          return parseFloat(a.cells[n].textContent) <=
+            parseFloat(b.cells[n].textContent)
+            ? -1
+            : 1;
+        }
+      : function(a, b) {
+          var c = a.cells[n].textContent
+            .trim()
+            .localeCompare(b.cells[n].textContent.trim());
+          return c > 0 ? 1 : c < 0 ? -1 : 0;
+        };
+  var isSorted = function(array, fn) {
+    if (array.length < 2) {
+      return 1;
+    }
+    var direction = fn(array[0], array[1]);
+    for (var i = 1; i < array.length - 1; ++i) {
+      var d = fn(array[i], array[i + 1]);
+      if (d === 0) {
+        continue;
+      } else if (direction === 0) {
+        direction = d;
+      } else if (direction !== d) {
+        return 0;
+      }
+    }
+    return direction;
+  };
+
+  var sorted = isSorted(tr, fn);
+  var i;
+
+  if (sorted === 1 || sorted === -1) {
+    // if sorted already, reverse it
+    for (i = tr.length - 1; i >= 0; --i) {
+      tb.appendChild(tr[i]); // append each row in order
+    }
+  } else {
+    tr = tr.sort(fn);
+    for (i = 0; i < tr.length; ++i) {
+      tb.appendChild(tr[i]); // append each row in order
+    }
+  }
+};
 
 /**
  * Initialization data for the sos-extension extension.

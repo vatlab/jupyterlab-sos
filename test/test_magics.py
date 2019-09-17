@@ -34,7 +34,6 @@ class TestMagics(NotebookTest):
                 "save",
                 "sandbox",
                 "sessioninfo",
-                "set",
                 "sosrun",
                 "sossave",
                 "shutdown",
@@ -436,8 +435,7 @@ class TestMagics(NotebookTest):
             """,
             kernel="SoS",
         )
-        lines = output.splitlines()
-        results = [
+        assert all(line in output.splitlines() for line in [
             "This var is defined without global.",
             "This var is defined with global.",
             "This var is defined in Cell.",
@@ -447,9 +445,7 @@ class TestMagics(NotebookTest):
             "['1', '2', '3']",
             "a.txt",
             "1",
-        ]
-        for index, line in enumerate(lines):
-            assert lines[index] == results[index]
+        ])
 
     def test_magic_runfile(self, notebook):
         #
@@ -463,29 +459,29 @@ class TestMagics(NotebookTest):
             """,
             kernel="SoS",
         )
-        assert "2" == notebook.check_output(
-            "%runfile check_run --var=2", kernel="SoS")
+        assert "21122" in notebook.check_output(
+            "%runfile check_run --var=21122", kernel="SoS")
 
     @pytest.mark.skipif(
         sys.platform == "win32" or "TRAVIS" in os.environ,
         reason="Skip test because of no internet connection or in travis test",
     )
     def test_magic_preview_dot(self, notebook):
-        output = notebook.check_output(
-            '''
-            %preview -n a.dot
-            with open('a.dot', 'w') as dot:
-                dot.write("""\\
-            graph graphname {
-                a -- b -- c;
-                b -- d;
-            }
-            """)
-            ''',
+        dotfile = os.path.join(os.path.expanduser('~'), 'a.dot')
+        with open(dotfile, 'w') as dot:
+            dot.write("""\
+graph graphname {
+    a -- b -- c;
+    b -- d;
+}
+""")
+
+        output = notebook.check_output('%preview -n ~/a.dot',
             kernel="SoS",
             selector="img",
         )
         assert "a.dot" in output and "data:image/png;base64" in output
+        os.remove(dotfile)
 
     def test_magic_preview_in_R(self, notebook):
         assert "mtcars" in notebook.check_output(
@@ -849,20 +845,6 @@ class TestMagics(NotebookTest):
             x in output for x in ('rsync 3.2', 'v1', 'v2', 'v3', 'v4', 'd1',
                                   'd2', 'd3', 'd4'))
 
-    def test_magic_set(self, notebook):
-        assert "set" in notebook.check_output(
-            """\
-            %set
-            %set -v2
-            %set
-            %set -v1
-            """,
-            kernel="SoS",
-        )
-        #
-        # not accept workflow name
-        assert "Magic %set cannot set positional argument" in notebook.check_output(
-            "%set haha", kernel="SoS", expect_error=True)
 
     @pytest.mark.skipif(
         sys.platform == "win32",

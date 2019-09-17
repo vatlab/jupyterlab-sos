@@ -9,6 +9,8 @@ import { ICellModel, Cell } from "@jupyterlab/cells";
 
 import { ConsolePanel } from "@jupyterlab/console";
 
+import { JSONObject } from '@phosphor/coreutils';
+
 import { Manager } from "./manager";
 import { changeCellKernel, hideLanSelector } from "./selectors";
 
@@ -102,24 +104,28 @@ function getNotebookWorkflow(panel: NotebookPanel) {
 }
 
 function my_execute(
-  content: KernelMessage.IExecuteRequest,
-  disposeOnDone: boolean = true
-): Kernel.IFuture {
+  content: KernelMessage.IExecuteRequestMsg['content'] ,
+  disposeOnDone: boolean = true,
+  metadata?: JSONObject
+): Kernel.IShellFuture<
+    KernelMessage.IExecuteRequestMsg,
+    KernelMessage.IExecuteReplyMsg
+  > {
   let code = content.code;
 
-  content.sos = {};
+  metadata.sos = {};
   let panel = Manager.currentNotebook;
   if (
     code.match(
       /^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/m
     )
   ) {
-    content.sos["workflow"] = getNotebookWorkflow(panel);
+    metadata.sos["workflow"] = getNotebookWorkflow(panel);
   }
-  content.sos["path"] = panel.context.path;
-  content.sos["use_panel"] = Manager.consolesOfNotebook(panel).length > 0;
+  metadata.sos["path"] = panel.context.path;
+  metadata.sos["use_panel"] = Manager.consolesOfNotebook(panel).length > 0;
 
-  content.sos["use_iopub"] = true;
+  metadata.sos["use_iopub"] = true;
 
   let info = Manager.manager.get_info(panel);
 
@@ -127,7 +133,7 @@ function my_execute(
   let cells = panel.content.widgets;
 
   if (code.match(/^%toc/m)) {
-    content.sos["toc"] = scanHeaderLines(cells);
+    metadata.sos["toc"] = scanHeaderLines(cells);
   }
 
   for (let i = cells.length - 1; i >= 0; --i) {
@@ -142,12 +148,12 @@ function my_execute(
       if (!prompt || prompt.textContent.indexOf("*") === -1) continue;
       // use cell kernel if meta exists, otherwise use nb.metadata["sos"].default_kernel
       if (info.autoResume) {
-        content.sos["rerun"] = true;
+        metadata.sos["rerun"] = true;
         info.autoResume = false;
       }
-      content.sos["cell_id"] = cell.model.id;
-      content.sos["cell_kernel"] = cell.model.metadata.get("kernel");
-      return this.orig_execute(content, disposeOnDone);
+      metadata.sos["cell_id"] = cell.model.id;
+      metadata.sos["cell_kernel"] = cell.model.metadata.get("kernel");
+      return this.orig_execute(content, disposeOnDone, metadata);
     }
   }
 
@@ -162,10 +168,10 @@ function my_execute(
 
   // hide the drop down box
   hideLanSelector(last_cell);
-  content.sos["cell_kernel"] = kernel;
-  content.sos["cell_id"] = -1;
+  metadata.sos["cell_kernel"] = kernel;
+  metadata.sos["cell_id"] = -1;
   content.silent = false;
   content.store_history = true;
 
-  return this.orig_execute(content, disposeOnDone);
+  return this.orig_execute(content, disposeOnDone, metadata);
 }
