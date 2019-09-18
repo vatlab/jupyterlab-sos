@@ -598,7 +598,7 @@ class Notebook:
                     Keys.DOWN).send_keys(Keys.DOWN).send_keys(
                         Keys.DOWN).send_keys(Keys.DOWN).send_keys(
                             Keys.DOWN).send_keys(Keys.DOWN).click().perform()
-            wait_for_selector(self.browser, "div .jp-ConsolePanel")
+            wait_for_selector(self.browser, "div .jp-ConsolePanel", timeout=120)
 
     def edit_prompt_cell(self,
                          content,
