@@ -14,14 +14,6 @@ from selenium.webdriver.common.keys import Keys
 
 class TestFrontEnd(NotebookTest):
 
-    def test_toggle_console(self, notebook):
-
-        assert bool(notebook.is_console_panel_open())==False
-        notebook.toggle_console_panel()
-        assert bool(notebook.is_console_panel_open())==True
-        notebook.toggle_console_panel()
-        assert bool(notebook.is_console_panel_open())==False
-
     def test_run_in_console(self, notebook):
         idx = notebook.call("print(1)", kernel="SoS")
         time.sleep(5)
