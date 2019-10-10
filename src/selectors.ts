@@ -132,18 +132,22 @@ export function addLanSelector(cell: Cell, info: NotebookInfo) {
     }
     select.className = CELL_LANGUAGE_DROPDOWN_CLASS + " sos-widget";
     let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
-    editor.parentElement.insertBefore(select, editor);
-    select.value = kernel;
-    select.addEventListener("change", function(evt) {
-      // set cell level meta data
-      let kernel = (evt.target as HTMLOptionElement).value;
-      cell.model.metadata.set("kernel", kernel);
-      info.sos_comm.send({ "set-editor-kernel": kernel });
-      // change style
-      changeStyleOnKernel(cell, kernel, info);
-      // set global meta data
-      saveKernelInfo();
-    });
+    if (!editor) {
+      // if the cell is collapsed, no jp-InputArea-editor could be found
+    } else {
+      editor.parentElement.insertBefore(select, editor);
+      select.value = kernel;
+      select.addEventListener("change", function(evt) {
+        // set cell level meta data
+        let kernel = (evt.target as HTMLOptionElement).value;
+        cell.model.metadata.set("kernel", kernel);
+        info.sos_comm.send({ "set-editor-kernel": kernel });
+        // change style
+        changeStyleOnKernel(cell, kernel, info);
+        // set global meta data
+        saveKernelInfo();
+      });
+    }
   } else {
     // use the existing dropdown box
     let select = nodes.item(0) as HTMLSelectElement;
