@@ -289,7 +289,7 @@ function markExpr(python_mode: any) {
                 if (stream.match(sosMagics[i])) {
                   if (sosMagics[i] === "%expand") {
                     // %expand, %expand --in R
-                    if (stream.eol() || stream.match(/\s*$/, false) || stream.match(/\s*--in\s+.*$/, false) || stream.match(/\s*-i\s+.*$/, false)) {
+                    if (stream.eol() || stream.match(/\s*(-i\s*\S+|--in\s*\S+)?$/, false)) {
                       state.overlay_state.sigil = {
                         left: "{",
                         right: "}"
@@ -298,8 +298,8 @@ function markExpr(python_mode: any) {
                       let found = stream.match(/\s+(\S+)\s+(\S+)\s*(-i\s*\S+|--in\s*\S+)?$/, false);
                       if (found) {
                         state.overlay_state.sigil = {
-                          left: found[1],
-                          right: found[2]
+                          left: found[1].match(/^.*[A-Za-z]$/) ? found[1] + ' ' : found[1],
+                          right: found[2].match(/^[A-Za-z].*$/) ? ' ' + found[2] : found[2]
                         };
                       } else {
                         state.overlay_state.sigil = false;
@@ -537,13 +537,13 @@ function markExpr(python_mode: any) {
                 right: "}"
               };
             } else {
-              let found = stream.match(/expand\s*=\s*"(\S+) (\S+)"/, false);
+              let found = stream.match(/\s+(\S+)\s+(\S+)\s*(-i\s*\S+|--in\s*\S+)?$/, false);
               if (!found)
                 found = stream.match(/expand\s*=\s*'(\S+) (\S+)'/, false);
               if (found) {
                 state.overlay_state.sigil = {
-                  left: found[1],
-                  right: found[2]
+                  left: found[1].match(/^.*[A-Za-z]$/) ? found[1] + ' ' : found[1],
+                  right: found[2].match(/^[A-Za-z].*$/) ? ' ' + found[2] : found[2]
                 };
               }
             }
