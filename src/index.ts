@@ -3,13 +3,13 @@ import {
   JupyterFrontEndPlugin
 } from "@jupyterlab/application";
 
-import { each } from "@phosphor/algorithm";
+import { each } from "@lumino/algorithm";
 
-import { IDisposable, DisposableDelegate } from "@phosphor/disposable";
+import { IDisposable, DisposableDelegate } from "@lumino/disposable";
 
 import { Cell, CodeCell } from "@jupyterlab/cells";
 
-import { Session } from "@jupyterlab/services";
+import { Kernel, Session } from "@jupyterlab/services";
 
 import { DocumentRegistry } from "@jupyterlab/docregistry";
 
@@ -619,7 +619,7 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   let info = Manager.manager.get_info(panel);
   if (info.sos_comm && !renew) return;
 
-  let sos_comm = panel.context.session.kernel.connectToComm("sos_comm");
+  let sos_comm = panel.context.sessionContext.session?.kernel.createComm("sos_comm");
 
   Manager.manager.register_comm(sos_comm, panel);
   sos_comm.open("initial");
@@ -716,14 +716,14 @@ export class SoSWidgets
     let info = Manager.manager.get_info(panel);
 
     // this is a singleton class
-    context.session.ready.then(() => {
+    context.sessionContext.ready.then(() => {
       // kernel information (for opened notebook) should be ready at this time.
       // However, when the notebook is created from File -> New Notebook -> Select Kernel
       // The kernelPreference.name is not yet set and we have to use kernelDisplayName
       // which is SoS (not sos)
       let cur_kernel =
-        panel.context.session.kernelPreference.name ||
-        panel.context.session.kernelDisplayName;
+        panel.context.sessionContext.kernelPreference.name ||
+        panel.context.sessionContext.kernelDisplayName;
       if (cur_kernel.toLowerCase() === "sos") {
         console.log(`session ready with kernel sos`);
         // if this is not a sos kernel, remove all buttons
@@ -746,8 +746,8 @@ export class SoSWidgets
       }
     });
 
-    context.session.kernelChanged.connect(
-      (sender: any, args: Session.IKernelChangedArgs) => {
+    context.sessionContext.kernelChanged.connect(
+      (sender: any, args: Session.ISessionConnection.IKernelChangedArgs) => {
         console.log(`kernel changed to ${args.newValue.name}`);
         if (args.newValue.name === "sos") {
           if (panel.content.model.metadata.has("sos")) {
@@ -771,11 +771,11 @@ export class SoSWidgets
       }
     );
 
-    context.session.statusChanged.connect((sender, status) => {
+    context.sessionContext.statusChanged.connect((sender, status) => {
       // if a sos notebook is restarted
       if (
-        (status === "connected" || status === "starting") &&
-        panel.context.session.kernelDisplayName === "SoS"
+        (status === "busy" || status === "starting") &&
+        panel.context.sessionContext.kernelDisplayName === "SoS"
       ) {
         console.log(`connected to sos kernel`);
         connectSoSComm(panel, true);
@@ -785,8 +785,8 @@ export class SoSWidgets
 
     panel.content.model.cells.changed.connect((list, changed) => {
       let cur_kernel =
-        panel.context.session.kernelPreference.name ||
-        panel.context.session.kernelDisplayName;
+        panel.context.sessionContext.kernelPreference.name ||
+        panel.context.sessionContext.kernelDisplayName;
       if (cur_kernel.toLowerCase() === "sos") {
         each(changed.newValues, cellmodel => {
           let idx = changed.newIndex; // panel.content.widgets.findIndex(x => x.model.id == cellmodel.id);
@@ -823,7 +823,7 @@ export class SoSWidgets
       // this event is triggered both when a cell gets focus, and
       // also when a new notebook is created etc when cell does not exist
       if (cell && cell.model.type === "code" && info.sos_comm) {
-        let cell_kernel = cell.model.metadata.get("kernel");
+        let cell_kernel = cell.model.metadata.get("kernel") as string;
         info.sos_comm.send({
           "set-editor-kernel": cell_kernel
         });
@@ -940,10 +940,10 @@ const extension: JupyterFrontEndPlugin<void> = {
         let info = Manager.manager.get_info(Manager.currentNotebook);
         addLanSelector(panel.promptCell, info);
       });
-      labconsole.session.statusChanged.connect((sender, status) => {
+      labconsole.sessionContext.statusChanged.connect((sender, status: Kernel.Status) => {
         if (
-          status === "connected" &&
-          panel.console.session.kernelDisplayName === "SoS"
+          status == "busy" &&
+          panel.console.sessionContext?.kernelDisplayName === "SoS"
         ) {
           console.log(`connected to sos kernel`);
           // connectSoSComm(panel, true);

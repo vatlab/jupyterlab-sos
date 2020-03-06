@@ -2,7 +2,7 @@ import { NotebookPanel, INotebookTracker } from "@jupyterlab/notebook";
 
 import { ConsolePanel, IConsoleTracker } from "@jupyterlab/console";
 
-import { CommandRegistry } from "@phosphor/commands";
+import { CommandRegistry } from "@lumino/commands";
 
 import { Kernel } from "@jupyterlab/services";
 //
@@ -172,7 +172,7 @@ export class Manager {
 
   public static consolesOfNotebook(panel: NotebookPanel): Array<ConsolePanel> {
     return this._console_tracker.filter(value => {
-      return value.console.session.path === panel.context.path;
+      return value.console.sessionContext.path === panel.context.path;
     });
   }
 

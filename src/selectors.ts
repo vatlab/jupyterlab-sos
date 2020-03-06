@@ -28,7 +28,7 @@ export function saveKernelInfo() {
     used_kernels
   )
     .sort()
-    .map(function(x) {
+    .map(function(x: string) {
       return [
         info.DisplayName.get(x),
         info.KernelName.get(x),

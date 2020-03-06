@@ -9,13 +9,13 @@ import { ICellModel, Cell } from "@jupyterlab/cells";
 
 import { ConsolePanel } from "@jupyterlab/console";
 
-import { JSONObject } from '@phosphor/coreutils';
+import { JSONObject } from '@lumino/coreutils';
 
 import { Manager } from "./manager";
 import { changeCellKernel, hideLanSelector } from "./selectors";
 
 export function wrapExecutor(panel: NotebookPanel) {
-  let kernel = panel.session.kernel;
+  let kernel = panel.sessionContext.session?.kernel;
 
   // override kernel execute with the wrapper.
   // however, this function can be called multiple times for kernel
@@ -28,7 +28,7 @@ export function wrapExecutor(panel: NotebookPanel) {
 }
 
 export function wrapConsoleExecutor(panel: ConsolePanel) {
-  let kernel = panel.session.kernel;
+  let kernel = panel.sessionContext.session?.kernel;
 
   // override kernel execute with the wrapper.
   // however, this function can be called multiple times for kernel
@@ -152,7 +152,7 @@ function my_execute(
         info.autoResume = false;
       }
       metadata.sos["cell_id"] = cell.model.id;
-      metadata.sos["cell_kernel"] = cell.model.metadata.get("kernel");
+      metadata.sos["cell_kernel"] = cell.model.metadata.get("kernel") as string;
       return this.orig_execute(content, disposeOnDone, metadata);
     }
   }
