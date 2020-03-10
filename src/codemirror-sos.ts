@@ -537,7 +537,7 @@ function markExpr(python_mode: any) {
                 right: "}"
               };
             } else {
-              let found = stream.match(/\s+(\S+)\s+(\S+)\s*(-i\s*\S+|--in\s*\S+)?$/, false);
+              let found = stream.match(/expand\s*=\s*"(\S+) (\S+)"/, false);
               if (!found)
                 found = stream.match(/expand\s*=\s*'(\S+) (\S+)'/, false);
               if (found) {
