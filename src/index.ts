@@ -778,7 +778,7 @@ export class SoSWidgets
         panel.context.sessionContext.kernelDisplayName === "SoS"
       ) {
         console.log(`connected to sos kernel`);
-        connectSoSComm(panel, true);
+        connectSoSComm(panel);
         wrapExecutor(panel);
       }
     });
