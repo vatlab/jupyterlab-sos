@@ -18,32 +18,30 @@ class TestMagics(NotebookTest):
         """test %pwd in the python3 kernel (which is not a sos magic)"""
         assert len(notebook.check_output("%pwd", kernel="Python3")) > 0
 
-    def test_help_messages(self, notebook):
+    @pytest.mark.parametrize('magic', [
+        "cd",
+        "convert",
+        "dict",
+        "get",
+        "matplotlib",
+        "preview",
+        "put",
+        "render",
+        'revisions',
+        "run",
+        "runfile",
+        "save",
+        "sandbox",
+        "sessioninfo",
+        "sosrun",
+        "shutdown",
+        "task",
+        "use",
+        "with",
+    ])
+    def test_help_messages(self, notebook, magic):
         """test help functions of magics"""
-        for magic in (
-                "cd",
-                "dict",
-                "get",
-                "matplotlib",
-                "preview",
-                "put",
-                "render",
-                'revisions',
-                "run",
-                "runfile",
-                "save",
-                "sandbox",
-                "sessioninfo",
-                "sosrun",
-                "sossave",
-                "shutdown",
-                "task",
-                "use",
-                "with",
-        ):
-            output = notebook.check_output(f"%{magic} -h", kernel="SoS")
-            # output does not have error
-            assert magic in output
+        assert magic in notebook.check_output(f"%{magic} -h", kernel="SoS")
 
     def test_magic_capture(self, notebook):
         # test %capture
@@ -246,7 +244,7 @@ class TestMagics(NotebookTest):
             %expand
             if ({par} > 50) {{
                 cat('A parameter {par} greater than 50 is specified.');
-            
+
 
             """,
             kernel="R",
@@ -256,7 +254,7 @@ class TestMagics(NotebookTest):
             %expand ${ }
             if (${par} > 50) {
                 cat('A parameter ${par} greater than 50 is specified.');
-            
+
             """,
             kernel="R",
         )
@@ -265,7 +263,7 @@ class TestMagics(NotebookTest):
             %expand [ ]
             if ([par] > 50) {
                 cat('A parameter [par] greater than 50 is specified.');
-            
+
             """,
             kernel="R",
         )
@@ -476,7 +474,8 @@ graph graphname {
 }
 """)
 
-        output = notebook.check_output('%preview -n ~/a.dot',
+        output = notebook.check_output(
+            '%preview -n ~/a.dot',
             kernel="SoS",
             selector="img",
         )
@@ -829,7 +828,7 @@ graph graphname {
             'str_section': 'rsync 3.2',
             'list_section': [('v1', 'v2'), ('v3', b'v4')],
             'dict_section': {'d1': 'd2', 'd3': b'd4'}
-        
+
         ''',
             kernel='SoS')
         output = notebook.check_output(
@@ -844,7 +843,6 @@ graph graphname {
         assert all(
             x in output for x in ('rsync 3.2', 'v1', 'v2', 'v3', 'v4', 'd1',
                                   'd2', 'd3', 'd4'))
-
 
     @pytest.mark.skipif(
         sys.platform == "win32",
