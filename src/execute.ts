@@ -104,13 +104,13 @@ function getNotebookWorkflow(panel: NotebookPanel) {
 }
 
 function my_execute(
-  content: KernelMessage.IExecuteRequestMsg['content'] ,
+  content: KernelMessage.IExecuteRequestMsg['content'],
   disposeOnDone: boolean = true,
   metadata?: JSONObject
 ): Kernel.IShellFuture<
-    KernelMessage.IExecuteRequestMsg,
-    KernelMessage.IExecuteReplyMsg
-  > {
+  KernelMessage.IExecuteRequestMsg,
+  KernelMessage.IExecuteReplyMsg
+> {
   let code = content.code;
 
   metadata.sos = {};
@@ -136,42 +136,38 @@ function my_execute(
     metadata.sos["toc"] = scanHeaderLines(cells);
   }
 
-  for (let i = cells.length - 1; i >= 0; --i) {
-    // this is the cell that is being executed...
-    // according to this.set_input_prompt("*") before execute is called.
-    // also, because a cell might be starting without a previous cell
-    // being finished, we should start from reverse and check actual code
-    let cell = cells[i];
-    if (code === cell.model.value.text) {
-      // check *
-      let prompt = cell.node.querySelector(".jp-InputArea-prompt");
-      if (!prompt || prompt.textContent.indexOf("*") === -1) continue;
-      // use cell kernel if meta exists, otherwise use nb.metadata["sos"].default_kernel
-      if (info.autoResume) {
-        metadata.sos["rerun"] = true;
-        info.autoResume = false;
-      }
-      metadata.sos["cell_id"] = cell.model.id;
-      metadata.sos["cell_kernel"] = cell.model.metadata.get("kernel") as string;
-      return this.orig_execute(content, disposeOnDone, metadata);
+  let cell = panel.content.widgets.find(x => x.model.id === metadata.cellId);
+  if (cell) {
+    // check *
+    // let prompt = cell.node.querySelector(".jp-InputArea-prompt");
+    // if (!prompt || prompt.textContent.indexOf("*") === -1) continue;
+    // use cell kernel if meta exists, otherwise use nb.metadata["sos"].default_kernel
+    if (info.autoResume) {
+      metadata.sos["rerun"] = true;
+      info.autoResume = false;
     }
+    metadata.sos["cell_id"] = cell.model.id;
+    metadata.sos["cell_kernel"] = cell.model.metadata.get("kernel") as string;
+    if (metadata.sos["cell_kernel"] === "Markdown") {
+      // fold the input of markdown cells
+      cell.inputHidden = true;
+    }
+  } else {
+    let labconsole = Manager.currentConsole.console;
+    let last_cell = labconsole.cells.get(labconsole.cells.length - 1);
+    let kernel = last_cell.model.metadata.get("kernel");
+    kernel = kernel ? kernel.toString() : "SoS";
+
+    // change the color of console cell
+    changeCellKernel(last_cell, kernel, info);
+    changeCellKernel(labconsole.promptCell, kernel, info);
+
+    // hide the drop down box
+    hideLanSelector(last_cell);
+    metadata.sos["cell_kernel"] = kernel;
+    metadata.sos["cell_id"] = -1;
+    content.silent = false;
+    content.store_history = true;
   }
-
-  let labconsole = Manager.currentConsole.console;
-  let last_cell = labconsole.cells.get(labconsole.cells.length - 1);
-  let kernel = last_cell.model.metadata.get("kernel");
-  kernel = kernel ? kernel.toString() : "SoS";
-
-  // change the color of console cell
-  changeCellKernel(last_cell, kernel, info);
-  changeCellKernel(labconsole.promptCell, kernel, info);
-
-  // hide the drop down box
-  hideLanSelector(last_cell);
-  metadata.sos["cell_kernel"] = kernel;
-  metadata.sos["cell_id"] = -1;
-  content.silent = false;
-  content.store_history = true;
-
   return this.orig_execute(content, disposeOnDone, metadata);
 }

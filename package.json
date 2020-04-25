@@ -44,7 +44,8 @@
     "@lumino/algorithm": "^1.2.3"
   },
   "devDependencies": {
-    "@types/codemirror": "~0.0.76",
+    "@types/codemirror": "0.0.76",
+    "codemirror": "^5.53.2",
     "rimraf": "~3.0.0",
     "typedoc": "^0.15.4",
     "typescript": "~3.7.3"

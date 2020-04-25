@@ -88,7 +88,7 @@ function formatDuration(ms: number): string {
 }
 
 function update_duration() {
-  setInterval(function() {
+  setInterval(function () {
     document
       .querySelectorAll("[id^='status_duration_']")
       .forEach((item: HTMLElement) => {
@@ -237,7 +237,7 @@ function update_workflow_status(info, panel) {
   let onmouseover = `onmouseover='this.classList="fa fa-2x fa-fw fa-trash"'`;
   let onmouseleave = `onmouseleave='this.classList="fa fa-2x fa-fw ${
     status_class[info.status]
-  }"'`;
+    }"'`;
   let onclick = `onclick="cancel_workflow(this.id.substring(21))"`;
 
   let data = {
@@ -251,19 +251,19 @@ function update_workflow_status(info, panel) {
       <td class="workflow_icon">
         <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${
         status_class[info.status]
-      }"
+        }"
         ${onmouseover} ${onmouseleave} ${onclick}></i>
       </td>
       <td class="workflow_name">
         <pre><span id="workflow_name_${cell_id}">${
         info.workflow_name
-      }</span></pre>
+        }</span></pre>
       </td>
       <td class="workflow_id">
         <span>Workflow ID</span></br>
         <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${
         info.workflow_id
-      }</span></pre>
+        }</span></pre>
       </td>
       <td class="workflow_index">
         <span>Index</span></br>
@@ -273,7 +273,7 @@ function update_workflow_status(info, panel) {
         <span id="status_text_${cell_id}">${info.status}</span></br>
         <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${
         info.status
-      }" datetime="${info.start_time}">${timer_text}</time></pre>
+        }" datetime="${info.start_time}">${timer_text}</time></pre>
       </td>
 </tr>
 </table>
@@ -402,16 +402,16 @@ function update_task_status(info, panel) {
     `<pre>${info.task_id}` +
     `<div class="task_id_actions">` +
     `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', task:'${
-      info.task_id
+    info.task_id
     }', queue: '${info.queue}'})"></i>` +
     `<i class="fa fa-fw fa-play" onclick="task_action({action:'execute', task:'${
-      info.task_id
+    info.task_id
     }', queue: '${info.queue}'})"></i>` +
     `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', task:'${
-      info.task_id
+    info.task_id
     }', queue: '${info.queue}'})"></i>` +
     `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', task:'${
-      info.task_id
+    info.task_id
     }', queue: '${info.queue}'})"></i>` +
     `</div></pre>`;
 
@@ -426,13 +426,13 @@ function update_task_status(info, panel) {
       `<pre class="task_tags task_tag_${tag}">${tag}` +
       `<div class="task_tag_actions">` +
       `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', tag:'${tag}', queue: '${
-        info.queue
+      info.queue
       }'})"></i>` +
       `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', tag:'${tag}', queue: '${
-        info.queue
+      info.queue
       }'})"></i>` +
       `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', tag:'${tag}', queue: '${
-        info.queue
+      info.queue
       }'})"></i>` +
       `</div></pre>`;
   }
@@ -448,7 +448,7 @@ function update_task_status(info, panel) {
   <td class="task_icon">
     <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${
         status_class[info.status]
-      }"
+        }"
     ${onmouseover} ${onmouseleave} ${onclick}></i>
   </td>
   <td class="task_id">
@@ -460,12 +460,12 @@ function update_task_status(info, panel) {
   <td class="task_timer">
     <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${
         info.status
-      }" datetime="${info.start_time}">${timer_text}</time></pre>
+        }" datetime="${info.start_time}">${timer_text}</time></pre>
   </td>
   <td class="task_status">
     <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${
         info.status
-      }</span></pre>
+        }</span></pre>
   </td>
 </tr>
 </table>
@@ -619,27 +619,32 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   let info = Manager.manager.get_info(panel);
   if (info.sos_comm && !renew) return;
 
-  let sos_comm = panel.context.sessionContext.session?.kernel.createComm("sos_comm");
+  try {
+    let sos_comm = panel.context.sessionContext.session?.kernel.createComm("sos_comm");
+    Manager.manager.register_comm(sos_comm, panel);
+    sos_comm.open("initial");
+    sos_comm.onMsg = on_frontend_msg;
 
-  Manager.manager.register_comm(sos_comm, panel);
-  sos_comm.open("initial");
-  sos_comm.onMsg = on_frontend_msg;
+    if (panel.content.model.metadata.has("sos")) {
+      sos_comm.send({
+        "notebook-version": (panel.content.model.metadata.get("sos") as any)[
+          "version"
+        ],
+        "list-kernel": (panel.content.model.metadata.get("sos") as any)["kernels"]
+      });
+    } else {
+      sos_comm.send({
+        "notebook-version": "",
+        "list-kernel": []
+      });
+    }
 
-  if (panel.content.model.metadata.has("sos")) {
-    sos_comm.send({
-      "notebook-version": (panel.content.model.metadata.get("sos") as any)[
-        "version"
-      ],
-      "list-kernel": (panel.content.model.metadata.get("sos") as any)["kernels"]
-    });
-  } else {
-    sos_comm.send({
-      "notebook-version": "",
-      "list-kernel": []
-    });
+    console.log("sos comm registered");
+  } catch (err) {
+    // if the kernel is for the notebook console, an exception
+    // 'Comms are disabled on this kernel connection' will be thrown
+    return;
   }
-
-  console.log("sos comm registered");
 }
 
 function hideSoSWidgets(element: HTMLElement) {
@@ -658,7 +663,7 @@ function showSoSWidgets(element: HTMLElement) {
     sos_elements[i].style.display = "";
 }
 
-(<any>window).task_action = async function(param) {
+(<any>window).task_action = async function (param) {
   if (!param.action) {
     return;
   }
@@ -684,7 +689,7 @@ function showSoSWidgets(element: HTMLElement) {
   });
 };
 
-(<any>window).cancel_workflow = function(cell_id) {
+(<any>window).cancel_workflow = function (cell_id) {
   console.log("Cancel workflow " + cell_id);
   let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
@@ -692,7 +697,7 @@ function showSoSWidgets(element: HTMLElement) {
   });
 };
 
-(<any>window).execute_workflow = function(cell_ids) {
+(<any>window).execute_workflow = function (cell_ids) {
   console.log("Run workflows " + cell_ids);
   let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
@@ -777,7 +782,6 @@ export class SoSWidgets
         (status === "busy" || status === "starting") &&
         panel.context.sessionContext.kernelDisplayName === "SoS"
       ) {
-        console.log(`connected to sos kernel`);
         connectSoSComm(panel);
         wrapExecutor(panel);
       }
@@ -830,7 +834,7 @@ export class SoSWidgets
       }
     });
 
-    return new DisposableDelegate(() => {});
+    return new DisposableDelegate(() => { });
   }
 }
 
@@ -839,7 +843,7 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
 }
 
 
-(<any>window).filterDataFrame = function(id) {
+(<any>window).filterDataFrame = function (id) {
   var input = document.getElementById("search_" + id) as HTMLInputElement;;
   var filter = input.value.toUpperCase();
   var table = document.getElementById("dataframe_" + id) as HTMLTableElement;
@@ -861,7 +865,7 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
   }
 };
 
-(<any>window).sortDataFrame = function(id, n, dtype) {
+(<any>window).sortDataFrame = function (id, n, dtype) {
   var table = document.getElementById("dataframe_" + id) as HTMLTableElement;
 
   var tb = table.tBodies[0]; // use `<tbody>` to ignore `<thead>` and `<tfoot>` rows
@@ -869,19 +873,19 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
 
   var fn =
     dtype === "numeric"
-      ? function(a, b) {
-          return parseFloat(a.cells[n].textContent) <=
-            parseFloat(b.cells[n].textContent)
-            ? -1
-            : 1;
-        }
-      : function(a, b) {
-          var c = a.cells[n].textContent
-            .trim()
-            .localeCompare(b.cells[n].textContent.trim());
-          return c > 0 ? 1 : c < 0 ? -1 : 0;
-        };
-  var isSorted = function(array, fn) {
+      ? function (a, b) {
+        return parseFloat(a.cells[n].textContent) <=
+          parseFloat(b.cells[n].textContent)
+          ? -1
+          : 1;
+      }
+      : function (a, b) {
+        var c = a.cells[n].textContent
+          .trim()
+          .localeCompare(b.cells[n].textContent.trim());
+        return c > 0 ? 1 : c < 0 ? -1 : 0;
+      };
+  var isSorted = function (array, fn) {
     if (array.length < 2) {
       return 1;
     }
