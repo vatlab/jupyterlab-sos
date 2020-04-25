@@ -22,7 +22,7 @@ before_install:
     - pip install entrypoints jupyter coverage codacy-coverage pytest pytest-cov python-coveralls
     - conda install -q pandas numpy
     - conda install -c r r-essentials r-feather
-    - conda install -c conda-forge feather-format nodejs
+    - conda install -c conda-forge feather-format nodejs=13.13.0
     # SoS Notebook
     - pip install jedi notebook nbconvert nbformat pyyaml psutil tqdm scipy markdown matplotlib jupyterlab
     - sudo apt-get install libmagickwand-dev libmagickcore-dev graphviz
