@@ -22,7 +22,7 @@ before_install:
     - pip install entrypoints jupyter coverage codacy-coverage pytest pytest-cov python-coveralls
     - conda install -q pandas numpy
     - conda install -c r r-essentials r-feather
-    - conda install -c conda-forge feather-format
+    - conda install -c conda-forge feather-format nodejs
     # SoS Notebook
     - pip install jedi notebook nbconvert nbformat pyyaml psutil tqdm scipy markdown matplotlib jupyterlab
     - sudo apt-get install libmagickwand-dev libmagickcore-dev graphviz
@@ -35,7 +35,7 @@ before_install:
     - python -m sos_notebook.install
     - pip install selenium
     - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
-    - wget https://chromedriver.storage.googleapis.com/76.0.3809.126/chromedriver_linux64.zip -P ~/
+    - wget https://chromedriver.storage.googleapis.com/81.0.4044.69/chromedriver_linux64.zip -P ~/
     - unzip ~/chromedriver_linux64.zip -d ~/
     - rm ~/chromedriver_linux64.zip
     - sudo mv -f ~/chromedriver /usr/local/share/
@@ -61,4 +61,3 @@ notifications:
             - junma80@gmail.com
         on_success: never
         on_failure: always
-
