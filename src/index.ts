@@ -643,6 +643,7 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   } catch (err) {
     // if the kernel is for the notebook console, an exception
     // 'Comms are disabled on this kernel connection' will be thrown
+    console.log(err);
     return;
   }
 }
@@ -827,6 +828,10 @@ export class SoSWidgets
       // this event is triggered both when a cell gets focus, and
       // also when a new notebook is created etc when cell does not exist
       if (cell && cell.model.type === "code" && info.sos_comm) {
+        if (info.sos_comm.isDisposed) {
+          // this happens after kernel restart #53
+          connectSoSComm(panel, true);
+        }
         let cell_kernel = cell.model.metadata.get("kernel") as string;
         info.sos_comm.send({
           "set-editor-kernel": cell_kernel
