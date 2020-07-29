@@ -9,8 +9,13 @@ import "codemirror/mode/sas/sas";
 import "codemirror/mode/javascript/javascript";
 import "codemirror/mode/shell/shell";
 import "codemirror/mode/julia/julia";
-import "codemirror/mode/markdown/markdown";
+import "codemirror/mode/htmlembedded/htmlembedded";
+import "codemirror/mode/xml/xml";
+import "codemirror/mode/yaml/yaml";
+import "codemirror/mode/javascript/javascript";
+import "codemirror/mode/stex/stex";
 import "codemirror/mode/meta";
+
 
 var sosKeywords = ["input", "output", "depends", "parameter"];
 var sosActionWords = [
@@ -117,6 +122,14 @@ modeMap.set("typescript", {
 });
 modeMap.set("octave", "octave");
 modeMap.set("matlab", "octave");
+modeMap.set("html", "htmlembedded");
+modeMap.set("xml", "xml");
+modeMap.set("yaml", "yaml");
+modeMap.set("json", {
+  name: "javascript",
+  jsonMode: true
+});
+modeMap.set("stex", "stex");
 
 let extMap: Map<string, any> = new Map();
 extMap.set("sos", 'python3');
@@ -130,6 +143,12 @@ extMap.set("jl", "julia");
 extMap.set("js", "javascript");
 extMap.set("ts", "typecript");
 extMap.set("m", "matlab");
+extMap.set("html", "html");
+extMap.set("xml", "xml");
+extMap.set("yaml", "yaml");
+extMap.set("yml", "yaml");
+extMap.set("json", "json");
+extMap.set("tex", "stex");
 
 function findMode(mode: string): any {
   if (modeMap.has(mode)) {
