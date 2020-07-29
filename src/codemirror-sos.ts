@@ -9,6 +9,7 @@ import "codemirror/mode/sas/sas";
 import "codemirror/mode/javascript/javascript";
 import "codemirror/mode/shell/shell";
 import "codemirror/mode/julia/julia";
+import "codemirror/mode/markdown/markdown";
 import "codemirror/mode/htmlembedded/htmlembedded";
 import "codemirror/mode/xml/xml";
 import "codemirror/mode/yaml/yaml";
