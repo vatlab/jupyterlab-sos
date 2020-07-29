@@ -576,13 +576,13 @@ function markExpr(python_mode: any) {
             // for report, we need to find "output" option
             if (mode_string === "report" &&
               stream.match(/^.*output\s*=\s*/, false)) {
-              let found = stream.match(/^.*output\s*=\s*"""([^"]+)"""/, false);
+              let found = stream.match(/^.*output\s*=\s*[rRbufF]*"""([^"]+)"""/, false);
               if (!found)
-                found = stream.match(/^.*output\s*=\s*'''([^.]+)'''/, false);
+                found = stream.match(/^.*output\s*=\s*[rRbufF]*'''([^.]+)'''/, false);
               if (!found)
-                found = stream.match(/^.*output\s*=\s*"([^"]+)"/, false);
+                found = stream.match(/^.*output\s*=\s*[rRbufF]*"([^"]+)"/, false);
               if (!found)
-                found = stream.match(/^.*output\s*=\s*'([^']+)'/, false);
+                found = stream.match(/^.*output\s*=\s*[rRbufF]*'([^']+)'/, false);
 
               // found[1] is the filename
               state.sos_state = 'start ' + findModeFromFilename(found ? found[1] : found);
