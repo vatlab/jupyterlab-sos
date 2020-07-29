@@ -99,7 +99,8 @@ modeMap.set("python3", {
   version: 3
 });
 modeMap.set("r", "r");
-modeMap.set("report", "markdown");
+// the actual mode of report will be determined by the output parameter
+modeMap.set("report", "report");
 modeMap.set("pandoc", "markdown");
 modeMap.set("download", "markdown");
 modeMap.set("markdown", "markdown");
@@ -117,6 +118,19 @@ modeMap.set("typescript", {
 modeMap.set("octave", "octave");
 modeMap.set("matlab", "octave");
 
+let extMap: Map<string, any> = new Map();
+extMap.set("sos", 'python3');
+extMap.set("py", "python3");
+extMap.set("r", "r");
+extMap.set("md", "markdown");
+extMap.set("rb", "ruby");
+extMap.set("sas", "sas");
+extMap.set("sh", "shell");
+extMap.set("jl", "julia");
+extMap.set("js", "javascript");
+extMap.set("ts", "typecript");
+extMap.set("m", "matlab");
+
 function findMode(mode: string): any {
   if (modeMap.has(mode)) {
     return modeMap.get(mode);
@@ -126,9 +140,20 @@ function findMode(mode: string): any {
   return null;
 }
 
+function findModeFromFilename(filename: string): any {
+  if (!filename) {
+    return 'markdown';
+  }
+  let ext = filename.split('.').pop().toLowerCase();
+  if (extMap.has(ext)) {
+    return extMap.get(ext);
+  }
+  return 'markdown';
+}
+
 function markExpr(python_mode: any) {
   return {
-    startState: function() {
+    startState: function () {
       return {
         in_python: false,
         sigil: false,
@@ -137,7 +162,7 @@ function markExpr(python_mode: any) {
       };
     },
 
-    copyState: function(state: any) {
+    copyState: function (state: any) {
       return {
         in_python: state.in_python,
         sigil: state.sigil,
@@ -149,7 +174,7 @@ function markExpr(python_mode: any) {
       };
     },
 
-    token: function(stream: any, state: any) {
+    token: function (stream: any, state: any) {
       if (state.in_python) {
         if (stream.match(state.sigil.right)) {
           state.in_python = false;
@@ -197,7 +222,7 @@ function markExpr(python_mode: any) {
           }
           return "sos-sigil" + (state.matched ? "" : " sos-unmatched");
         }
-        while (stream.next() && !stream.match(state.sigil.left, false)) {}
+        while (stream.next() && !stream.match(state.sigil.left, false)) { }
         return null;
       }
     }
@@ -206,7 +231,7 @@ function markExpr(python_mode: any) {
 
 (CodeMirror as any).defineMode(
   "sos",
-  function(conf: CodeMirror.EditorConfiguration, parserConf: any) {
+  function (conf: CodeMirror.EditorConfiguration, parserConf: any) {
     let sosPythonConf: any = {};
     for (let prop in parserConf) {
       if (parserConf.hasOwnProperty(prop)) {
@@ -241,7 +266,7 @@ function markExpr(python_mode: any) {
       );
       var overlay_mode = markExpr(python_mode);
       return {
-        startState: function() {
+        startState: function () {
           return {
             sos_mode: true,
             base_state: (CodeMirror as any).startState(base_mode),
@@ -255,7 +280,7 @@ function markExpr(python_mode: any) {
           };
         },
 
-        copyState: function(state) {
+        copyState: function (state) {
           return {
             sos_mode: state.sos_mode,
             base_state: (CodeMirror as any).copyState(
@@ -274,7 +299,7 @@ function markExpr(python_mode: any) {
           };
         },
 
-        token: function(stream, state) {
+        token: function (stream, state) {
           if (state.sos_mode) {
             if (stream.sol()) {
               let sl = stream.peek();
@@ -348,7 +373,7 @@ function markExpr(python_mode: any) {
           }
         },
 
-        indent: function(state, textAfter) {
+        indent: function (state, textAfter) {
           // inner indent
           if (!state.sos_mode) {
             if (!base_mode.indent) return CodeMirror.Pass;
@@ -360,12 +385,12 @@ function markExpr(python_mode: any) {
           }
         },
 
-        innerMode: function(state: any) {
+        innerMode: function (state: any) {
           return state.sos_mode
             ? {
-                state: state.base_state,
-                mode: base_mode
-              }
+              state: state.base_state,
+              mode: base_mode
+            }
             : null;
         },
 
@@ -377,7 +402,7 @@ function markExpr(python_mode: any) {
       base_mode = (CodeMirror as any).getMode(conf, sosPythonConf);
       overlay_mode = markExpr(base_mode);
       return {
-        startState: function() {
+        startState: function () {
           return {
             sos_state: null,
             base_state: (CodeMirror as any).startState(base_mode),
@@ -393,7 +418,7 @@ function markExpr(python_mode: any) {
           };
         },
 
-        copyState: function(state) {
+        copyState: function (state) {
           return {
             sos_state: state.sos_state,
             base_state: (CodeMirror as any).copyState(
@@ -419,7 +444,7 @@ function markExpr(python_mode: any) {
           };
         },
 
-        token: function(stream, state) {
+        token: function (stream, state) {
           if (stream.sol()) {
             let sl = stream.peek();
             if (sl == "[") {
@@ -530,22 +555,37 @@ function markExpr(python_mode: any) {
             return it ? it + " sos-option" : null;
           } else if (state.sos_state && state.sos_state.startsWith("start ")) {
             // try to understand option expand=
-            if (stream.match(/expand\s*=\s*True/, false)) {
+            if (stream.match(/^.*expand\s*=\s*True/, false)) {
               // highlight {}
               state.overlay_state.sigil = {
                 left: "{",
                 right: "}"
               };
             } else {
-              let found = stream.match(/expand\s*=\s*"(\S+) (\S+)"/, false);
+              let found = stream.match(/^.*expand\s*=\s*"(\S+) (\S+)"/, false);
               if (!found)
-                found = stream.match(/expand\s*=\s*'(\S+) (\S+)'/, false);
+                found = stream.match(/^.*expand\s*=\s*'(\S+) (\S+)'/, false);
               if (found) {
                 state.overlay_state.sigil = {
                   left: found[1].match(/^.*[A-Za-z]$/) ? found[1] + ' ' : found[1],
                   right: found[2].match(/^[A-Za-z].*$/) ? ' ' + found[2] : found[2]
                 };
               }
+            }
+            let mode_string = state.sos_state.slice(6).toLowerCase();
+            // for report, we need to find "output" option
+            if (mode_string === "report" &&
+              stream.match(/^.*output\s*=\s*/, false)) {
+              let found = stream.match(/^.*output\s*=\s*"""([^"]+)"""/, false);
+              if (!found)
+                found = stream.match(/^.*output\s*=\s*'''([^.]+)'''/, false);
+              if (!found)
+                found = stream.match(/^.*output\s*=\s*"([^"]+)"/, false);
+              if (!found)
+                found = stream.match(/^.*output\s*=\s*'([^']+)'/, false);
+
+              // found[1] is the filename
+              state.sos_state = 'start ' + findModeFromFilename(found ? found[1] : found);
             }
             let token = base_mode.token(stream, state.base_state);
             // if it is end of line, ending the starting switch mode
@@ -612,7 +652,7 @@ function markExpr(python_mode: any) {
           }
         },
 
-        indent: function(state, textAfter) {
+        indent: function (state, textAfter) {
           // inner indent
           if (state.inner_mode) {
             if (!state.inner_mode.indent) return CodeMirror.Pass;
@@ -622,13 +662,13 @@ function markExpr(python_mode: any) {
           }
         },
 
-        innerMode: function(state: any) {
+        innerMode: function (state: any) {
           return state.inner_mode
             ? null
             : {
-                state: state.base_state,
-                mode: base_mode
-              };
+              state: state.base_state,
+              mode: base_mode
+            };
         },
 
         lineComment: "#",
