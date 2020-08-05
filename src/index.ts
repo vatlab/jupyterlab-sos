@@ -33,7 +33,8 @@ import {
   changeCellKernel,
   changeStyleOnKernel,
   saveKernelInfo,
-  toggleDisplayOutput
+  toggleDisplayOutput,
+  toggleCellKernel,
 } from "./selectors";
 
 import { wrapExecutor, wrapConsoleExecutor } from "./execute";
@@ -962,12 +963,23 @@ const extension: JupyterFrontEndPlugin<void> = {
     });
 
     // add an command to toggle output
-    const command: string = "sos:toggle_output";
-    app.commands.addCommand(command, {
+    const command_toggle_output: string = "sos:toggle_output";
+    app.commands.addCommand(command_toggle_output, {
       label: "Toggle cell output tags",
       execute: () => {
         // get current notebook and toggle current cell
         toggleDisplayOutput(notebook_tracker.activeCell);
+      }
+    });
+
+    // add an command to toggle output
+    const command_toggle_kernel: string = "sos:toggle_kernel";
+    app.commands.addCommand(command_toggle_kernel, {
+      label: "Toggle cell kernel",
+      execute: () => {
+        // get current notebook and toggle current cell
+        toggleCellKernel(notebook_tracker.activeCell,
+          notebook_tracker.currentWidget);
       }
     });
 
@@ -983,7 +995,8 @@ const extension: JupyterFrontEndPlugin<void> = {
     // });
 
     // Add the command to the palette.
-    palette.addItem({ command, category: "Cell output" });
+    palette.addItem({ command: command_toggle_output, category: "Cell output" });
+    palette.addItem({ command: command_toggle_kernel, category: "Toggle kernel" });
 
     console.log("JupyterLab extension sos-extension is activated!");
   }

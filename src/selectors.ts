@@ -1,4 +1,7 @@
-import { NotebookPanel } from "@jupyterlab/notebook";
+import {
+  NotebookPanel
+  //, NotebookActions
+} from "@jupyterlab/notebook";
 
 import {
   Cell // ICellModel
@@ -28,7 +31,7 @@ export function saveKernelInfo() {
     used_kernels
   )
     .sort()
-    .map(function(x: string) {
+    .map(function (x: string) {
       return [
         info.DisplayName.get(x),
         info.KernelName.get(x),
@@ -78,10 +81,39 @@ export function toggleDisplayOutput(cell) {
   }
 }
 
+
+export function toggleCellKernel(cell: Cell, panel: NotebookPanel) {
+
+  if (cell.model.type === "markdown") {
+    // markdown, to code
+    // NotebookActions.changeCellType(panel.content, 'code');
+    return;
+  } else if (cell.model.type === "code") {
+    // switch to the next used kernel
+    let kernels = (panel.content.model.metadata.get("sos") as any)["kernels"];
+    // current kernel
+    let kernel = cell.model.metadata.get("kernel");
+
+    if (kernels.length == 1) {
+      return;
+    }
+    // index of kernel
+    for (let i = 0; i < kernels.length; ++i) {
+      if (kernels[i][0] === kernel) {
+        let info: NotebookInfo = Manager.manager.get_info(panel);
+        let next = (i + 1) % kernels.length;
+        // notebook_1.NotebookActions.changeCellType(panel.content, 'markdown');
+        changeCellKernel(cell, kernels[next][0], info);
+        break;
+      }
+    }
+  }
+}
+
 function remove_tag(cell, tag) {
   let taglist = cell.model.metadata.get('tags') as string[];
   let new_list: string[] = [];
-  for (let i=0; i < taglist.length; i++) {
+  for (let i = 0; i < taglist.length; i++) {
     if (taglist[i] != tag) {
       new_list.push(taglist[i]);
     }
@@ -143,7 +175,7 @@ export function addLanSelector(cell: Cell, info: NotebookInfo) {
     let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
     editor.parentElement.insertBefore(select, editor);
     select.value = kernel;
-    select.addEventListener("change", function(evt) {
+    select.addEventListener("change", function (evt) {
       // set cell level meta data
       let kernel = (evt.target as HTMLOptionElement).value;
       cell.model.metadata.set("kernel", kernel);
