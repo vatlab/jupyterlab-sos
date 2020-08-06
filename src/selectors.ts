@@ -1,6 +1,6 @@
 import {
-  NotebookPanel
-  //, NotebookActions
+  NotebookPanel,
+  NotebookActions
 } from "@jupyterlab/notebook";
 
 import {
@@ -107,6 +107,17 @@ export function toggleCellKernel(cell: Cell, panel: NotebookPanel) {
         break;
       }
     }
+  }
+}
+
+
+export function toggleMarkdownCell(cell: Cell, panel: NotebookPanel) {
+
+  if (cell.model.type === "markdown") {
+    // markdown, to code
+    NotebookActions.changeCellType(panel.content, 'code');
+  } else {
+    NotebookActions.changeCellType(panel.content, 'markdown');
   }
 }
 

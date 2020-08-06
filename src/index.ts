@@ -35,6 +35,7 @@ import {
   saveKernelInfo,
   toggleDisplayOutput,
   toggleCellKernel,
+  toggleMarkdownCell,
 } from "./selectors";
 
 import { wrapExecutor, wrapConsoleExecutor } from "./execute";
@@ -983,6 +984,16 @@ const extension: JupyterFrontEndPlugin<void> = {
       }
     });
 
+    // add an command to toggle output
+    const command_toggle_markdown: string = "sos:toggle_markdown";
+    app.commands.addCommand(command_toggle_markdown, {
+      label: "Toggle cell kernel",
+      execute: () => {
+        // get current notebook and toggle current cell
+        toggleMarkdownCell(notebook_tracker.activeCell,
+          notebook_tracker.currentWidget);
+      }
+    });
     // app.commands.addKeyBinding({
     //   keys: ["Ctrl Shift O"],
     //   selector: ".jp-Notebook.jp-mod-editMode",
@@ -997,6 +1008,7 @@ const extension: JupyterFrontEndPlugin<void> = {
     // Add the command to the palette.
     palette.addItem({ command: command_toggle_output, category: "Cell output" });
     palette.addItem({ command: command_toggle_kernel, category: "Toggle kernel" });
+    palette.addItem({ command: command_toggle_markdown, category: "Toggle markdown" });
 
     console.log("JupyterLab extension sos-extension is activated!");
   }
