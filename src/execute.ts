@@ -90,7 +90,7 @@ function getCellWorkflow(cell: ICellModel) {
 // get workflow from notebook
 function getNotebookWorkflow(panel: NotebookPanel) {
   let cells = panel.content.widgets;
-  let workflow = "#!/usr/bin/env sos-runner\n#fileformat=SOS1.0\n\n";
+  let workflow = "";
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
     if (
@@ -98,6 +98,22 @@ function getNotebookWorkflow(panel: NotebookPanel) {
       (!cell.metadata.get("kernel") || cell.metadata.get("kernel") === "SoS")
     ) {
       workflow += getCellWorkflow(cell);
+    }
+  }
+  if (workflow != "") {
+    workflow = "#!/usr/bin/env sos-runner\n#fileformat=SOS1.0\n\n" + workflow;
+  }
+  return workflow;
+}
+
+function getNotebookContent(panel: NotebookPanel) {
+  let cells = panel.content.widgets;
+  let workflow = "#!/usr/bin/env sos-runner\n#fileformat=SOS1.0\n\n";
+
+  for (let i = 0; i < cells.length; ++i) {
+    let cell = cells[i].model;
+    if (cell.type === "code" ) {
+      workflow += `# cell ${i + 1}, kernel=${cell.metadata.get("kernel")}\n${cell.value.text}\n\n`
     }
   }
   return workflow;
@@ -117,10 +133,14 @@ function my_execute(
   let panel = Manager.currentNotebook;
   if (
     code.match(
-      /^%sosrun($|\s)|^%run($|\s)|^%sossave($|\s)|^%preview\s.*(-w|--workflow).*$/m
+      /^%sosrun($|\s)|^%run($|\s)|^%convert($|\s)|^%preview\s.*(-w|--workflow).*$/m
     )
   ) {
-    metadata.sos["workflow"] = getNotebookWorkflow(panel);
+    if (code.match(/^%convert\s.*(-a|--all).*$/m)) {
+      metadata.sos["workflow"] = getNotebookContent(panel);
+    } else {
+      metadata.sos["workflow"] = getNotebookWorkflow(panel);
+    }
   }
   metadata.sos["path"] = panel.context.path;
   metadata.sos["use_panel"] = Manager.consolesOfNotebook(panel).length > 0;
