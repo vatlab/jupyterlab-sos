@@ -380,20 +380,32 @@ function update_task_status(info, panel) {
   if (has_status_table) {
     // if we already have timer, let us try to "fix" it in the notebook
     let timer = document.getElementById(`status_duration_${elem_id}_${cell_id}`);
-    timer_text = timer.innerText;
-    if (
-      timer_text === "" &&
-      (info.status === "completed" ||
-        info.status === "failed" ||
-        info.status === "aborted")
-    ) {
-      timer_text = "Ran for < 5 seconds";
+    if (!timer) {
+      // we could be opening an previous document with different cell_id
+      timer = document.querySelector(`[id^="status_duration_${elem_id}"]`)
     }
-    if (!info.start_time) {
-      info.start_time = timer.getAttribute("datetime");
-    }
-    if (!info.tags) {
-      info.tags = document.getElementById(`status_tags_${elem_id}_${cell_id}`).innerText;
+    if (timer) {
+      timer_text = timer.innerText;
+      if (
+        timer_text === "" &&
+        (info.status === "completed" ||
+          info.status === "failed" ||
+          info.status === "aborted")
+      ) {
+        timer_text = "Ran for < 5 seconds";
+      }
+      if (!info.start_time) {
+        info.start_time = timer.getAttribute("datetime");
+      }
+      if (!info.tags) {
+        let tags = document.getElementById(`status_tags_${elem_id}_${cell_id}`);
+        if (!tags) {
+          tags =  document.querySelector(`[id^="status_tags_${elem_id}"]`)
+        }
+        if (tags) {
+          info.tags = tags.innerText;
+        }
+      }
     }
   }
 

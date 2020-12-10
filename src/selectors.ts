@@ -313,13 +313,13 @@ export function updateCellStyles(
       info
     );
   }
-  let tasks = document.querySelectorAll('[id^="status_"]');
+  let tasks = document.querySelectorAll('[id^="task_status_"]');
   let unknownTasks = [];
   for (let i = 0; i < tasks.length; ++i) {
     // status_localhost_5ea9232779ca1959
-    if (tasks[i].id.match("^task_status_icon_.+_[0-9a-f]{16,32}$")) {
+    if (tasks[i].id.match("^task_status_icon_.*")) {
       tasks[i].className = "fa fa-fw fa-2x fa-refresh fa-spin";
-      unknownTasks.push(tasks[i].id);
+      unknownTasks.push(tasks[i].id.substring(17));
     }
   }
   return unknownTasks;
