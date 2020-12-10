@@ -134,7 +134,11 @@ function fix_display_id(cell) {
     }
     let targets = cell.outputArea._displayIdMap.get(id[1]) || [];
     targets.push(idx);
-    cell.outputArea._displayIdMap.set(id[1].split('_').slice(0, -1).join('_'), targets);
+    let target_id = id[1];
+    if (target_id.match('^task_.*') ) {
+      target_id = target_id.split("_").slice(0, -1).join("_");
+    }
+    cell.outputArea._displayIdMap.set(target_id, targets);
   }
 }
 
