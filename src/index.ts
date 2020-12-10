@@ -295,9 +295,9 @@ function update_task_status(info, panel) {
     if (!elems) {
       return;
     }
-    let cell_elems = Array.from(elems).map(x => x.closest(".code_cell"));
+    let cell_elems = Array.from(elems).map(x => x.closest(".jp-CodeCell"));
     let cells = cell_elems.map(cell_elem =>
-      panel.content.widgets.find(x => x.node[0] == cell_elem)
+      panel.content.widgets.find(x => x.node == cell_elem)
     );
     let display_ids = Array.from(elems).map(x => x.closest(".task_table").id.split('_').slice(0, -1).join('_'));
 
@@ -346,8 +346,8 @@ function update_task_status(info, panel) {
     }
   } else {
     has_status_table = document.querySelector(`[id^="task_${elem_id}"]`);
-    let elem = has_status_table.closest(".code_cell");
-    cell = panel.content.widgets.find(x => x.node[0] == elem);
+    let elem = has_status_table.closest(".jp-CodeCell");
+    cell = panel.content.widgets.find(x => x.node == elem);
     cell_id = cell.model.id;
   }
 
