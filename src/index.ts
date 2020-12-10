@@ -134,7 +134,7 @@ function fix_display_id(cell) {
     }
     let targets = cell.outputArea._displayIdMap.get(id[1]) || [];
     targets.push(idx);
-    cell.outputArea._displayIdMap.set(id[1], targets);
+    cell.outputArea._displayIdMap.set(id[1].split('_').slice(0, -1).join('_'), targets);
   }
 }
 
