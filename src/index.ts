@@ -332,7 +332,7 @@ function update_task_status(info, panel) {
   if (cell_id) {
     cell = panel.content.widgets.find(x => x.model.id == cell_id);
     has_status_table = document.getElementById(`task_${elem_id}_${cell_id}`);
-    if (!has_status_table) {
+    if (!has_status_table && info.status != 'pending') {
       // if there is already a table inside, with cell_id that is different from before...
       has_status_table = document.querySelector(
         `[id^="task_${elem_id}"]`
