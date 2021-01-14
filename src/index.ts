@@ -93,11 +93,11 @@ function update_duration() {
   setInterval(function () {
     document
       .querySelectorAll("[id^='status_duration_']")
-      .forEach((item: HTMLElement) => {
+      .forEach((item: Element) => {
         if (item.className != "running") {
           return;
         }
-        item.innerText =
+        (item as HTMLElement).innerText =
           "Ran for " +
           formatDuration(
             +new Date() - +new Date(parseFloat(item.getAttribute("datetime")))

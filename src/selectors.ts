@@ -24,20 +24,20 @@ export function saveKernelInfo() {
   for (var i = cells.length - 1; i >= 0; --i) {
     let cell = cells.get(i);
     if (cell.type === "code" && cell.metadata.get("kernel")) {
-      used_kernels.add(cell.metadata.get("kernel"));
+      used_kernels.add(cell.metadata.get("kernel") as string);
     }
   }
   (panel.content.model.metadata.get("sos") as any)["kernels"] = Array.from(
-    used_kernels
+    used_kernels.values()
   )
     .sort()
-    .map(function (x: string) {
+    .map(function (x) {
       return [
-        info.DisplayName.get(x),
-        info.KernelName.get(x),
-        info.LanguageName.get(x) || "",
-        info.BackgroundColor.get(x) || "",
-        info.CodeMirrorMode.get(x) || ""
+        info.DisplayName.get(x as string),
+        info.KernelName.get(x as string),
+        info.LanguageName.get(x as string) || "",
+        info.BackgroundColor.get(x as string) || "",
+        info.CodeMirrorMode.get(x as string) || ""
       ];
     });
 }
