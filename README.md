@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/vatlab/jupyterlab-sos.svg?branch=master)](https://travis-ci.org/vatlab/jupyterlab-sos)
 [![npm version](https://badge.fury.io/js/jupyterlab-sos.svg)](https://badge.fury.io/js/jupyterlab-sos)
+[![PyPI version](https://badge.fury.io/py/jupyterlab-sos.svg)](https://badge.fury.io/py/jupyterlab-sos)
+
 
 # JupyterLab extension for SoS polyglot notebook and workflow system
 
@@ -23,13 +25,29 @@ jupyterlab-sos is a JupyterLab extension for the [SoS Polyglot Notebook](https:/
 * If you have a working jupyterlab installation with `sos-notebook`, you can install `jupyterlab-sos` from command line
 
   ```bash
+  pip install jupyterlab-sos
+  ```
+
+  or through the jupyterlab extension installation process,
+  which will require node.js
+
+  ```bash
   jupyter labextension install transient-display-data
   jupyter labextension install jupyterlab-sos
   ```
-  or install these two extensions from the extension manager (`Enable Extension Manager` from `Settings` if needed).
+
+  You could also install these two extensions from the extension manager (`Enable Extension Manager` from `Settings` if needed).
+
+  Finally, if you just upgraded `jupyterlab` with `jupyterlab-sos` installed, you could run
+
+  ```bash
+  jupyter labextension update --all
+  ```
+
+  to upgrade all your extensions to the latest version.
 
 ## Development
-  
+
 For a development install (requires npm version 4 or later), do the following in the repository directory:
 
 ```bash
@@ -44,4 +62,3 @@ To rebuild the package and the JupyterLab app:
 npm run build
 jupyter lab build
 ```
-
