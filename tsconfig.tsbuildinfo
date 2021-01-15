@@ -436,7 +436,7 @@
         "signature": "ecf78e637f710f340ec08d5d92b3f31b134a46a4fcf2e758690d8c46ce62cba6",
         "affectsGlobalScope": true
       },
-      "./node_modules/@types/react/node_modules/csstype/index.d.ts": {
+      "./node_modules/csstype/index.d.ts": {
         "version": "2421504d4ad8486abdb522b7bcdd4caafbcf4a320cdf7b19e780df258c639d7f",
         "signature": "2421504d4ad8486abdb522b7bcdd4caafbcf4a320cdf7b19e780df258c639d7f",
         "affectsGlobalScope": false
@@ -561,7 +561,7 @@
         "signature": "d17f7a001dae13ded8536376f9319169a4c53e0e3789756e2058d0f4b4083a19",
         "affectsGlobalScope": false
       },
-      "./node_modules/csstype/index.d.ts": {
+      "./node_modules/typestyle/node_modules/csstype/index.d.ts": {
         "version": "f9d66b7d0c140496459807082ebe1bd8185a2d7478951881724b708e72fc7386",
         "signature": "f9d66b7d0c140496459807082ebe1bd8185a2d7478951881724b708e72fc7386",
         "affectsGlobalScope": false
@@ -4112,10 +4112,10 @@
       "./node_modules/@types/react/index.d.ts": [
         "./node_modules/@types/prop-types/index.d.ts",
         "./node_modules/@types/react/global.d.ts",
-        "./node_modules/@types/react/node_modules/csstype/index.d.ts"
+        "./node_modules/csstype/index.d.ts"
       ],
       "./node_modules/typestyle/lib/types.d.ts": [
-        "./node_modules/csstype/index.d.ts"
+        "./node_modules/typestyle/node_modules/csstype/index.d.ts"
       ],
       "./src/codemirror-sos.ts": [
         "./node_modules/@types/codemirror/index.d.ts",
@@ -6151,10 +6151,10 @@
       "./node_modules/@types/react/index.d.ts": [
         "./node_modules/@types/prop-types/index.d.ts",
         "./node_modules/@types/react/global.d.ts",
-        "./node_modules/@types/react/node_modules/csstype/index.d.ts"
+        "./node_modules/csstype/index.d.ts"
       ],
       "./node_modules/typestyle/lib/types.d.ts": [
-        "./node_modules/csstype/index.d.ts"
+        "./node_modules/typestyle/node_modules/csstype/index.d.ts"
       ],
       "./src/codemirror-sos.ts": [
         "./node_modules/@types/codemirror/mode/meta.d.ts"
@@ -6569,7 +6569,6 @@
       "./node_modules/@types/prop-types/index.d.ts",
       "./node_modules/@types/react/global.d.ts",
       "./node_modules/@types/react/index.d.ts",
-      "./node_modules/@types/react/node_modules/csstype/index.d.ts",
       "./node_modules/csstype/index.d.ts",
       "./node_modules/popper.js/index.d.ts",
       "./node_modules/typescript/lib/lib.dom.d.ts",
@@ -6597,6 +6596,7 @@
       "./node_modules/typescript/lib/lib.scripthost.d.ts",
       "./node_modules/typescript/lib/lib.webworker.importscripts.d.ts",
       "./node_modules/typestyle/lib/types.d.ts",
+      "./node_modules/typestyle/node_modules/csstype/index.d.ts",
       "./src/codemirror-sos.ts",
       "./src/execute.ts",
       "./src/index.ts",
