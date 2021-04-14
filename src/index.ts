@@ -18,6 +18,13 @@ import { KernelMessage } from "@jupyterlab/services";
 import { ICommandPalette } from "@jupyterlab/apputils";
 
 import {
+  ICodeMirror
+} from '@jupyterlab/codemirror';
+
+import CodeMirror from 'codemirror';
+
+
+import {
   NotebookPanel,
   INotebookModel,
   INotebookTracker
@@ -25,7 +32,9 @@ import {
 
 import { IConsoleTracker } from "@jupyterlab/console";
 
-import * as CodeMirror from "codemirror";
+import {
+  sosHintWords, sos_mode
+} from "./codemirror-sos";
 
 import {
   addLanSelector,
@@ -59,6 +68,29 @@ function registerSoSFileType(app: JupyterFrontEnd) {
     extensions: [".sos"],
     mimeTypes: [SOS_MIME_TYPE],
     iconClass: "jp-MaterialIcon sos_icon"
+  });
+}
+
+function defineSoSCodeMirrorMode(code_mirror_singleton) {
+  // hint word for SoS mode
+  try {
+    code_mirror_singleton.registerHelper("hintWords", "sos", sosHintWords);
+  } catch (error) {
+    console.log(`Failed to register hintWords for sos mode. ${error}`);
+  }
+
+  (code_mirror_singleton as any).defineMode(
+    "sos",
+    sos_mode,
+    "python");
+
+  (code_mirror_singleton as any).defineMIME("text/x-sos", "sos");
+
+  (code_mirror_singleton as any).modeInfo.push({
+    ext: ["sos"],
+    mime: "text/x-sos",
+    mode: "sos",
+    name: "SoS"
   });
 }
 
@@ -135,7 +167,7 @@ function fix_display_id(cell) {
     let targets = cell.outputArea._displayIdMap.get(id[1]) || [];
     targets.push(idx);
     let target_id = id[1];
-    if (target_id.match('^task_.*') ) {
+    if (target_id.match('^task_.*')) {
       target_id = target_id.split("_").slice(0, -1).join("_");
     }
     cell.outputArea._displayIdMap.set(target_id, targets);
@@ -241,8 +273,7 @@ function update_workflow_status(info, panel) {
 
   // look for status etc and update them.
   let onmouseover = `onmouseover='this.classList="fa fa-2x fa-fw fa-trash"'`;
-  let onmouseleave = `onmouseleave='this.classList="fa fa-2x fa-fw ${
-    status_class[info.status]
+  let onmouseleave = `onmouseleave='this.classList="fa fa-2x fa-fw ${status_class[info.status]
     }"'`;
   let onclick = `onclick="cancel_workflow(this.id.substring(21))"`;
 
@@ -255,20 +286,17 @@ function update_workflow_status(info, panel) {
 <table id="workflow_${cell_id}" class="workflow_table  ${info.status}">
 <tr>
       <td class="workflow_icon">
-        <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${
-        status_class[info.status]
+        <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${status_class[info.status]
         }"
         ${onmouseover} ${onmouseleave} ${onclick}></i>
       </td>
       <td class="workflow_name">
-        <pre><span id="workflow_name_${cell_id}">${
-        info.workflow_name
+        <pre><span id="workflow_name_${cell_id}">${info.workflow_name
         }</span></pre>
       </td>
       <td class="workflow_id">
         <span>Workflow ID</span></br>
-        <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${
-        info.workflow_id
+        <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${info.workflow_id
         }</span></pre>
       </td>
       <td class="workflow_index">
@@ -277,8 +305,7 @@ function update_workflow_status(info, panel) {
       </td>
       <td class="workflow_status">
         <span id="status_text_${cell_id}">${info.status}</span></br>
-        <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${
-        info.status
+        <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${info.status
         }" datetime="${info.start_time}">${timer_text}</time></pre>
       </td>
 </tr>
@@ -400,7 +427,7 @@ function update_task_status(info, panel) {
       if (!info.tags) {
         let tags = document.getElementById(`status_tags_${elem_id}_${cell_id}`);
         if (!tags) {
-          tags =  document.querySelector(`[id^="status_tags_${elem_id}"]`)
+          tags = document.querySelector(`[id^="status_tags_${elem_id}"]`)
         }
         if (tags) {
           info.tags = tags.innerText;
@@ -423,17 +450,13 @@ function update_task_status(info, panel) {
   let id_elems =
     `<pre>${info.task_id}` +
     `<div class="task_id_actions">` +
-    `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', task:'${
-    info.task_id
+    `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', task:'${info.task_id
     }', queue: '${info.queue}'})"></i>` +
-    `<i class="fa fa-fw fa-play" onclick="task_action({action:'execute', task:'${
-    info.task_id
+    `<i class="fa fa-fw fa-play" onclick="task_action({action:'execute', task:'${info.task_id
     }', queue: '${info.queue}'})"></i>` +
-    `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', task:'${
-    info.task_id
+    `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', task:'${info.task_id
     }', queue: '${info.queue}'})"></i>` +
-    `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', task:'${
-    info.task_id
+    `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', task:'${info.task_id
     }', queue: '${info.queue}'})"></i>` +
     `</div></pre>`;
 
@@ -447,14 +470,11 @@ function update_task_status(info, panel) {
     tags_elems +=
       `<pre class="task_tags task_tag_${tag}">${tag}` +
       `<div class="task_tag_actions">` +
-      `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', tag:'${tag}', queue: '${
-      info.queue
+      `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', tag:'${tag}', queue: '${info.queue
       }'})"></i>` +
-      `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', tag:'${tag}', queue: '${
-      info.queue
+      `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', tag:'${tag}', queue: '${info.queue
       }'})"></i>` +
-      `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', tag:'${tag}', queue: '${
-      info.queue
+      `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', tag:'${tag}', queue: '${info.queue
       }'})"></i>` +
       `</div></pre>`;
   }
@@ -468,8 +488,7 @@ function update_task_status(info, panel) {
 <table id="task_${elem_id}_${cell_id}" class="task_table ${info.status}">
 <tr>
   <td class="task_icon">
-    <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${
-        status_class[info.status]
+    <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${status_class[info.status]
         }"
     ${onmouseover} ${onmouseleave} ${onclick}></i>
   </td>
@@ -480,13 +499,11 @@ function update_task_status(info, panel) {
     <span id="status_tags_${elem_id}_${cell_id}"><pre><i class="fa fa-fw fa-info-circle"></i></pre>${tags_elems}</span>
   </td>
   <td class="task_timer">
-    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${
-        info.status
+    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${info.status
         }" datetime="${info.start_time}">${timer_text}</time></pre>
   </td>
   <td class="task_status">
-    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${
-        info.status
+    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${info.status
         }</span></pre>
   </td>
 </tr>
@@ -960,17 +977,19 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
 const extension: JupyterFrontEndPlugin<void> = {
   id: "vatlab/jupyterlab-extension:sos",
   autoStart: true,
-  requires: [INotebookTracker, IConsoleTracker, ICommandPalette],
+  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror],
   activate: (
     app: JupyterFrontEnd,
     notebook_tracker: INotebookTracker,
     console_tracker: IConsoleTracker,
-    palette: ICommandPalette
+    palette: ICommandPalette,
+    codeMirror: ICodeMirror,
   ) => {
     registerSoSFileType(app);
     registerSoSWidgets(app);
     Manager.set_trackers(notebook_tracker, console_tracker);
     Manager.set_commands(app.commands);
+
 
     console_tracker.widgetAdded.connect((sender, panel) => {
       const labconsole = panel.console;
@@ -990,6 +1009,8 @@ const extension: JupyterFrontEndPlugin<void> = {
         }
       });
     });
+
+    defineSoSCodeMirrorMode(codeMirror.CodeMirror);
 
     // add an command to toggle output
     const command_toggle_output: string = "sos:toggle_output";
