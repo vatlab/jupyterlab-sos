@@ -643,6 +643,10 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
 
   try {
     let sos_comm = panel.context.sessionContext.session?.kernel.createComm("sos_comm");
+    if (!sos_comm) {
+      console.log(`Failed to connect to sos_comm. Will try later.`)
+      return null;
+    }
     Manager.manager.register_comm(sos_comm, panel);
     sos_comm.open("initial");
     sos_comm.onMsg = on_frontend_msg;
@@ -776,6 +780,10 @@ export class SoSWidgets
 
     context.sessionContext.kernelChanged.connect(
       (sender: any, args: Session.ISessionConnection.IKernelChangedArgs) => {
+        // somehow when the kernelChanged is sent, there could be no newValue?
+        if (!args.newValue) {
+          return;
+        }
         console.log(`kernel changed to ${args.newValue.name}`);
         if (args.newValue.name === "sos") {
           if (panel.content.model.metadata.has("sos")) {
