@@ -70,8 +70,8 @@ setup_args = dict(
     packages=setuptools.find_packages(),
     install_requires=[
         "jupyterlab>=3.0.0rc13,==3.*",
-        "sos-notebook>=0.22.4",
-        "sos>=0.22.5",
+        "sos-notebook>=0.22.3",
+        "sos>=0.22.4",
         "transient-display-data>=0.4.0",
     ],
     zip_safe=False,
