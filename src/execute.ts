@@ -20,7 +20,7 @@ export function wrapExecutor(panel: NotebookPanel) {
   // override kernel execute with the wrapper.
   // however, this function can be called multiple times for kernel
   // restart etc, so we should be careful
-  if (!kernel.hasOwnProperty("orig_execute")) {
+  if (kernel && !kernel.hasOwnProperty("orig_execute")) {
     (kernel as any)["orig_execute"] = kernel.requestExecute;
     kernel.requestExecute = my_execute;
     console.log("executor patched");
