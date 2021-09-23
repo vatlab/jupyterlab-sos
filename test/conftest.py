@@ -5,17 +5,17 @@
 
 import json
 import os
-import pytest
-import requests
-from subprocess import Popen
 import sys
-from testpath.tempdir import TemporaryDirectory
 import time
+from subprocess import Popen
 from urllib.parse import urljoin
 
-from selenium.webdriver import Firefox, Remote, Chrome
+import pytest
+import requests
 from selenium import webdriver
+from selenium.webdriver import Chrome, Firefox, Remote
 from test_utils import Notebook
+from testpath.tempdir import TemporaryDirectory
 
 pjoin = os.path.join
 
@@ -60,24 +60,17 @@ def notebook_server():
             sys.executable,
             '-m',
             'jupyterlab',
-            '--no-browser'
+            '--no-browser',
+            '--notebook-dir',
+            nbdir,
+            # run with a base URL that would be escaped,
+            # to test that we don't double-escape URLs
+            #'--NotebookApp.base_url=/a@b/',
         ]
-
-        # command = [
-        #     sys.executable,
-        #     '-m',
-        #     'jupyterlab',
-        #     '--no-browser',
-        #     '--notebook-dir',
-        #     nbdir,
-        #     # run with a base URL that would be escaped,
-        #     # to test that we don't double-escape URLs
-        #     '--NotebookApp.base_url=/a@b/',
-        # ]
         print("command=", command)
         proc = info['popen'] = Popen(command, cwd=nbdir, env=env)
         info_file_path = pjoin(td, 'jupyter_runtime',
-                               'nbserver-%i.json' % proc.pid)
+                               'jpserver-%i.json' % proc.pid)
         info.update(_wait_for_server(proc, info_file_path))
 
         print("Notebook server info:", info)

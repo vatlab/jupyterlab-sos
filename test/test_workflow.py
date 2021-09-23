@@ -8,7 +8,6 @@
 from test_utils import NotebookTest
 
 
-
 class TestWorkflow(NotebookTest):
 
     def test_no_output(self, notebook):
