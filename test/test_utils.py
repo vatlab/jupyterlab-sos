@@ -424,7 +424,7 @@ class Notebook:
         # kernelMenu = self.browser.find_element_by_id(
         #     "menu-change-kernel-submenu")
         wait_for_selector(self.browser,
-                          'div.jp-Toolbar-kernelStatus[title="Kernel Idle"]')
+                          'div[title="Kernel Idle"]')
         kernelMenu = self.cells[0].find_element_by_class_name(
             "jp-CelllanguageDropDown")
         kernelEntries = kernelMenu.find_elements_by_tag_name("option")

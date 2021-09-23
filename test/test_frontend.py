@@ -3,6 +3,7 @@
 # Copyright (c) Bo Peng and the University of Texas MD Anderson Cancer Center
 # Distributed under the terms of the 3-clause BSD License.
 
+import pytest
 import time
 import unittest
 
@@ -14,6 +15,7 @@ from test_utils import NotebookTest, flush_channels, sos_kernel
 
 class TestFrontEnd(NotebookTest):
 
+    @pytest.mark.skip(reason="upstream bug")
     def test_run_in_console(self, notebook):
         idx = notebook.call("print(1)", kernel="SoS")
         time.sleep(5)
