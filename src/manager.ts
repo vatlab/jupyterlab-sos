@@ -4,6 +4,8 @@ import { ConsolePanel, IConsoleTracker } from "@jupyterlab/console";
 
 import { CommandRegistry } from "@lumino/commands";
 
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+
 import { Kernel } from "@jupyterlab/services";
 //
 export class NotebookInfo {
@@ -147,6 +149,7 @@ export class Manager {
   private static _console_tracker: IConsoleTracker;
   private static _commands: CommandRegistry;
   private _info: Map<NotebookPanel, NotebookInfo>;
+  private _settings: ISettingRegistry.ISettings;
 
   private constructor() {
     if (!this._info) {
@@ -207,5 +210,14 @@ export class Manager {
   public notebook_of_comm(comm_id: string): NotebookPanel {
     for (let [panel, info] of Array.from(this._info.entries()))
       if (info.sos_comm && info.sos_comm.commId === comm_id) return panel;
+  }
+
+  public update_config(settings: ISettingRegistry.ISettings): void {
+    this._settings = settings;
+  }
+
+  public get_config(key: string): any {
+    // sos.kernel_codemirror_mode
+    return this._settings.get(key);
   }
 }

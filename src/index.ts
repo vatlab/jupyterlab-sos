@@ -13,6 +13,8 @@ import { Kernel, Session } from "@jupyterlab/services";
 
 import { DocumentRegistry } from "@jupyterlab/docregistry";
 
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+
 import { KernelMessage } from "@jupyterlab/services";
 
 import { ICommandPalette } from "@jupyterlab/apputils";
@@ -984,12 +986,20 @@ const extension: JupyterFrontEndPlugin<void> = {
     console_tracker: IConsoleTracker,
     palette: ICommandPalette,
     codeMirror: ICodeMirror,
+    settingRegistry: ISettingRegistry | null,
   ) => {
     registerSoSFileType(app);
     registerSoSWidgets(app);
     Manager.set_trackers(notebook_tracker, console_tracker);
     Manager.set_commands(app.commands);
 
+    if (settingRegistry) {
+      const fetchSettings = settingRegistry
+        ? settingRegistry.load(extension.id)
+        : Promise.reject(new Error(`No setting registry for ${extension.id}`));
+
+      fetchSettings.then(settings => { Manager.manager.update_config(settings); });
+    }
 
     console_tracker.widgetAdded.connect((sender, panel) => {
       const labconsole = panel.console;

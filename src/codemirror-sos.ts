@@ -3,20 +3,10 @@ import CodeMirror from 'codemirror';
 import "codemirror/lib/codemirror";
 import "codemirror/mode/python/python";
 import "codemirror/mode/r/r";
-import "codemirror/mode/octave/octave";
-import "codemirror/mode/ruby/ruby";
-import "codemirror/mode/sas/sas";
-import "codemirror/mode/javascript/javascript";
-import "codemirror/mode/shell/shell";
-import "codemirror/mode/julia/julia";
 import "codemirror/mode/markdown/markdown";
-import "codemirror/mode/htmlembedded/htmlembedded";
-import "codemirror/mode/xml/xml";
-import "codemirror/mode/yaml/yaml";
-import "codemirror/mode/javascript/javascript";
-import "codemirror/mode/stex/stex";
-import "codemirror/mode/meta";
+import "codemirror/addon/mode/loadmode"
 
+import { Manager } from "./manager";
 
 var sosKeywords = ["input", "output", "depends", "parameter"];
 var sosActionWords = [
@@ -85,85 +75,34 @@ var sosActions = sosActionWords.map(x => new RegExp("^\\s*" + x + ":"));
 var sosMagics = sosMagicWords.map(x => "%" + x);
 
 
-let modeMap: Map<string, any> = new Map();
-modeMap.set("sos", null);
-modeMap.set("python", {
-  name: "python",
-  version: 3
-});
-modeMap.set("python2", {
-  name: "python",
-  version: 2
-});
-modeMap.set("python3", {
-  name: "python",
-  version: 3
-});
-modeMap.set("r", "r");
-// the actual mode of report will be determined by the output parameter
-modeMap.set("report", "report");
-modeMap.set("pandoc", "markdown");
-modeMap.set("download", "markdown");
-modeMap.set("markdown", "markdown");
-modeMap.set("ruby", "ruby");
-modeMap.set("sas", "sas");
-modeMap.set("bash", "shell");
-modeMap.set("sh", "shell");
-modeMap.set("julia", "julia");
-modeMap.set("run", "shell");
-modeMap.set("javascript", "javascript");
-modeMap.set("typescript", {
-  name: "javascript",
-  typescript: true
-});
-modeMap.set("octave", "octave");
-modeMap.set("matlab", "octave");
-modeMap.set("html", "htmlembedded");
-modeMap.set("xml", "xml");
-modeMap.set("yaml", "yaml");
-modeMap.set("json", {
-  name: "javascript",
-  jsonMode: true
-});
-modeMap.set("stex", "stex");
-
-let extMap: Map<string, any> = new Map();
-extMap.set("sos", 'python3');
-extMap.set("py", "python3");
-extMap.set("r", "r");
-extMap.set("md", "markdown");
-extMap.set("rb", "ruby");
-extMap.set("sas", "sas");
-extMap.set("sh", "shell");
-extMap.set("jl", "julia");
-extMap.set("js", "javascript");
-extMap.set("ts", "typecript");
-extMap.set("m", "matlab");
-extMap.set("html", "html");
-extMap.set("xml", "xml");
-extMap.set("yaml", "yaml");
-extMap.set("yml", "yaml");
-extMap.set("json", "json");
-extMap.set("tex", "stex");
-
 function findMode(mode: string): any {
-  if (modeMap.has(mode)) {
-    return modeMap.get(mode);
-  } else if (typeof mode === 'string' && modeMap.has(mode.toLowerCase())) {
-    return modeMap.get(mode.toLowerCase())
+  let modeMap = Manager.manager.get_config('sos.kernel_codemirror_mode');
+  if (modeMap) {
+    if (mode in modeMap) {
+      return modeMap[mode];
+    } else if (typeof mode === 'string' && mode.toLowerCase() in modeMap) {
+      return modeMap[mode.toLowerCase()]
+    }
   }
   return null;
 }
 
 function findModeFromFilename(filename: string): any {
-  if (!filename) {
-    return 'markdown';
+  var val = filename, m, mode;
+  if (m = /.+\.([^.]+)$/.exec(val)) {
+    var info = (CodeMirror as any).findModeByExtension(m[1]);
+    if (info) {
+      mode = info.mode;
+    }
+  } else if (/\//.test(val)) {
+    var info = (CodeMirror as any).findModeByMIME(val);
+    if (info) {
+      mode = info.mode;
+    }
+  } else {
+    mode = val;
   }
-  let ext = filename.split('.').pop().toLowerCase();
-  if (extMap.has(ext)) {
-    return extMap.get(ext);
-  }
-  return 'markdown';
+  return mode;
 }
 
 function markExpr(python_mode: any) {
@@ -244,6 +183,7 @@ function markExpr(python_mode: any) {
   };
 }
 
+(CodeMirror as any).modeURL = "codemirror/mode/%N/%N";
 
 export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) {
   let sosPythonConf: any = {};
@@ -258,16 +198,26 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
   // this is the SoS flavored python mode with more identifiers
   let base_mode: any = null;
   if ("base_mode" in parserConf && parserConf.base_mode) {
-    let mode = findMode(parserConf.base_mode);
-    if (mode) {
-      base_mode = CodeMirror.getMode(conf, mode);
+    let spec = findMode(parserConf.base_mode);
+    if (spec) {
+      let modename = spec;
+      if (typeof spec != "string") {
+        modename = spec.name;
+      }
+      if (!CodeMirror.modes.hasOwnProperty(modename)) {
+        console.log(`Load codemirror mode ${modename}`);
+        (CodeMirror as any).requireMode(modename, function () { }, {});
+      }
+      base_mode = CodeMirror.getMode(conf, spec);
+      // base_mode = CodeMirror.getMode(conf, mode);
     } else {
-      console.log(
-        `No base mode is found for ${parserConf.base_mode}. Python mode used.`
-      );
+      base_mode = CodeMirror.getMode(conf, parserConf.base_mode);
     }
+    // } else {
+    //   console.log(
+    //     `No base mode is found for ${parserConf.base_mode}. Python mode used.`
+    //   );
   }
-  // if there is a user specified base mode, this is the single cell mode
 
   // if there is a user specified base mode, this is the single cell mode
   if (base_mode) {
