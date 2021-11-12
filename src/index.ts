@@ -1005,8 +1005,10 @@ const extension: JupyterFrontEndPlugin<void> = {
       const labconsole = panel.console;
 
       labconsole.promptCellCreated.connect(panel => {
-        let info = Manager.manager.get_info(Manager.currentNotebook);
-        addLanSelector(panel.promptCell, info);
+        if (Manager.currentNotebook) {
+          let info = Manager.manager.get_info(Manager.currentNotebook);
+          addLanSelector(panel.promptCell, info);
+        }
       });
       labconsole.sessionContext.statusChanged.connect((sender, status: Kernel.Status) => {
         if (
