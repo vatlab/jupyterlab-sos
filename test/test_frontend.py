@@ -3,10 +3,10 @@
 # Copyright (c) Bo Peng and the University of Texas MD Anderson Cancer Center
 # Distributed under the terms of the 3-clause BSD License.
 
-import pytest
 import time
 import unittest
 
+import pytest
 from ipykernel.tests.utils import execute, wait_for_idle
 from selenium.webdriver.common.keys import Keys
 # from sos_notebook.test_utils import flush_channels, sos_kernel, NotebookTest

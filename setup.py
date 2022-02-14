@@ -4,11 +4,9 @@ jupyterlab-sos setup
 import json
 import os
 
-from jupyter_packaging import (
-    create_cmdclass, install_npm, ensure_targets,
-    combine_commands, skip_if_exists
-)
 import setuptools
+from jupyter_packaging import (combine_commands, create_cmdclass,
+                               ensure_targets, install_npm, skip_if_exists)
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
