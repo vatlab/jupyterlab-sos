@@ -218,6 +218,6 @@ export class Manager {
 
   public get_config(key: string): any {
     // sos.kernel_codemirror_mode
-    return this._settings.get(key);
+    return this._settings.get(key).composite;
   }
 }

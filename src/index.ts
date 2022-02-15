@@ -996,7 +996,6 @@ const extension: JupyterFrontEndPlugin<void> = {
 
     if (settingRegistry) {
       const setting = await settingRegistry.load(PLUGIN_ID);
-      console.log(setting.get('sos.kernel_codemirror_mode'));
       Manager.manager.update_config(setting);
     }
 
