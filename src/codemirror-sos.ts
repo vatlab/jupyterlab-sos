@@ -440,17 +440,22 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
           ) {
             // the second parameter is starting column
             let mode = findMode(state.sos_state.slice(9).toLowerCase());
-            state.inner_mode = CodeMirror.getMode(conf, mode);
-            state.inner_state = (CodeMirror as any).startState(
-              state.inner_mode,
-              stream.indentation()
-            );
-            state.sos_state = null;
+            if (mode) {
+              state.inner_mode = CodeMirror.getMode(conf, mode);
+              state.inner_state = (CodeMirror as any).startState(
+                state.inner_mode,
+                stream.indentation()
+              );
+              state.sos_state = null;
+            } else {
+              state.sos_state = 'unknown_language';
+            }
             state.sos_indent = stream.indentation();
           }
-          if (state.inner_mode && stream.indentation() === 0 &&
-            stream.indentation() < state.sos_indent
-          ) {
+          if (stream.indentation() === 0 &&
+            ((state.inner_mode &&
+              stream.indentation() < state.sos_indent
+            ) || state.sos_state == 'unknown_language')) {
             state.inner_mode = null;
             state.sos_state = null;
           }
@@ -471,7 +476,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
                   state.sos_state =
                     "entering " + stream.current().slice(0, -1);
                 } else {
-                  state.sos_state = "unknown_language";
+                  state.sos_state = "entering unknown_language";
                 }
               } else {
                 state.sos_state = "start " + stream.current().slice(0, -1);
@@ -567,7 +572,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
             if (mode) {
               state.sos_state = "entering " + state.sos_state.slice(6);
             } else {
-              state.sos_state = "unknown_language";
+              state.sos_state = "entering unknown_language";
             }
           }
           return token + " sos-option";
