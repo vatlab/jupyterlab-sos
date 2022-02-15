@@ -2487,8 +2487,13 @@
         "affectsGlobalScope": false
       },
       "./src/index.ts": {
+<<<<<<< Updated upstream
         "version": "cb1613e33a241216463197620ac855c40956c71c23adbee374b9b9caf56551d9",
         "signature": "c88dbb21b1afebebc233ab11238447db6272ec9b380aab7d3cc8672bf2b1702f",
+=======
+        "version": "1496c6a17af75d37ff26059a8f73a4dc33f6975191922c0a5bc7ce467b1090a1",
+        "signature": "845e3bcd0c84c58265d4242f19aadf7137d3f53db01a5c93ec5cddb31751a15c",
+>>>>>>> Stashed changes
         "affectsGlobalScope": false
       }
     },
