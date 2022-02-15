@@ -2327,7 +2327,7 @@
         "affectsGlobalScope": false
       },
       "./src/codemirror-sos.ts": {
-        "version": "c0544959566b5a538e575f9e31b9dafbc1ae314a11fb9b7bc9d52795178e820a",
+        "version": "f7575605a68c4f3da16224ae81abd02ff819c19f58a059793f0c8b5286202982",
         "signature": "4939c65b74699f57acb3b6ddb39f9e0cda68c616a841381532085ac7ae8dbd86",
         "affectsGlobalScope": false
       },

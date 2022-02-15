@@ -446,6 +446,13 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
               stream.indentation()
             );
             state.sos_state = null;
+            state.sos_indent = stream.indentation();
+          }
+          if (state.inner_mode && stream.indentation() === 0 &&
+            stream.indentation() < state.sos_indent
+          ) {
+            state.inner_mode = null;
+            state.sos_state = null;
           }
           for (var i = 0; i < sosDirectives.length; i++) {
             if (stream.match(sosDirectives[i])) {
@@ -479,6 +486,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
             state.sos_state = "start " + stream.current().slice(0, -1);
             return "builtin strong";
           }
+
         } else if (state.sos_state == "header_option") {
           // stuff after :
           if (stream.peek() == "]") {
@@ -578,10 +586,6 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
           if (!state.overlay_state.sigil) {
             let st = state.inner_mode.token(stream, state.inner_state);
             return st ? it + st : null;
-          } else if (stream.indentation() < state.inner_state.indent) {
-            state.inner_mode = null;
-            state.sos_state = null;
-            return "existing mode";
           } else {
             // overlay mode, more complicated
             if (
