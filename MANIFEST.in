@@ -1,19 +1,21 @@
 include LICENSE
-include README.md
+include *.md
 include pyproject.toml
 include jupyter-config/jupyterlab-sos.json
 
 include package.json
 include install.json
 include ts*.json
+include yarn.lock
 
-graft jupyterlab-sos/labextension
+graft jupyterlab_sos/labextension
 
 # Javascript files
 graft src
 graft style
 prune **/node_modules
 prune lib
+prune binder
 
 # Patterns to exclude from any directory
 global-exclude *~

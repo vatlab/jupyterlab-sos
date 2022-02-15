@@ -31,49 +31,50 @@
       "selector": ".jp-Notebook.jp-mod-editMode"
     }
   ],
-  "kernel_codemirror_mode": {
-    "python": {
-      "name": "python",
-      "version": 3
-    },
-    "python2": {
-      "name": "python",
-      "version": 2
-    },
-    "python3": {
-      "name": "python",
-      "version": 3
-    },
-    "r": "r",
-    "report": "report",
-    "pandoc": "markdown",
-    "download": "markdown",
-    "markdown": "markdown",
-    "ruby": "ruby",
-    "sas": "sas",
-    "bash": "shell",
-    "sh": "shell",
-    "julia": "julia",
-    "run": "shell",
-    "javascript": "javascript",
-    "typescript": {
-      "name": "javascript",
-      "typescript": true
-    },
-    "octave": "octave",
-    "matlab": "octave",
-    "mllike": "mllike",
-    "clike": "clike",
-    "html": "htmlembedded",
-    "xml": "xml",
-    "yaml": "yaml",
-    "json": {
-      "name": "javascript",
-      "jsonMode": true
-    },
-    "stex": "stex"
+  "properties": {
+    "sos.kernel_codemirror_mode": {
+      "python": {
+        "name": "python",
+        "version": 3
+      },
+      "python2": {
+        "name": "python",
+        "version": 2
+      },
+      "python3": {
+        "name": "python",
+        "version": 3
+      },
+      "r": "r",
+      "report": "report",
+      "pandoc": "markdown",
+      "download": "markdown",
+      "markdown": "markdown",
+      "ruby": "ruby",
+      "sas": "sas",
+      "bash": "shell",
+      "sh": "shell",
+      "julia": "julia",
+      "run": "shell",
+      "javascript": "javascript",
+      "typescript": {
+        "name": "javascript",
+        "typescript": true
+      },
+      "octave": "octave",
+      "matlab": "octave",
+      "mllike": "mllike",
+      "clike": "clike",
+      "html": "htmlembedded",
+      "xml": "xml",
+      "yaml": "yaml",
+      "json": {
+        "name": "javascript",
+        "jsonMode": true
+      },
+      "stex": "stex"
+    }
   },
-  "properties": {},
   "additionalProperties": false,
   "type": "object"
 }

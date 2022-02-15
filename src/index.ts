@@ -976,11 +976,12 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
 /**
  * Initialization data for the sos-extension extension.
  */
+const PLUGIN_ID = 'jupyterlab-sos:plugin';
 const extension: JupyterFrontEndPlugin<void> = {
   id: "vatlab/jupyterlab-extension:sos",
   autoStart: true,
-  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror],
-  activate: (
+  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror, ISettingRegistry],
+  activate: async (
     app: JupyterFrontEnd,
     notebook_tracker: INotebookTracker,
     console_tracker: IConsoleTracker,
@@ -994,11 +995,9 @@ const extension: JupyterFrontEndPlugin<void> = {
     Manager.set_commands(app.commands);
 
     if (settingRegistry) {
-      const fetchSettings = settingRegistry
-        ? settingRegistry.load(extension.id)
-        : Promise.reject(new Error(`No setting registry for ${extension.id}`));
-
-      fetchSettings.then(settings => { Manager.manager.update_config(settings); });
+      const setting = await settingRegistry.load(PLUGIN_ID);
+      console.log(setting.get('sos.kernel_codemirror_mode'));
+      Manager.manager.update_config(setting);
     }
 
     console_tracker.widgetAdded.connect((sender, panel) => {

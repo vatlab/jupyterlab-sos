@@ -1,64 +1,80 @@
-[![Build Status](https://travis-ci.org/vatlab/jupyterlab-sos.svg?branch=master)](https://travis-ci.org/vatlab/jupyterlab-sos)
-[![npm version](https://badge.fury.io/js/jupyterlab-sos.svg)](https://badge.fury.io/js/jupyterlab-sos)
-[![PyPI version](https://badge.fury.io/py/jupyterlab-sos.svg)](https://badge.fury.io/py/jupyterlab-sos)
+# jupyterlab_sos
+
+[![Github Actions Status](https://github.com/vatlab/jupyterlab-sos.git/workflows/Build/badge.svg)](https://github.com/vatlab/jupyterlab-sos.git/actions/workflows/build.yml)
+
+JupyterLab extension for SoS workflow engine and polyglot notebook
 
 
-# JupyterLab extension for SoS polyglot notebook and workflow system
 
-jupyterlab-sos is a JupyterLab extension for the [SoS Polyglot Notebook](https://vatlab.github.io/sos-docs/) that allows you to use multiple Jupyter kernels in one notebook. It is also a frontend to the [SoS Workflow Engine](https://github.com/vatlab/SoS) that is designed for daily computational research with both exploratory interactive data analysis and batch data processing.
+## Requirements
 
-## Prerequisites
+* JupyterLab >= 3.0
 
-* [sos-notebook](https://github.com/vatlab/sos-notebook) and language modules of interest (e.g. [sos-python](https://github.com/vatlab/sos-python) and [sos-r](https://github.com/vatlab/sos-notebook)). See [installation instruction](https://vatlab.github.io/sos-docs/running.html) for details.
-* JupyterLab >= 1.0.0
-* [transient-display-data](https://github.com/vatlab/transient-display-data)
+## Install
 
-## Installation
-
-* If you are using conda, you can install `jupyterlab-sos` with command
-
-  ```bash
-  conda install jupyterlab-sos -c conda-forge
-  ```
-  This will automatically install the `transient-display-data` extension, even `jupyterlab`, `sos-notebook`, and `sos` if needed.
-
-* If you have a working jupyterlab installation with `sos-notebook`, you can install `jupyterlab-sos` from command line
-
-  ```bash
-  pip install jupyterlab-sos
-  ```
-
-  or through the jupyterlab extension installation process,
-  which will require node.js
-
-  ```bash
-  jupyter labextension install transient-display-data
-  jupyter labextension install jupyterlab-sos
-  ```
-
-  You could also install these two extensions from the extension manager (`Enable Extension Manager` from `Settings` if needed).
-
-  Finally, if you just upgraded `jupyterlab` with `jupyterlab-sos` installed, you could run
-
-  ```bash
-  jupyter labextension update --all
-  ```
-
-  to upgrade all your extensions to the latest version.
-
-## Development
-
-For a development install (requires npm version 4 or later), do the following in the repository directory:
+To install the extension, execute:
 
 ```bash
-npm install
-npm run build
-jupyter labextension link .
+pip install jupyterlab_sos
 ```
 
-To rebuild the package and the JupyterLab app:
+## Uninstall
+
+To remove the extension, execute:
 
 ```bash
-npm run build
-jupyter lab build
+pip uninstall jupyterlab_sos
 ```
+
+
+## Contributing
+
+### Development install
+
+Note: You will need NodeJS to build the extension package.
+
+The `jlpm` command is JupyterLab's pinned version of
+[yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
+`yarn` or `npm` in lieu of `jlpm` below.
+
+```bash
+# Clone the repo to your local environment
+# Change directory to the jupyterlab_sos directory
+# Install package in development mode
+pip install -e .
+# Link your development version of the extension with JupyterLab
+jupyter labextension develop . --overwrite
+# Rebuild extension Typescript source after making changes
+jlpm run build
+```
+
+You can watch the source directory and run JupyterLab at the same time in different terminals to watch for changes in the extension's source and automatically rebuild the extension.
+
+```bash
+# Watch the source directory in one terminal, automatically rebuilding when needed
+jlpm run watch
+# Run JupyterLab in another terminal
+jupyter lab
+```
+
+With the watch command running, every saved change will immediately be built locally and available in your running JupyterLab. Refresh JupyterLab to load the change in your browser (you may need to wait several seconds for the extension to be rebuilt).
+
+By default, the `jlpm run build` command generates the source maps for this extension to make it easier to debug using the browser dev tools. To also generate source maps for the JupyterLab core extensions, you can run the following command:
+
+```bash
+jupyter lab build --minimize=False
+```
+
+### Development uninstall
+
+```bash
+pip uninstall jupyterlab_sos
+```
+
+In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
+command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
+folder is located. Then you can remove the symlink named `jupyterlab-sos` within that folder.
+
+### Packaging the extension
+
+See [RELEASE](RELEASE.md)
