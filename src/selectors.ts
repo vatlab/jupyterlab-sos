@@ -182,9 +182,13 @@ export function addLanSelector(cell: Cell, info: NotebookInfo) {
       cell_should_be_hidden = true;
       // cell.inputHidden = true;
     }
-
-    let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
-    editor.parentElement.insertBefore(select, editor);
+    let toolbar = cell.node.getElementsByClassName('jp-cell-toolbar');
+    if (toolbar) {
+        toolbar[0].insertBefore(select, null);
+    } else {
+        let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
+        editor.parentElement.insertBefore(select, editor);
+    }
     select.value = kernel;
     select.addEventListener("change", function (evt) {
       // set cell level meta data

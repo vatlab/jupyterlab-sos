@@ -2417,7 +2417,7 @@
         "affectsGlobalScope": false
       },
       "./src/selectors.ts": {
-        "version": "011cb6c6bc1812eeeefacdade980c8fa49ad1cc5c9648e998f98caa5794317da",
+        "version": "2185e3e1de836325f59213484b4d31ad75b48fd7e790919f8231f1a9aa737db8",
         "signature": "31cbae516ae9960cecfa58ee9ad768c3f48ca3b8adf66a50814e5fe9d62e9091",
         "affectsGlobalScope": false
       },
@@ -8054,5 +8054,5 @@
       "./src/selectors.ts"
     ]
   },
-  "version": "4.1.6"
+  "version": "4.1.5"
 }
