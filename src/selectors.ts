@@ -11,7 +11,14 @@ import { CodeMirrorEditor } from "@jupyterlab/codemirror";
 
 import { NotebookInfo } from "./manager";
 
+import { Widget } from '@lumino/widgets';
+
 import { Manager, safe_css_name } from "./manager";
+
+import {
+  HTMLSelect
+} from '@jupyterlab/ui-components';
+
 
 const CELL_LANGUAGE_DROPDOWN_CLASS = "jp-CelllanguageDropDown";
 
@@ -184,10 +191,10 @@ export function addLanSelector(cell: Cell, info: NotebookInfo) {
     }
     let toolbar = cell.node.getElementsByClassName('jp-cell-toolbar');
     if (toolbar) {
-        toolbar[0].insertBefore(select, null);
+      toolbar[0].insertBefore(select, null);
     } else {
-        let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
-        editor.parentElement.insertBefore(select, editor);
+      let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
+      editor.parentElement.insertBefore(select, editor);
     }
     select.value = kernel;
     select.addEventListener("change", function (evt) {
@@ -327,4 +334,37 @@ export function updateCellStyles(
     }
   }
   return unknownTasks;
+}
+
+
+/**
+ * A toolbar widget that switches cell types.
+ */
+export class KernelSwitcher extends Widget {
+  /**
+   * Construct a new cell type switcher.
+   */
+  constructor(widget: Cell) {
+    super();
+    this.addClass(CELL_LANGUAGE_DROPDOWN_CLASS);
+    this._cell = widget;
+  }
+
+  /**
+   * Handle `change` events for the HTMLSelect component.
+   */
+  handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+
+  };
+
+  /**
+   * Handle `keydown` events for the HTMLSelect component.
+   */
+  handleKeyDown = (event: React.KeyboardEvent): void => {
+    if (event.keyCode === 13) {
+      this._cell.activate();
+    }
+  };
+
+  private _cell: Cell;
 }

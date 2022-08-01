@@ -5,6 +5,9 @@ import {
 
 import { each } from "@lumino/algorithm";
 
+import { IObservableList } from '@jupyterlab/observables';
+
+
 import { IDisposable, DisposableDelegate } from "@lumino/disposable";
 
 import { Cell, CodeCell } from "@jupyterlab/cells";
@@ -16,8 +19,9 @@ import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { KernelMessage } from "@jupyterlab/services";
+import { ITranslator } from '@jupyterlab/translation';
 
-import { ICommandPalette } from "@jupyterlab/apputils";
+import { createToolbarFactory, ToolbarRegistry, ICommandPalette, IToolbarWidgetRegistry } from "@jupyterlab/apputils";
 
 import {
   ICodeMirror
@@ -29,7 +33,8 @@ import CodeMirror from 'codemirror';
 import {
   NotebookPanel,
   INotebookModel,
-  INotebookTracker
+  INotebookTracker,
+  NotebookWidgetFactory
 } from "@jupyterlab/notebook";
 
 import { IConsoleTracker } from "@jupyterlab/console";
@@ -47,6 +52,7 @@ import {
   toggleDisplayOutput,
   toggleCellKernel,
   toggleMarkdownCell,
+  KernelSwitcher
 } from "./selectors";
 
 import { wrapExecutor, wrapConsoleExecutor } from "./execute";
@@ -980,13 +986,16 @@ const PLUGIN_ID = 'jupyterlab-sos:plugin';
 const extension: JupyterFrontEndPlugin<void> = {
   id: "vatlab/jupyterlab-extension:sos",
   autoStart: true,
-  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror, ISettingRegistry],
+  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror, IToolbarWidgetRegistry,
+    ITranslator, ISettingRegistry],
   activate: async (
     app: JupyterFrontEnd,
     notebook_tracker: INotebookTracker,
     console_tracker: IConsoleTracker,
     palette: ICommandPalette,
     codeMirror: ICodeMirror,
+    translator: ITranslator,
+    toolbarRegistry: IToolbarWidgetRegistry | null,
     settingRegistry: ISettingRegistry | null,
   ) => {
     registerSoSFileType(app);
@@ -994,9 +1003,47 @@ const extension: JupyterFrontEndPlugin<void> = {
     Manager.set_trackers(notebook_tracker, console_tracker);
     Manager.set_commands(app.commands);
 
+    const FACTORY = 'Cell';
+
+    // Toolbar
+    // - Define a custom toolbar item
+    toolbarRegistry.registerFactory<Cell>(
+      FACTORY,
+      'kernel_selector',
+      (cell: Cell) =>
+        new KernelSwitcher(cell)
+    );
+
+    let settings = null;
     if (settingRegistry) {
-      const setting = await settingRegistry.load(PLUGIN_ID);
-      Manager.manager.update_config(setting);
+      settings = await settingRegistry.load(PLUGIN_ID);
+      Manager.manager.update_config(settings);
+    }
+
+    let toolbarFactory:
+      | ((widget: Cell) => IObservableList<ToolbarRegistry.IToolbarItem>)
+      | undefined;
+
+    if (settingRegistry) {
+      // Create the factory
+      toolbarFactory = createToolbarFactory(
+        toolbarRegistry,
+        settingRegistry,
+        FACTORY,
+        'jupyterlab-sos:plugin',
+        translator
+      );
+
+      const factory = new NotebookWidgetFactory({
+        name: FACTORY,
+        fileTypes: ['notebook'],
+        modelName: 'codecell',
+        defaultFor: ['codecell'],
+        // ...
+        toolbarFactory,
+        translator: translator
+      });
+      app.docRegistry.addWidgetFactory(factory);
     }
 
     console_tracker.widgetAdded.connect((sender, panel) => {
