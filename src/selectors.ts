@@ -4,20 +4,18 @@ import {
 } from "@jupyterlab/notebook";
 
 import {
-  Cell // ICellModel
+  Cell, ICellModel
 } from "@jupyterlab/cells";
 
 import { CodeMirrorEditor } from "@jupyterlab/codemirror";
 
 import { NotebookInfo } from "./manager";
 
-import { Widget } from '@lumino/widgets';
-
 import { Manager, safe_css_name } from "./manager";
 
-import {
-  HTMLSelect
-} from '@jupyterlab/ui-components';
+import { ReactWidget } from '@jupyterlab/apputils';
+
+import React from 'react';
 
 
 const CELL_LANGUAGE_DROPDOWN_CLASS = "jp-CelllanguageDropDown";
@@ -337,34 +335,28 @@ export function updateCellStyles(
 }
 
 
-/**
- * A toolbar widget that switches cell types.
- */
-export class KernelSwitcher extends Widget {
-  /**
-   * Construct a new cell type switcher.
-   */
-  constructor(widget: Cell) {
+export class KernelSwitcher extends ReactWidget {
+  constructor(model: ICellModel) {
     super();
     this.addClass(CELL_LANGUAGE_DROPDOWN_CLASS);
-    this._cell = widget;
+    // this._model = model;
   }
 
-  /**
-   * Handle `change` events for the HTMLSelect component.
-   */
   handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
 
   };
 
-  /**
-   * Handle `keydown` events for the HTMLSelect component.
-   */
   handleKeyDown = (event: React.KeyboardEvent): void => {
-    if (event.keyCode === 13) {
-      this._cell.activate();
-    }
+
   };
 
-  private _cell: Cell;
+  render(): JSX.Element {
+    return (
+      <label>
+        <input type={'checkbox'}></input>Check me!
+      </label>
+    );
+  }
+
+  // private _model: ICellModel;
 }

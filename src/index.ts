@@ -5,9 +5,6 @@ import {
 
 import { each } from "@lumino/algorithm";
 
-import { IObservableList } from '@jupyterlab/observables';
-
-
 import { IDisposable, DisposableDelegate } from "@lumino/disposable";
 
 import { Cell, CodeCell } from "@jupyterlab/cells";
@@ -21,7 +18,7 @@ import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { KernelMessage } from "@jupyterlab/services";
 import { ITranslator } from '@jupyterlab/translation';
 
-import { createToolbarFactory, ToolbarRegistry, ICommandPalette, IToolbarWidgetRegistry } from "@jupyterlab/apputils";
+import { ICommandPalette, IToolbarWidgetRegistry } from "@jupyterlab/apputils";
 
 import {
   ICodeMirror
@@ -33,8 +30,7 @@ import CodeMirror from 'codemirror';
 import {
   NotebookPanel,
   INotebookModel,
-  INotebookTracker,
-  NotebookWidgetFactory
+  INotebookTracker
 } from "@jupyterlab/notebook";
 
 import { IConsoleTracker } from "@jupyterlab/console";
@@ -1003,47 +999,19 @@ const extension: JupyterFrontEndPlugin<void> = {
     Manager.set_trackers(notebook_tracker, console_tracker);
     Manager.set_commands(app.commands);
 
-    const FACTORY = 'Cell';
-
     // Toolbar
     // - Define a custom toolbar item
     toolbarRegistry.registerFactory<Cell>(
-      FACTORY,
+      'Cell',
       'kernel_selector',
       (cell: Cell) =>
-        new KernelSwitcher(cell)
+        new KernelSwitcher(cell.model)
     );
 
     let settings = null;
     if (settingRegistry) {
       settings = await settingRegistry.load(PLUGIN_ID);
       Manager.manager.update_config(settings);
-    }
-
-    let toolbarFactory:
-      | ((widget: Cell) => IObservableList<ToolbarRegistry.IToolbarItem>)
-      | undefined;
-
-    if (settingRegistry) {
-      // Create the factory
-      toolbarFactory = createToolbarFactory(
-        toolbarRegistry,
-        settingRegistry,
-        FACTORY,
-        'jupyterlab-sos:plugin',
-        translator
-      );
-
-      const factory = new NotebookWidgetFactory({
-        name: FACTORY,
-        fileTypes: ['notebook'],
-        modelName: 'codecell',
-        defaultFor: ['codecell'],
-        // ...
-        toolbarFactory,
-        translator: translator
-      });
-      app.docRegistry.addWidgetFactory(factory);
     }
 
     console_tracker.widgetAdded.connect((sender, panel) => {
