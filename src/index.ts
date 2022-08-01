@@ -40,8 +40,8 @@ import {
 } from "./codemirror-sos";
 
 import {
-  addLanSelector,
-  updateCellStyles,
+  // addLanSelector,
+  // updateCellStyles,
   changeCellKernel,
   changeStyleOnKernel,
   saveKernelInfo,
@@ -530,7 +530,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 
   if (msg_type === "kernel-list") {
     info.updateLanguages(data);
-    let unknownTasks = updateCellStyles(panel, info);
+    let unknownTasks = null; // updateCellStyles(panel, info);
     if (unknownTasks) {
       info.sos_comm.send({
         "update-task-status": unknownTasks
@@ -869,7 +869,7 @@ export class SoSWidgets
             }
             cell.model.metadata.set("kernel", kernel);
           }
-          addLanSelector(cell, info);
+          // addLanSelector(cell, info);
           changeStyleOnKernel(cell, kernel, info);
         });
       }
@@ -990,8 +990,7 @@ const extension: JupyterFrontEndPlugin<void> = {
     console_tracker: IConsoleTracker,
     palette: ICommandPalette,
     codeMirror: ICodeMirror,
-    translator: ITranslator,
-    toolbarRegistry: IToolbarWidgetRegistry | null,
+    toolbarRegistry: IToolbarWidgetRegistry,
     settingRegistry: ISettingRegistry | null,
   ) => {
     registerSoSFileType(app);
@@ -1019,8 +1018,8 @@ const extension: JupyterFrontEndPlugin<void> = {
 
       labconsole.promptCellCreated.connect(panel => {
         if (Manager.currentNotebook) {
-          let info = Manager.manager.get_info(Manager.currentNotebook);
-          addLanSelector(panel.promptCell, info);
+          // let info = Manager.manager.get_info(Manager.currentNotebook);
+          // addLanSelector(panel.promptCell, info);
         }
       });
       labconsole.sessionContext.statusChanged.connect((sender, status: Kernel.Status) => {
