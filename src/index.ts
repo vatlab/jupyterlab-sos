@@ -16,7 +16,6 @@ import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { KernelMessage } from "@jupyterlab/services";
-import { ITranslator } from '@jupyterlab/translation';
 
 import { ICommandPalette, IToolbarWidgetRegistry } from "@jupyterlab/apputils";
 
@@ -983,7 +982,7 @@ const extension: JupyterFrontEndPlugin<void> = {
   id: "vatlab/jupyterlab-extension:sos",
   autoStart: true,
   requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror, IToolbarWidgetRegistry,
-    ITranslator, ISettingRegistry],
+    ISettingRegistry],
   activate: async (
     app: JupyterFrontEnd,
     notebook_tracker: INotebookTracker,
@@ -1004,7 +1003,7 @@ const extension: JupyterFrontEndPlugin<void> = {
       'Cell',
       'kernel_selector',
       (cell: Cell) =>
-        new KernelSwitcher(cell)
+        new KernelSwitcher()
     );
 
     let settings = null;

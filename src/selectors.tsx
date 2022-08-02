@@ -289,21 +289,23 @@ export function updateCellStyles(
 }
 
 export class KernelSwitcher extends ReactWidget {
-  constructor(cell: Cell) {
+  constructor() {
     super();
-    this._cell = cell;
   }
 
   handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    let cell = Manager.currentNotebook.content.activeCell;
+
     let kernel = event.target.value;
-    this._cell.model.metadata.set('kernel', kernel);
+    cell.model.metadata.set('kernel', kernel);
     let panel = Manager.currentNotebook;
     let info: NotebookInfo = Manager.manager.get_info(panel);
     info.sos_comm.send({ 'set-editor-kernel': kernel });
     // change style
-    changeStyleOnKernel(this._cell, kernel, info);
+    changeStyleOnKernel(cell, kernel, info);
     // set global meta data
     saveKernelInfo();
+    this.update();
   };
 
   handleKeyDown = (event: React.KeyboardEvent): void => {};
@@ -311,6 +313,7 @@ export class KernelSwitcher extends ReactWidget {
   render(): JSX.Element {
     let panel = Manager.currentNotebook;
     let info = Manager.manager.get_info(panel);
+    let cell = panel.content.activeCell;
 
     const optionChildren = info.KernelList.map((lan) => {
       return (
@@ -319,8 +322,7 @@ export class KernelSwitcher extends ReactWidget {
         </option>
       );
     });
-
-    let kernel = this._cell.model.metadata.get('kernel') as string;
+    let kernel = cell.model.metadata.get('kernel') as string;
 
     return (
       <HTMLSelect
@@ -335,6 +337,4 @@ export class KernelSwitcher extends ReactWidget {
       </HTMLSelect>
     );
   }
-
-  private _cell: Cell;
 }
