@@ -53,7 +53,8 @@ setup_args = dict(
     packages=setuptools.find_packages(),
     install_requires=[
         'jupyterlab>=3.4.0',
-        'sos-notebook>=0.23.3'
+        'sos-notebook>=0.23.3',
+        'transient-display-data>=0.4.3'
     ],
     zip_safe=False,
     include_package_data=True,
