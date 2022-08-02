@@ -314,7 +314,7 @@ export class KernelSwitcher extends ReactWidget {
 
     const optionChildren = info.KernelList.map((lan) => {
       return (
-        <option value={lan} id={lan}>
+        <option key={lan} value={lan} id={lan}>
           {lan}
         </option>
       );
