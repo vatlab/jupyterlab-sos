@@ -1,19 +1,20 @@
-import {
-  NotebookPanel,
-  NotebookActions
-} from "@jupyterlab/notebook";
+import { NotebookPanel, NotebookActions } from '@jupyterlab/notebook';
 
-import {
-  Cell // ICellModel
-} from "@jupyterlab/cells";
+import { Cell } from '@jupyterlab/cells';
 
-import { CodeMirrorEditor } from "@jupyterlab/codemirror";
+import { CodeMirrorEditor } from '@jupyterlab/codemirror';
 
-import { NotebookInfo } from "./manager";
+import { NotebookInfo } from './manager';
 
-import { Manager, safe_css_name } from "./manager";
+import { Manager, safe_css_name } from './manager';
 
-const CELL_LANGUAGE_DROPDOWN_CLASS = "jp-CelllanguageDropDown";
+import { HTMLSelect } from '@jupyterlab/ui-components';
+
+import { ReactWidget } from '@jupyterlab/apputils';
+
+import React from 'react';
+
+const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
 
 export function saveKernelInfo() {
   let panel = Manager.currentNotebook;
@@ -23,11 +24,11 @@ export function saveKernelInfo() {
   let cells = panel.content.model.cells;
   for (var i = cells.length - 1; i >= 0; --i) {
     let cell = cells.get(i);
-    if (cell.type === "code" && cell.metadata.get("kernel")) {
-      used_kernels.add(cell.metadata.get("kernel") as string);
+    if (cell.type === 'code' && cell.metadata.get('kernel')) {
+      used_kernels.add(cell.metadata.get('kernel') as string);
     }
   }
-  (panel.content.model.metadata.get("sos") as any)["kernels"] = Array.from(
+  (panel.content.model.metadata.get('sos') as any)['kernels'] = Array.from(
     used_kernels.values()
   )
     .sort()
@@ -35,9 +36,9 @@ export function saveKernelInfo() {
       return [
         info.DisplayName.get(x as string),
         info.KernelName.get(x as string),
-        info.LanguageName.get(x as string) || "",
-        info.BackgroundColor.get(x as string) || "",
-        info.CodeMirrorMode.get(x as string) || ""
+        info.LanguageName.get(x as string) || '',
+        info.BackgroundColor.get(x as string) || '',
+        info.CodeMirrorMode.get(x as string) || '',
       ];
     });
 }
@@ -47,52 +48,50 @@ export function hideLanSelector(cell) {
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
   if (nodes.length > 0) {
-    nodes[0].style.display = "none";
+    nodes[0].style.display = 'none';
   }
 }
 
 export function toggleDisplayOutput(cell) {
-  if (cell.model.type === "markdown") {
+  if (cell.model.type === 'markdown') {
     // switch between hide_output and ""
     if (
-      cell.model.metadata.get("tags") &&
-      (cell.model.metadata.get("tags") as Array<string>).indexOf(
-        "hide_output"
+      cell.model.metadata.get('tags') &&
+      (cell.model.metadata.get('tags') as Array<string>).indexOf(
+        'hide_output'
       ) >= 0
     ) {
       // if report_output on, remove it
-      remove_tag(cell, "hide_output");
+      remove_tag(cell, 'hide_output');
     } else {
-      add_tag(cell, "hide_output");
+      add_tag(cell, 'hide_output');
     }
-  } else if (cell.model.type === "code") {
+  } else if (cell.model.type === 'code') {
     // switch between report_output and ""
     if (
-      cell.model.metadata.get("tags") &&
-      (cell.model.metadata.get("tags") as Array<string>).indexOf(
-        "report_output"
+      cell.model.metadata.get('tags') &&
+      (cell.model.metadata.get('tags') as Array<string>).indexOf(
+        'report_output'
       ) >= 0
     ) {
       // if report_output on, remove it
-      remove_tag(cell, "report_output");
+      remove_tag(cell, 'report_output');
     } else {
-      add_tag(cell, "report_output");
+      add_tag(cell, 'report_output');
     }
   }
 }
 
-
 export function toggleCellKernel(cell: Cell, panel: NotebookPanel) {
-
-  if (cell.model.type === "markdown") {
+  if (cell.model.type === 'markdown') {
     // markdown, to code
     // NotebookActions.changeCellType(panel.content, 'code');
     return;
-  } else if (cell.model.type === "code") {
+  } else if (cell.model.type === 'code') {
     // switch to the next used kernel
-    let kernels = (panel.content.model.metadata.get("sos") as any)["kernels"];
+    let kernels = (panel.content.model.metadata.get('sos') as any)['kernels'];
     // current kernel
-    let kernel = cell.model.metadata.get("kernel");
+    let kernel = cell.model.metadata.get('kernel');
 
     if (kernels.length == 1) {
       return;
@@ -110,10 +109,8 @@ export function toggleCellKernel(cell: Cell, panel: NotebookPanel) {
   }
 }
 
-
 export function toggleMarkdownCell(cell: Cell, panel: NotebookPanel) {
-
-  if (cell.model.type === "markdown") {
+  if (cell.model.type === 'markdown') {
     // markdown, to code
     NotebookActions.changeCellType(panel.content, 'code');
   } else {
@@ -131,7 +128,7 @@ function remove_tag(cell, tag) {
   }
   cell.model.metadata.set('tags', new_list);
   let op = cell.node.getElementsByClassName(
-    "jp-Cell-outputWrapper"
+    'jp-Cell-outputWrapper'
   ) as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < op.length; ++i) {
     op.item(i).classList.remove(tag);
@@ -147,7 +144,7 @@ function add_tag(cell, tag) {
   }
   cell.model.metadata.set('tags', taglist);
   let op = cell.node.getElementsByClassName(
-    "jp-Cell-outputWrapper"
+    'jp-Cell-outputWrapper'
   ) as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < op.length; ++i) {
     op.item(i).classList.add(tag);
@@ -155,64 +152,30 @@ function add_tag(cell, tag) {
 }
 
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
-  if (!cell.model.metadata.has("kernel")) {
-    cell.model.metadata.set("kernel", "SoS");
+  if (!cell.model.metadata.has('kernel')) {
+    cell.model.metadata.set('kernel', 'SoS');
   }
-  let kernel = cell.model.metadata.get("kernel") as string;
+  let kernel = cell.model.metadata.get('kernel') as string;
 
   let nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
-  if (nodes.length === 0) {
-    // if there is no selector, create one
-    let select = document.createElement("select");
-    for (let lan of info.KernelList) {
-      let option = document.createElement("option");
-      option.value = lan;
-      option.id = lan;
-      option.textContent = lan;
-      select.appendChild(option);
-    }
-    select.className = CELL_LANGUAGE_DROPDOWN_CLASS + " sos-widget";
-
-    let cell_should_be_hidden = false;
-    if (cell.inputHidden) {
-      // if the cell is collapsed, no jp-InputArea-editor could be found
-      cell.inputHidden = false;
-      cell_should_be_hidden = true;
-      // cell.inputHidden = true;
-    }
-
-    let editor = cell.node.getElementsByClassName("jp-InputArea-editor")[0];
-    editor.parentElement.insertBefore(select, editor);
-    select.value = kernel;
-    select.addEventListener("change", function (evt) {
-      // set cell level meta data
-      let kernel = (evt.target as HTMLOptionElement).value;
-      cell.model.metadata.set("kernel", kernel);
-      info.sos_comm.send({ "set-editor-kernel": kernel });
-      // change style
-      changeStyleOnKernel(cell, kernel, info);
-      // set global meta data
-      saveKernelInfo();
-    });
-    if (cell_should_be_hidden) {
-      cell.inputHidden = true;
-    }
-  } else {
+  if (nodes.length > 0) {
     // use the existing dropdown box
-    let select = nodes.item(0) as HTMLSelectElement;
+    let select = nodes
+      .item(0)
+      .getElementsByTagName('select')[0] as HTMLSelectElement;
     // update existing
     for (let lan of info.KernelList) {
       // ignore if already exists
       if (select.options.namedItem(lan)) continue;
-      let option = document.createElement("option");
+      let option = document.createElement('option');
       option.value = lan;
       option.id = lan;
       option.textContent = lan;
       select.appendChild(option);
     }
-    select.value = kernel ? kernel : "SoS";
+    select.value = kernel ? kernel : 'SoS';
   }
 }
 
@@ -221,7 +184,7 @@ export function changeCellKernel(
   kernel: string,
   info: NotebookInfo
 ) {
-  cell.model.metadata.set("kernel", kernel);
+  cell.model.metadata.set('kernel', kernel);
   let nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
@@ -240,25 +203,25 @@ export function changeStyleOnKernel(
 ) {
   // Note: JupyterLab does not yet support tags
   if (
-    cell.model.metadata.get("tags") &&
-    (cell.model.metadata.get("tags") as Array<string>).indexOf(
-      "report_output"
+    cell.model.metadata.get('tags') &&
+    (cell.model.metadata.get('tags') as Array<string>).indexOf(
+      'report_output'
     ) >= 0
   ) {
     let op = cell.node.getElementsByClassName(
-      "jp-Cell-outputWrapper"
+      'jp-Cell-outputWrapper'
     ) as HTMLCollectionOf<HTMLElement>;
     for (let i = 0; i < op.length; ++i)
-      op.item(i).classList.add("report-output");
+      op.item(i).classList.add('report-output');
   } else {
     let op = cell.node.getElementsByClassName(
-      "jp-Cell-outputWrapper"
+      'jp-Cell-outputWrapper'
     ) as HTMLCollectionOf<HTMLElement>;
     for (let i = 0; i < op.length; ++i)
-      op.item(i).classList.remove("report-output");
+      op.item(i).classList.remove('report-output');
   }
   for (let className of Array.from(cell.node.classList)) {
-    if (className.startsWith("sos_lan_")) {
+    if (className.startsWith('sos_lan_')) {
       cell.node.classList.remove(className);
     }
   }
@@ -273,15 +236,15 @@ export function changeStyleOnKernel(
     info.LanguageName.get(kernel) ||
     info.KernelName.get(kernel) ||
     kernel;
-  if (!base_mode || base_mode === "sos") {
+  if (!base_mode || base_mode === 'sos') {
     (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption(
-      "mode",
-      "sos"
+      'mode',
+      'sos'
     );
   } else {
-    (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption("mode", {
-      name: "sos",
-      base_mode: base_mode
+    (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', {
+      name: 'sos',
+      base_mode: base_mode,
     });
   }
 }
@@ -295,10 +258,10 @@ export function updateCellStyles(
   // setting up background color and selection according to notebook metadata
   for (let i = 0; i < cells.length; ++i) {
     addLanSelector(cells[i], info);
-    if (cells[i].model.type === "code") {
+    if (cells[i].model.type === 'code') {
       changeStyleOnKernel(
         cells[i],
-        cells[i].model.metadata.get("kernel") as string,
+        cells[i].model.metadata.get('kernel') as string,
         info
       );
     }
@@ -309,7 +272,7 @@ export function updateCellStyles(
     addLanSelector(panels[i].console.promptCell, info);
     changeStyleOnKernel(
       panels[i].console.promptCell,
-      panels[i].console.promptCell.model.metadata.get("kernel") as string,
+      panels[i].console.promptCell.model.metadata.get('kernel') as string,
       info
     );
   }
@@ -317,10 +280,61 @@ export function updateCellStyles(
   let unknownTasks = [];
   for (let i = 0; i < tasks.length; ++i) {
     // status_localhost_5ea9232779ca1959
-    if (tasks[i].id.match("^task_status_icon_.*")) {
-      tasks[i].className = "fa fa-fw fa-2x fa-refresh fa-spin";
+    if (tasks[i].id.match('^task_status_icon_.*')) {
+      tasks[i].className = 'fa fa-fw fa-2x fa-refresh fa-spin';
       unknownTasks.push(tasks[i].id.substring(17));
     }
   }
   return unknownTasks;
+}
+
+export class KernelSwitcher extends ReactWidget {
+  constructor() {
+    super();
+  }
+
+  handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    let cell = Manager.currentNotebook.content.activeCell;
+
+    let kernel = event.target.value;
+    cell.model.metadata.set('kernel', kernel);
+    let panel = Manager.currentNotebook;
+    let info: NotebookInfo = Manager.manager.get_info(panel);
+    info.sos_comm.send({ 'set-editor-kernel': kernel });
+    // change style
+    changeStyleOnKernel(cell, kernel, info);
+    // set global meta data
+    saveKernelInfo();
+    this.update();
+  };
+
+  handleKeyDown = (event: React.KeyboardEvent): void => {};
+
+  render(): JSX.Element {
+    let panel = Manager.currentNotebook;
+    let info = Manager.manager.get_info(panel);
+    let cell = panel.content.activeCell;
+
+    const optionChildren = info.KernelList.map((lan) => {
+      return (
+        <option key={lan} value={lan} id={lan}>
+          {lan}
+        </option>
+      );
+    });
+    let kernel = cell.model.metadata.get('kernel') as string;
+
+    return (
+      <HTMLSelect
+        className={CELL_LANGUAGE_DROPDOWN_CLASS}
+        onChange={this.handleChange}
+        onKeyDown={this.handleKeyDown}
+        value={kernel ? kernel : 'SoS'}
+        aria-label="Kernel"
+        title={'Select the cell kernel'}
+      >
+        {optionChildren}
+      </HTMLSelect>
+    );
+  }
 }

@@ -17,7 +17,7 @@ import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { KernelMessage } from "@jupyterlab/services";
 
-import { ICommandPalette } from "@jupyterlab/apputils";
+import { ICommandPalette, IToolbarWidgetRegistry } from "@jupyterlab/apputils";
 
 import {
   ICodeMirror
@@ -47,6 +47,7 @@ import {
   toggleDisplayOutput,
   toggleCellKernel,
   toggleMarkdownCell,
+  KernelSwitcher
 } from "./selectors";
 
 import { wrapExecutor, wrapConsoleExecutor } from "./execute";
@@ -790,7 +791,7 @@ export class SoSWidgets
         }
         // connectSoSComm(panel);
         // wrapExecutor(panel);
-        // updateCellStyles(panel, info);
+        updateCellStyles(panel, info);
         showSoSWidgets(panel.node);
       } else {
         hideSoSWidgets(panel.node);
@@ -817,7 +818,7 @@ export class SoSWidgets
           }
           // connectSoSComm(panel);
           // wrapExecutor(panel);
-          // updateCellStyles(panel, info);
+          updateCellStyles(panel, info);
           showSoSWidgets(panel.node);
         } else {
           // in this case, the .sos_widget should be hidden
@@ -980,13 +981,15 @@ const PLUGIN_ID = 'jupyterlab-sos:plugin';
 const extension: JupyterFrontEndPlugin<void> = {
   id: "vatlab/jupyterlab-extension:sos",
   autoStart: true,
-  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror, ISettingRegistry],
+  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror, IToolbarWidgetRegistry,
+    ISettingRegistry],
   activate: async (
     app: JupyterFrontEnd,
     notebook_tracker: INotebookTracker,
     console_tracker: IConsoleTracker,
     palette: ICommandPalette,
     codeMirror: ICodeMirror,
+    toolbarRegistry: IToolbarWidgetRegistry,
     settingRegistry: ISettingRegistry | null,
   ) => {
     registerSoSFileType(app);
@@ -994,9 +997,19 @@ const extension: JupyterFrontEndPlugin<void> = {
     Manager.set_trackers(notebook_tracker, console_tracker);
     Manager.set_commands(app.commands);
 
+    // Toolbar
+    // - Define a custom toolbar item
+    toolbarRegistry.registerFactory<Cell>(
+      'Cell',
+      'kernel_selector',
+      (cell: Cell) =>
+        new KernelSwitcher()
+    );
+
+    let settings = null;
     if (settingRegistry) {
-      const setting = await settingRegistry.load(PLUGIN_ID);
-      Manager.manager.update_config(setting);
+      settings = await settingRegistry.load(PLUGIN_ID);
+      Manager.manager.update_config(settings);
     }
 
     console_tracker.widgetAdded.connect((sender, panel) => {

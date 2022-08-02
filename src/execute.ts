@@ -5,7 +5,7 @@ import {
 
 import { KernelMessage, Kernel } from "@jupyterlab/services";
 
-import { ICellModel, Cell } from "@jupyterlab/cells";
+import { Cell, ICellModel } from "@jupyterlab/cells";
 
 import { ConsolePanel } from "@jupyterlab/console";
 

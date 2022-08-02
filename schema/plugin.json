@@ -1,6 +1,13 @@
 {
   "title": "jupyterlab-sos",
   "description": "SoS extension settings.",
+  "jupyter.lab.toolbars": {
+    "Cell": [
+      {
+        "name": "kernel_selector"
+      }
+    ]
+  },
   "jupyter.lab.shortcuts": [
     {
       "command": "sos:toggle_output",

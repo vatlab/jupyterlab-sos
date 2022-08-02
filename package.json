@@ -1,6 +1,6 @@
 {
   "name": "jupyterlab-sos",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "JupyterLab extension for SoS workflow engine and polyglot notebook",
   "keywords": [
     "jupyter",
@@ -47,23 +47,27 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyterlab/application": "^3.1.12",
-    "@jupyterlab/apputils": "^3.1.12",
-    "@jupyterlab/codemirror": "^3.1.12",
-    "@jupyterlab/console": "^3.1.12",
+    "@jupyterlab/application": "^3.4.0",
+    "@jupyterlab/apputils": "^3.4.0",
+    "@jupyterlab/cells": "^3.4.0",
+    "@jupyterlab/codemirror": "^3.4.0",
+    "@jupyterlab/console": "^3.4.0",
     "@jupyterlab/coreutils": "^5.1.0",
-    "@jupyterlab/docregistry": "^3.1.12",
-    "@jupyterlab/notebook": "^3.1.12",
+    "@jupyterlab/docregistry": "^3.4.0",
+    "@jupyterlab/notebook": "^3.4.0",
     "@jupyterlab/services": "^6.1.12",
-    "@jupyterlab/settingregistry": "^3.1.12",
+    "@jupyterlab/settingregistry": "^3.4.0",
+    "@jupyterlab/ui-components": "^3.4.0",
     "@lumino/algorithm": "^1.3.3",
     "@lumino/commands": "^1.12.0",
     "@lumino/disposable": "^1.4.3",
-    "transient-display-data": "^0.4.1"
+    "react": "^17.0.0",
+    "transient-display-data": "^0.4.3"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.1.0",
+    "@jupyterlab/builder": "^3.4.0",
     "@types/codemirror": "0.0.97",
+    "@types/react": "^17.0.0",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "codemirror": "^5.53.2",
@@ -73,6 +77,11 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
+    "stylelint": "^14.3.0",
+    "stylelint-config-prettier": "^9.0.3",
+    "stylelint-config-recommended": "^6.0.0",
+    "stylelint-config-standard": "~24.0.0",
+    "stylelint-prettier": "^2.0.0",
     "typedoc": "^0.15.4",
     "typescript": "~4.1.3"
   },

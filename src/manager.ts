@@ -122,7 +122,7 @@ export class NotebookInfo {
       .filter(Boolean)
       .join("\n");
     var css = document.createElement("style");
-    css.type = "text/css";
+    // css.type = "text/css";
     css.innerHTML = css_text;
     document.body.appendChild(css);
   }
