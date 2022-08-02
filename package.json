@@ -62,7 +62,7 @@
     "@lumino/commands": "^1.12.0",
     "@lumino/disposable": "^1.4.3",
     "react": "^17.0.0",
-    "transient-display-data": "^0.4.1"
+    "transient-display-data": "^0.4.3"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.4.0",

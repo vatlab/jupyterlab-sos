@@ -13,6 +13,10 @@ import { NotebookInfo } from "./manager";
 
 import { Manager, safe_css_name } from "./manager";
 
+import {
+  HTMLSelect
+} from '@jupyterlab/ui-components';
+
 import { ReactWidget } from '@jupyterlab/apputils';
 
 import React from 'react';
@@ -352,9 +356,16 @@ export class KernelSwitcher extends ReactWidget {
 
   render(): JSX.Element {
     return (
-      <label>
-        <input type={'checkbox'}></input>Check me!
-      </label>
+      <HTMLSelect
+        className={CELL_LANGUAGE_DROPDOWN_CLASS}
+        onChange={this.handleChange}
+        onKeyDown={this.handleKeyDown}
+        value={"SoS"}
+        aria-label='Kernel'
+        title={'Select the cell kernel'}
+      >
+        <option value="sos">SoS</option>
+      </HTMLSelect>
     );
   }
 
