@@ -9,6 +9,10 @@ import { IDisposable, DisposableDelegate } from "@lumino/disposable";
 
 import { Cell, CodeCell } from "@jupyterlab/cells";
 
+import React from 'react';
+
+import { ReactWidget, UseSignal } from '@jupyterlab/apputils';
+
 import { Kernel, Session } from "@jupyterlab/services";
 
 import { DocumentRegistry } from "@jupyterlab/docregistry";
@@ -635,7 +639,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
           return item.id.substring(16);
         });
       if (pending) {
-        (<any>window).execute_workflow(pending);
+        (window as any).execute_workflow(pending);
       }
     }
   } else if (msg_type === "paste-table") {
@@ -711,7 +715,7 @@ function showSoSWidgets(element: HTMLElement) {
     sos_elements[i].style.display = "";
 }
 
-(<any>window).task_action = async function (param) {
+(window as any).task_action = async function (param) {
   if (!param.action) {
     return;
   }
@@ -737,7 +741,7 @@ function showSoSWidgets(element: HTMLElement) {
   });
 };
 
-(<any>window).cancel_workflow = function (cell_id) {
+(window as any).cancel_workflow = function (cell_id) {
   console.log("Cancel workflow " + cell_id);
   let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
@@ -745,7 +749,7 @@ function showSoSWidgets(element: HTMLElement) {
   });
 };
 
-(<any>window).execute_workflow = function (cell_ids) {
+(window as any).execute_workflow = function (cell_ids) {
   console.log("Run workflows " + cell_ids);
   let info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
@@ -899,7 +903,7 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
 }
 
 
-(<any>window).filterDataFrame = function (id) {
+(window as any).filterDataFrame = function (id) {
   var input = document.getElementById("search_" + id) as HTMLInputElement;;
   var filter = input.value.toUpperCase();
   var table = document.getElementById("dataframe_" + id) as HTMLTableElement;
@@ -921,7 +925,7 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
   }
 };
 
-(<any>window).sortDataFrame = function (id, n, dtype) {
+(window as any).sortDataFrame = function (id, n, dtype) {
   var table = document.getElementById("dataframe_" + id) as HTMLTableElement;
 
   var tb = table.tBodies[0]; // use `<tbody>` to ignore `<thead>` and `<tfoot>` rows
@@ -1000,11 +1004,15 @@ const extension: JupyterFrontEndPlugin<void> = {
 
     // Toolbar
     // - Define a custom toolbar item
-    toolbarRegistry.registerFactory<Cell>(
+    toolbarRegistry.registerFactory<NotebookPanel>(
       'Cell',
       'kernel_selector',
-      (cell: Cell) =>
-        new KernelSwitcher(cell)
+      (panel: NotebookPanel) =>
+        ReactWidget.create(
+          <UseSignal signal={panel.content.activeCellChanged}>
+          {(_, cell) => <KernelSwitcher cell={cell}></KernelSwitcher>
+          </UseSignal>}
+        ))
     );
 
     let settings = null;
