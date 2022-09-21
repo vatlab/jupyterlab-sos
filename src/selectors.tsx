@@ -312,6 +312,13 @@ export class KernelSwitcher extends ReactWidget {
 
   render(): JSX.Element {
     let panel = Manager.currentNotebook;
+    let cur_kernel =
+      panel.context.sessionContext.kernelPreference.name ||
+      panel.context.sessionContext.kernelDisplayName;
+    if (cur_kernel.toLowerCase() !== "sos") {
+      return;
+    }
+
     let info = Manager.manager.get_info(panel);
     let cell = panel.content.activeCell;
 
