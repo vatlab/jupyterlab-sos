@@ -183,7 +183,7 @@ function markExpr(python_mode: any) {
   };
 }
 
-(CodeMirror as any).modeURL = "codemirror/mode/%N/%N";
+(CodeMirror as any).modeURL = "codemirror/mode/%N/%N.js";
 
 export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) {
   let sosPythonConf: any = {};
