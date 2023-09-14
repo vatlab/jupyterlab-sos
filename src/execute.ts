@@ -5,7 +5,7 @@ import {
 
 import { KernelMessage, Kernel } from "@jupyterlab/services";
 
-import { Cell, ICellModel } from "@jupyterlab/cells";
+import { Cell, ICellModel, IMarkdownCellModel} from "@jupyterlab/cells";
 
 import { ConsolePanel } from "@jupyterlab/console";
 
@@ -45,7 +45,7 @@ function scanHeaderLines(cells: ReadonlyArray<Cell>) {
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
     if (cell.type === "markdown") {
-      var lines = cell.value.text.split("\n");
+      var lines = (cell as IMarkdownCellModel).sharedModel.getSource().split("\n");
       for (let l = 0; l < lines.length; ++l) {
         if (lines[l].match("^#+ ")) {
           TOC += lines[l] + "\n";
@@ -58,7 +58,7 @@ function scanHeaderLines(cells: ReadonlyArray<Cell>) {
 
 // get the workflow part of text from a cell
 function getCellWorkflow(cell: ICellModel) {
-  var lines = cell.value.text.split("\n");
+  var lines = cell.sharedModel.getSource().split("\n");
   var workflow = "";
   var l;
   for (l = 0; l < lines.length; ++l) {
@@ -113,7 +113,7 @@ function getNotebookContent(panel: NotebookPanel) {
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
     if (cell.type === "code" ) {
-      workflow += `# cell ${i + 1}, kernel=${cell.metadata.get("kernel")}\n${cell.value.text}\n\n`
+      workflow += `# cell ${i + 1}, kernel=${cell.metadata.get("kernel")}\n${cell.sharedModel.getSource()}\n\n`
     }
   }
   return workflow;

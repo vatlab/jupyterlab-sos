@@ -19,11 +19,11 @@ import { KernelMessage } from "@jupyterlab/services";
 
 import { ICommandPalette, IToolbarWidgetRegistry } from "@jupyterlab/apputils";
 
-import {
-  ICodeMirror
-} from '@jupyterlab/codemirror';
+// import {
+//   IEditorLanguageHandler
+// } from '@jupyterlab/codemirror';
 
-import CodeMirror from 'codemirror';
+// import CodeMirror from 'codemirror';
 
 
 import {
@@ -74,22 +74,21 @@ function registerSoSFileType(app: JupyterFrontEnd) {
   });
 }
 
-function defineSoSCodeMirrorMode(code_mirror_singleton) {
-  // hint word for SoS mode
+function defineSoSCodeMirrorMode(handler) {
   try {
-    code_mirror_singleton.registerHelper("hintWords", "sos", sosHintWords);
+    handler.registerHelper("hintWords", "sos", sosHintWords);
   } catch (error) {
     console.log(`Failed to register hintWords for sos mode. ${error}`);
   }
 
-  (code_mirror_singleton as any).defineMode(
+  (handler as any).defineMode(
     "sos",
     sos_mode,
     "python");
 
-  (code_mirror_singleton as any).defineMIME("text/x-sos", "sos");
+  (handler as any).defineMIME("text/x-sos", "sos");
 
-  (code_mirror_singleton as any).modeInfo.push({
+  (handler as any).modeInfo.push({
     ext: ["sos"],
     mime: "text/x-sos",
     mode: "sos",
@@ -981,14 +980,14 @@ const PLUGIN_ID = 'jupyterlab-sos:plugin';
 const extension: JupyterFrontEndPlugin<void> = {
   id: "vatlab/jupyterlab-extension:sos",
   autoStart: true,
-  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, ICodeMirror, IToolbarWidgetRegistry,
+  requires: [INotebookTracker, IConsoleTracker, ICommandPalette, IToolbarWidgetRegistry,
     ISettingRegistry],
   activate: async (
     app: JupyterFrontEnd,
     notebook_tracker: INotebookTracker,
     console_tracker: IConsoleTracker,
     palette: ICommandPalette,
-    codeMirror: ICodeMirror,
+    // editor_language_handler: IEditorLanguageHandler,
     toolbarRegistry: IToolbarWidgetRegistry,
     settingRegistry: ISettingRegistry | null,
   ) => {
@@ -1033,7 +1032,7 @@ const extension: JupyterFrontEndPlugin<void> = {
       });
     });
 
-    defineSoSCodeMirrorMode(codeMirror.CodeMirror);
+    // defineSoSCodeMirrorMode(editor_language_handler);
 
     // add an command to toggle output
     const command_toggle_output: string = "sos:toggle_output";
