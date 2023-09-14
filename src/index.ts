@@ -34,9 +34,9 @@ import {
 
 import { IConsoleTracker } from "@jupyterlab/console";
 
-import {
-  sosHintWords, sos_mode
-} from "./codemirror-sos";
+// import {
+//   sosHintWords, sos_mode
+// } from "./codemirror-sos";
 
 import {
   addLanSelector,
@@ -74,27 +74,27 @@ function registerSoSFileType(app: JupyterFrontEnd) {
   });
 }
 
-function defineSoSCodeMirrorMode(handler) {
-  try {
-    handler.registerHelper("hintWords", "sos", sosHintWords);
-  } catch (error) {
-    console.log(`Failed to register hintWords for sos mode. ${error}`);
-  }
+// function defineSoSCodeMirrorMode(handler) {
+//   try {
+//     handler.registerHelper("hintWords", "sos", sosHintWords);
+//   } catch (error) {
+//     console.log(`Failed to register hintWords for sos mode. ${error}`);
+//   }
 
-  (handler as any).defineMode(
-    "sos",
-    sos_mode,
-    "python");
+//   (handler as any).defineMode(
+//     "sos",
+//     sos_mode,
+//     "python");
 
-  (handler as any).defineMIME("text/x-sos", "sos");
+//   (handler as any).defineMIME("text/x-sos", "sos");
 
-  (handler as any).modeInfo.push({
-    ext: ["sos"],
-    mime: "text/x-sos",
-    mode: "sos",
-    name: "SoS"
-  });
-}
+//   (handler as any).modeInfo.push({
+//     ext: ["sos"],
+//     mime: "text/x-sos",
+//     mode: "sos",
+//     name: "SoS"
+//   });
+// }
 
 function formatDuration(ms: number): string {
   let res = [];
@@ -573,9 +573,9 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
    */
   } else if (msg_type === "highlight-workflow") {
     let elem = document.getElementById(data[1]) as HTMLTextAreaElement;
-    CodeMirror.fromTextArea(elem, {
-      mode: "sos"
-    });
+    // CodeMirror.fromTextArea(elem, {
+    //   mode: "sos"
+    // });
     // if in a regular notebook, we use static version of the HTML
     // to replace the codemirror js version.
     if (data[0]) {
@@ -670,7 +670,7 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
     sos_comm.open("initial");
     sos_comm.onMsg = on_frontend_msg;
 
-    if (panel.content.model.metadata.has("sos")) {
+    if (panel.content.model.metadata["sos"]) {
       sos_comm.send({
         "notebook-version": (panel.content.model.metadata['sos'] as any)[
           "version"
@@ -778,7 +778,7 @@ export class SoSWidgets
       if (cur_kernel.toLowerCase() === "sos") {
         console.log(`session ready with kernel sos`);
         // if this is not a sos kernel, remove all buttons
-        if (panel.content.model.metadata.has("sos")) {
+        if (panel.content.model.metadata["sos"]) {
           info.updateLanguages(
             (panel.content.model.metadata['sos'] as any)["kernels"]
           );
@@ -805,7 +805,7 @@ export class SoSWidgets
         }
         console.log(`kernel changed to ${args.newValue.name}`);
         if (args.newValue.name === "sos") {
-          if (panel.content.model.metadata.has("sos")) {
+          if (panel.content.model.metadata["sos"]) {
             info.updateLanguages(
               (panel.content.model.metadata['sos'] as any)["kernels"]
             );
@@ -850,7 +850,7 @@ export class SoSWidgets
             return;
           }
           let kernel = "SoS";
-          if (cell.model.metadata.has("kernel")) {
+          if (cell.model.metadata["kernel"]) {
             kernel = cell.model.metadata['kernel'] as string;
           } else {
             // find the kernel of a cell before this one to determine the default

@@ -152,7 +152,7 @@ function add_tag(cell, tag) {
 }
 
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
-  if (!cell.model.metadata.has('kernel')) {
+  if (!cell.model.metadata['kernel']) {
     cell.model.metadata['kernel'] = 'SoS';
   }
   let kernel = cell.model.metadata['kernel'] as string;
