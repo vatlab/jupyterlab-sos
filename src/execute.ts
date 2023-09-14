@@ -95,7 +95,7 @@ function getNotebookWorkflow(panel: NotebookPanel) {
     let cell = cells[i].model;
     if (
       cell.type === "code" &&
-      (!cell.metadata.get("kernel") || cell.metadata.get("kernel") === "SoS")
+      (!cell.metadata['kernel'] || cell.metadata['kernel'] === "SoS")
     ) {
       workflow += getCellWorkflow(cell);
     }
@@ -113,7 +113,7 @@ function getNotebookContent(panel: NotebookPanel) {
   for (let i = 0; i < cells.length; ++i) {
     let cell = cells[i].model;
     if (cell.type === "code" ) {
-      workflow += `# cell ${i + 1}, kernel=${cell.metadata.get("kernel")}\n${cell.sharedModel.getSource()}\n\n`
+      workflow += `# cell ${i + 1}, kernel=${cell.metadata['kernel']}\n${cell.sharedModel.getSource()}\n\n`
     }
   }
   return workflow;
@@ -167,7 +167,7 @@ function my_execute(
       info.autoResume = false;
     }
     metadata.sos["cell_id"] = cell.model.id;
-    metadata.sos["cell_kernel"] = cell.model.metadata.get("kernel") as string;
+    metadata.sos["cell_kernel"] = cell.model.metadata['kernel'] as string;
     if (metadata.sos["cell_kernel"] === "Markdown") {
       // fold the input of markdown cells
       cell.inputHidden = true;
@@ -175,7 +175,7 @@ function my_execute(
   } else {
     let labconsole = Manager.currentConsole.console;
     let last_cell = labconsole.cells.get(labconsole.cells.length - 1);
-    let kernel = last_cell.model.metadata.get("kernel");
+    let kernel = last_cell.model.metadata['kernel'];
     kernel = kernel ? kernel.toString() : "SoS";
 
     // change the color of console cell

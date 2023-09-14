@@ -42,7 +42,7 @@ export class NotebookInfo {
 
     let data = [["SoS", "sos", "", ""]];
     if (notebook.model.metadata.has("sos"))
-      data = (notebook.model.metadata.get("sos") as any)["kernels"];
+      data = (notebook.model.metadata['sos'] as any)["kernels"];
     // fill the look up tables with language list passed from the kernel
     for (let i = 0; i < data.length; i++) {
       // BackgroundColor is color

@@ -24,11 +24,11 @@ export function saveKernelInfo() {
   let cells = panel.content.model.cells;
   for (var i = cells.length - 1; i >= 0; --i) {
     let cell = cells.get(i);
-    if (cell.type === 'code' && cell.metadata.get('kernel')) {
-      used_kernels.add(cell.metadata.get('kernel') as string);
+    if (cell.type === 'code' && cell.metadata['kernel']) {
+      used_kernels.add(cell.metadata['kernel'] as string);
     }
   }
-  (panel.content.model.metadata.get('sos') as any)['kernels'] = Array.from(
+  (panel.content.model.metadata['sos'] as any)['kernels'] = Array.from(
     used_kernels.values()
   )
     .sort()
@@ -56,8 +56,8 @@ export function toggleDisplayOutput(cell) {
   if (cell.model.type === 'markdown') {
     // switch between hide_output and ""
     if (
-      cell.model.metadata.get('tags') &&
-      (cell.model.metadata.get('tags') as Array<string>).indexOf(
+      cell.model.metadata['tags'] &&
+      (cell.model.metadata['tags'] as Array<string>).indexOf(
         'hide_output'
       ) >= 0
     ) {
@@ -69,8 +69,8 @@ export function toggleDisplayOutput(cell) {
   } else if (cell.model.type === 'code') {
     // switch between report_output and ""
     if (
-      cell.model.metadata.get('tags') &&
-      (cell.model.metadata.get('tags') as Array<string>).indexOf(
+      cell.model.metadata['tags'] &&
+      (cell.model.metadata['tags'] as Array<string>).indexOf(
         'report_output'
       ) >= 0
     ) {
@@ -89,9 +89,9 @@ export function toggleCellKernel(cell: Cell, panel: NotebookPanel) {
     return;
   } else if (cell.model.type === 'code') {
     // switch to the next used kernel
-    let kernels = (panel.content.model.metadata.get('sos') as any)['kernels'];
+    let kernels = (panel.content.model.metadata['sos'] as any)['kernels'];
     // current kernel
-    let kernel = cell.model.metadata.get('kernel');
+    let kernel = cell.model.metadata['kernel'];
 
     if (kernels.length == 1) {
       return;
@@ -119,7 +119,7 @@ export function toggleMarkdownCell(cell: Cell, panel: NotebookPanel) {
 }
 
 function remove_tag(cell, tag) {
-  let taglist = cell.model.metadata.get('tags') as string[];
+  let taglist = cell.model.metadata['tags'] as string[];
   let new_list: string[] = [];
   for (let i = 0; i < taglist.length; i++) {
     if (taglist[i] != tag) {
@@ -136,7 +136,7 @@ function remove_tag(cell, tag) {
 }
 
 function add_tag(cell, tag) {
-  let taglist = cell.model.metadata.get('tags') as string[];
+  let taglist = cell.model.metadata['tags'] as string[];
   if (taglist) {
     taglist.push(tag);
   } else {
@@ -153,9 +153,9 @@ function add_tag(cell, tag) {
 
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
   if (!cell.model.metadata.has('kernel')) {
-    cell.model.metadata.set('kernel', 'SoS');
+    cell.model.metadata['kernel'] = 'SoS';
   }
-  let kernel = cell.model.metadata.get('kernel') as string;
+  let kernel = cell.model.metadata['kernel'] as string;
 
   let nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
@@ -184,7 +184,7 @@ export function changeCellKernel(
   kernel: string,
   info: NotebookInfo
 ) {
-  cell.model.metadata.set('kernel', kernel);
+  cell.model.metadata['kernel'] = kernel;
   let nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
@@ -203,8 +203,8 @@ export function changeStyleOnKernel(
 ) {
   // Note: JupyterLab does not yet support tags
   if (
-    cell.model.metadata.get('tags') &&
-    (cell.model.metadata.get('tags') as Array<string>).indexOf(
+    cell.model.metadata['tags'] &&
+    (cell.model.metadata['tags'] as Array<string>).indexOf(
       'report_output'
     ) >= 0
   ) {
@@ -261,7 +261,7 @@ export function updateCellStyles(
     if (cells[i].model.type === 'code') {
       changeStyleOnKernel(
         cells[i],
-        cells[i].model.metadata.get('kernel') as string,
+        cells[i].model.metadata['kernel'] as string,
         info
       );
     }
@@ -272,7 +272,7 @@ export function updateCellStyles(
     addLanSelector(panels[i].console.promptCell, info);
     changeStyleOnKernel(
       panels[i].console.promptCell,
-      panels[i].console.promptCell.model.metadata.get('kernel') as string,
+      panels[i].console.promptCell.model.metadata['kernel'] as string,
       info
     );
   }
@@ -297,7 +297,7 @@ export class KernelSwitcher extends ReactWidget {
     let cell = Manager.currentNotebook.content.activeCell;
 
     let kernel = event.target.value;
-    cell.model.metadata.set('kernel', kernel);
+    cell.model.metadata['kernel'] = kernel;
     let panel = Manager.currentNotebook;
     let info: NotebookInfo = Manager.manager.get_info(panel);
     info.sos_comm.send({ 'set-editor-kernel': kernel });
@@ -329,7 +329,7 @@ export class KernelSwitcher extends ReactWidget {
         </option>
       );
     });
-    let kernel = cell.model.metadata.get('kernel') as string;
+    let kernel = cell.model.metadata['kernel'] as string;
 
     return (
       <HTMLSelect

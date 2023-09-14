@@ -544,12 +544,12 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     if (!cell) {
       return;
     }
-    if (cell.model.metadata.get("kernel") !== info.DisplayName.get(data[1])) {
+    if (cell.model.metadata['kernel'] !== info.DisplayName.get(data[1])) {
       changeCellKernel(cell, info.DisplayName.get(data[1]), info);
       saveKernelInfo();
     } else if (
-      cell.model.metadata.get("tags") &&
-      (cell.model.metadata.get("tags") as Array<string>).indexOf(
+      cell.model.metadata['tags'] &&
+      (cell.model.metadata['tags'] as Array<string>).indexOf(
         "report_output"
       ) >= 0
     ) {
@@ -652,7 +652,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     alert(data);
   } else if (msg_type === "notebook-version") {
     // right now no upgrade, just save version to notebook
-    (panel.content.model.metadata.get("sos") as any)["version"] = data;
+    (panel.content.model.metadata['sos'] as any)["version"] = data;
   }
 }
 
@@ -672,10 +672,10 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
 
     if (panel.content.model.metadata.has("sos")) {
       sos_comm.send({
-        "notebook-version": (panel.content.model.metadata.get("sos") as any)[
+        "notebook-version": (panel.content.model.metadata['sos'] as any)[
           "version"
         ],
-        "list-kernel": (panel.content.model.metadata.get("sos") as any)["kernels"]
+        "list-kernel": (panel.content.model.metadata['sos'] as any)["kernels"]
       });
     } else {
       sos_comm.send({
@@ -780,13 +780,13 @@ export class SoSWidgets
         // if this is not a sos kernel, remove all buttons
         if (panel.content.model.metadata.has("sos")) {
           info.updateLanguages(
-            (panel.content.model.metadata.get("sos") as any)["kernels"]
+            (panel.content.model.metadata['sos'] as any)["kernels"]
           );
         } else {
-          panel.content.model.metadata.set("sos", {
+          panel.content.model.metadata["sos"] = {
             kernels: [["SoS", "sos", "", ""]],
             version: ""
-          });
+          };
         }
         // connectSoSComm(panel);
         // wrapExecutor(panel);
@@ -807,13 +807,13 @@ export class SoSWidgets
         if (args.newValue.name === "sos") {
           if (panel.content.model.metadata.has("sos")) {
             info.updateLanguages(
-              (panel.content.model.metadata.get("sos") as any)["kernels"]
+              (panel.content.model.metadata['sos'] as any)["kernels"]
             );
           } else {
-            panel.content.model.metadata.set("sos", {
+            panel.content.model.metadata["sos"] = {
               kernels: [["SoS", "sos", "", ""]],
               version: ""
-            });
+            };
           }
           // connectSoSComm(panel);
           // wrapExecutor(panel);
@@ -851,21 +851,19 @@ export class SoSWidgets
           }
           let kernel = "SoS";
           if (cell.model.metadata.has("kernel")) {
-            kernel = cell.model.metadata.get("kernel") as string;
+            kernel = cell.model.metadata['kernel'] as string;
           } else {
             // find the kernel of a cell before this one to determine the default
             // kernel of a new cell #18
             if (idx > 0) {
               for (idx = idx - 1; idx >= 0; --idx) {
                 if (panel.content.widgets[idx].model.type === "code") {
-                  kernel = panel.content.widgets[idx].model.metadata.get(
-                    "kernel"
-                  ) as string;
+                  kernel = panel.content.widgets[idx].model.metadata["kernel"] as string;
                   break;
                 }
               }
             }
-            cell.model.metadata.set("kernel", kernel);
+            cell.model.metadata["kernel"] = kernel;
           }
           addLanSelector(cell, info);
           changeStyleOnKernel(cell, kernel, info);
@@ -881,7 +879,7 @@ export class SoSWidgets
           // this happens after kernel restart #53
           connectSoSComm(panel, true);
         }
-        let cell_kernel = cell.model.metadata.get("kernel") as string;
+        let cell_kernel = cell.model.metadata['kernel'] as string;
         info.sos_comm.send({
           "set-editor-kernel": cell_kernel
         });
