@@ -24,13 +24,12 @@ export function saveKernelInfo() {
   let cells = panel.content.model.cells;
   for (var i = cells.length - 1; i >= 0; --i) {
     let cell = cells.get(i);
-    if (cell.type === 'code' && cell.metadata['kernel']) {
-      used_kernels.add(cell.metadata['kernel'] as string);
+    if (cell.type === 'code' && cell.getMetadata('kernel')) {
+      used_kernels.add(cell.getMetadata('kernel') as string);
     }
   }
-  (panel.content.model.metadata['sos'] as any)['kernels'] = Array.from(
-    used_kernels.values()
-  )
+  let sos_info = panel.content.model.getMetadata('sos');
+  sos_info['kernels'] = Array.from(used_kernels.values())
     .sort()
     .map(function (x) {
       return [
@@ -38,9 +37,10 @@ export function saveKernelInfo() {
         info.KernelName.get(x as string),
         info.LanguageName.get(x as string) || '',
         info.BackgroundColor.get(x as string) || '',
-        info.CodeMirrorMode.get(x as string) || '',
+        info.CodeMirrorMode.get(x as string) || ''
       ];
     });
+  panel.content.model.setMetadata('sos', sos_info);
 }
 
 export function hideLanSelector(cell) {
@@ -57,9 +57,7 @@ export function toggleDisplayOutput(cell) {
     // switch between hide_output and ""
     if (
       cell.model.metadata['tags'] &&
-      (cell.model.metadata['tags'] as Array<string>).indexOf(
-        'hide_output'
-      ) >= 0
+      (cell.model.metadata['tags'] as Array<string>).indexOf('hide_output') >= 0
     ) {
       // if report_output on, remove it
       remove_tag(cell, 'hide_output');
@@ -70,9 +68,8 @@ export function toggleDisplayOutput(cell) {
     // switch between report_output and ""
     if (
       cell.model.metadata['tags'] &&
-      (cell.model.metadata['tags'] as Array<string>).indexOf(
-        'report_output'
-      ) >= 0
+      (cell.model.metadata['tags'] as Array<string>).indexOf('report_output') >=
+        0
     ) {
       // if report_output on, remove it
       remove_tag(cell, 'report_output');
@@ -91,7 +88,7 @@ export function toggleCellKernel(cell: Cell, panel: NotebookPanel) {
     // switch to the next used kernel
     let kernels = (panel.content.model.metadata['sos'] as any)['kernels'];
     // current kernel
-    let kernel = cell.model.metadata['kernel'];
+    let kernel = cell.model.getMetadata('kernel');
 
     if (kernels.length == 1) {
       return;
@@ -152,10 +149,10 @@ function add_tag(cell, tag) {
 }
 
 export function addLanSelector(cell: Cell, info: NotebookInfo) {
-  if (!cell.model.metadata['kernel']) {
-    cell.model.metadata['kernel'] = 'SoS';
+  if (!cell.model.getMetadata('kernel')) {
+    cell.model.setMetadata('kernel', 'SoS');
   }
-  let kernel = cell.model.metadata['kernel'] as string;
+  let kernel = cell.model.getMetadata('kernel') as string;
 
   let nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
@@ -184,7 +181,7 @@ export function changeCellKernel(
   kernel: string,
   info: NotebookInfo
 ) {
-  cell.model.metadata['kernel'] = kernel;
+  cell.model.setMetadata('kernel', kernel);
   let nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
@@ -204,9 +201,7 @@ export function changeStyleOnKernel(
   // Note: JupyterLab does not yet support tags
   if (
     cell.model.metadata['tags'] &&
-    (cell.model.metadata['tags'] as Array<string>).indexOf(
-      'report_output'
-    ) >= 0
+    (cell.model.metadata['tags'] as Array<string>).indexOf('report_output') >= 0
   ) {
     let op = cell.node.getElementsByClassName(
       'jp-Cell-outputWrapper'
@@ -261,7 +256,7 @@ export function updateCellStyles(
     if (cells[i].model.type === 'code') {
       changeStyleOnKernel(
         cells[i],
-        cells[i].model.metadata['kernel'] as string,
+        cells[i].model.getMetadata('kernel') as string,
         info
       );
     }
@@ -272,7 +267,7 @@ export function updateCellStyles(
     addLanSelector(panels[i].console.promptCell, info);
     changeStyleOnKernel(
       panels[i].console.promptCell,
-      panels[i].console.promptCell.model.metadata['kernel'] as string,
+      panels[i].console.promptCell.model.getMetadata('kernel') as string,
       info
     );
   }
@@ -297,7 +292,7 @@ export class KernelSwitcher extends ReactWidget {
     let cell = Manager.currentNotebook.content.activeCell;
 
     let kernel = event.target.value;
-    cell.model.metadata['kernel'] = kernel;
+    cell.model.setMetadata('kernel', kernel);
     let panel = Manager.currentNotebook;
     let info: NotebookInfo = Manager.manager.get_info(panel);
     info.sos_comm.send({ 'set-editor-kernel': kernel });
@@ -315,21 +310,21 @@ export class KernelSwitcher extends ReactWidget {
     let cur_kernel =
       panel.context.sessionContext.kernelPreference.name ||
       panel.context.sessionContext.kernelDisplayName;
-    if (cur_kernel.toLowerCase() !== "sos") {
+    if (cur_kernel.toLowerCase() !== 'sos') {
       return;
     }
 
     let info = Manager.manager.get_info(panel);
     let cell = panel.content.activeCell;
 
-    const optionChildren = info.KernelList.map((lan) => {
+    const optionChildren = info.KernelList.map(lan => {
       return (
         <option key={lan} value={lan} id={lan}>
           {lan}
         </option>
       );
     });
-    let kernel = cell.model.metadata['kernel'] as string;
+    let kernel = cell.model.getMetadata('kernel') as string;
 
     return (
       <HTMLSelect

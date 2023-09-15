@@ -520,12 +520,12 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     if (!cell) {
       return;
     }
-    if (cell.model.metadata['kernel'] !== info.DisplayName.get(data[1])) {
+    if (cell.model.getMetadata('kernel') !== info.DisplayName.get(data[1])) {
       changeCellKernel(cell, info.DisplayName.get(data[1]), info);
       saveKernelInfo();
     } else if (
-      cell.model.metadata['tags'] &&
-      (cell.model.metadata['tags'] as Array<string>).indexOf('report_output') >=
+      cell.model.getMetadata('tags') &&
+      (cell.model.getMetadata('tags') as Array<string>).indexOf('report_output') >=
         0
     ) {
       // #639
@@ -646,12 +646,12 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
     sos_comm.open('initial');
     sos_comm.onMsg = on_frontend_msg;
 
-    if (panel.content.model.metadata['sos']) {
+    if (panel.content.model.getMetadata('sos')) {
       sos_comm.send({
-        'notebook-version': (panel.content.model.metadata['sos'] as any)[
+        'notebook-version': (panel.content.model.getMetadata('sos') as any)[
           'version'
         ],
-        'list-kernel': (panel.content.model.metadata['sos'] as any)['kernels']
+        'list-kernel': (panel.content.model.getMetadata('sos') as any)['kernels']
       });
     } else {
       sos_comm.send({
@@ -755,15 +755,15 @@ export class SoSWidgets
       if (cur_kernel.toLowerCase() === 'sos') {
         console.log(`session ready with kernel sos`);
         // if this is not a sos kernel, remove all buttons
-        if (panel.content.model.metadata['sos']) {
+        if (panel.content.model.getMetadata('sos')) {
           info.updateLanguages(
-            (panel.content.model.metadata['sos'] as any)['kernels']
+            (panel.content.model.getMetadata('sos') as any)['kernels']
           );
         } else {
-          panel.content.model.metadata['sos'] = {
+          panel.content.model.setMetadata('sos', {
             kernels: [['SoS', 'sos', '', '']],
             version: ''
-          };
+          });
         }
         // connectSoSComm(panel);
         // wrapExecutor(panel);
@@ -782,15 +782,15 @@ export class SoSWidgets
         }
         console.log(`kernel changed to ${args.newValue.name}`);
         if (args.newValue.name === 'sos') {
-          if (panel.content.model.metadata['sos']) {
+          if (panel.content.model.getMetadata('sos')) {
             info.updateLanguages(
-              (panel.content.model.metadata['sos'] as any)['kernels']
+              (panel.content.model.getMetadata('sos') as any)['kernels']
             );
           } else {
-            panel.content.model.metadata['sos'] = {
+            panel.content.model.setMetadata('sos', {
               kernels: [['SoS', 'sos', '', '']],
               version: ''
-            };
+            });
           }
           // connectSoSComm(panel);
           // wrapExecutor(panel);
@@ -827,22 +827,22 @@ export class SoSWidgets
             return;
           }
           let kernel = 'SoS';
-          if (cell.model.metadata['kernel']) {
-            kernel = cell.model.metadata['kernel'] as string;
+          if (cell.model.getMetadata('kernel')) {
+            kernel = cell.model.getMetadata('kernel') as string;
           } else {
             // find the kernel of a cell before this one to determine the default
             // kernel of a new cell #18
             if (idx > 0) {
               for (idx = idx - 1; idx >= 0; --idx) {
                 if (panel.content.widgets[idx].model.type === 'code') {
-                  kernel = panel.content.widgets[idx].model.metadata[
+                  kernel = panel.content.widgets[idx].model.getMetadata(
                     'kernel'
-                  ] as string;
+                   ) as string;
                   break;
                 }
               }
             }
-            cell.model.metadata['kernel'] = kernel;
+            cell.model.setMetadata('kernel', kernel);
           }
           addLanSelector(cell, info);
           changeStyleOnKernel(cell, kernel, info);
@@ -858,7 +858,7 @@ export class SoSWidgets
           // this happens after kernel restart #53
           connectSoSComm(panel, true);
         }
-        let cell_kernel = cell.model.metadata['kernel'] as string;
+        let cell_kernel = cell.model.getMetadata('kernel') as string;
         info.sos_comm.send({
           'set-editor-kernel': cell_kernel
         });
