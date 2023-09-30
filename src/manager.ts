@@ -41,8 +41,8 @@ export class NotebookInfo {
     this.pendingCells = new Map<any, any>();
 
     let data = [["SoS", "sos", "", ""]];
-    if (notebook.model.metadata.has("sos"))
-      data = (notebook.model.metadata.get("sos") as any)["kernels"];
+    if (notebook.model.getMetadata("sos"))
+      data = (notebook.model.getMetadata('sos') as any)["kernels"];
     // fill the look up tables with language list passed from the kernel
     for (let i = 0; i < data.length; i++) {
       // BackgroundColor is color

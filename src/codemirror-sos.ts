@@ -244,7 +244,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
         };
       },
 
-      copyState: function (state) {
+      copyState: function (state: any) {
         return {
           sos_mode: state.sos_mode,
           base_state: (CodeMirror as any).copyState(
@@ -263,7 +263,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
         };
       },
 
-      token: function (stream, state) {
+      token: function (stream: any, state: any) {
         if (state.sos_mode) {
           if (stream.sol()) {
             let sl = stream.peek();
@@ -337,7 +337,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
         }
       },
 
-      indent: function (state, textAfter) {
+      indent: function (state: any, textAfter: string) {
         // inner indent
         if (!state.sos_mode) {
           if (!base_mode.indent) return CodeMirror.Pass;
@@ -382,7 +382,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
         };
       },
 
-      copyState: function (state) {
+      copyState: function (state: any) {
         return {
           sos_state: state.sos_state,
           base_state: (CodeMirror as any).copyState(
@@ -408,7 +408,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
         };
       },
 
-      token: function (stream, state) {
+      token: function (stream: any, state: any) {
         if (stream.sol()) {
           let sl = stream.peek();
           if (sl == "[") {
@@ -629,7 +629,7 @@ export function sos_mode(conf: CodeMirror.EditorConfiguration, parserConf: any) 
         }
       },
 
-      indent: function (state, textAfter) {
+      indent: function (state: any, textAfter: string) {
         // inner indent
         if (state.inner_mode) {
           if (!state.inner_mode.indent) return CodeMirror.Pass;
