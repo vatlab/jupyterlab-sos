@@ -2,7 +2,7 @@ import { NotebookPanel, NotebookActions } from '@jupyterlab/notebook';
 
 import { Cell } from '@jupyterlab/cells';
 
-// import { CodeMirrorEditor } from '@jupyterlab/codemirror';
+import { CodeMirrorEditor } from '@jupyterlab/codemirror';
 
 import { NotebookInfo } from './manager';
 
@@ -221,27 +221,24 @@ export function changeStyleOnKernel(
     }
   }
   cell.node.classList.add(safe_css_name(`sos_lan_${kernel}`));
+  if (!cell.editorWidget) {
+    return;
+  }
   // cell.user_highlight = {
   //     name: 'sos',
   //     base_mode: info.LanguageName[kernel] || info.KernelName[kernel] || kernel,
   // };
-  // //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
-  // let base_mode: string =
-  //   info.CodeMirrorMode.get(kernel) ||
-  //   info.LanguageName.get(kernel) ||
-  //   info.KernelName.get(kernel) ||
-  //   kernel;
-  // if (!base_mode || base_mode === 'sos') {
-  //   (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption(
-  //     'mode',
-  //     'sos'
-  //   );
-  // } else {
-  //   (cell.inputArea.editorWidget.editor as CodeMirrorEditor).setOption('mode', {
-  //     name: 'sos',
-  //     base_mode: base_mode,
-  //   });
-  // }
+  //console.log(`Set cell code mirror mode to ${cell.user_highlight.base_mode}`)
+  let base_mode: string =
+    info.CodeMirrorMode.get(kernel) ||
+    info.LanguageName.get(kernel) ||
+    info.KernelName.get(kernel) ||
+    kernel;
+  if (!base_mode || base_mode === 'sos') {
+    (cell.editorWidget.editor as CodeMirrorEditor).model.mimeType = 'python';
+  } else {
+    (cell.editorWidget.editor as CodeMirrorEditor).model.mimeType = base_mode;
+  }
 }
 
 export function updateCellStyles(
@@ -307,6 +304,9 @@ export class KernelSwitcher extends ReactWidget {
 
   render(): JSX.Element {
     let panel = Manager.currentNotebook;
+    if (!panel) {
+      return;
+    }
     let cur_kernel =
       panel.context.sessionContext.kernelPreference.name ||
       panel.context.sessionContext.kernelDisplayName;

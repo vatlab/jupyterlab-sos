@@ -29,10 +29,6 @@ import {
 
 import { IConsoleTracker } from '@jupyterlab/console';
 
-// import {
-//   sosHintWords, sos_mode
-// } from "./codemirror-sos";
-
 import {
   addLanSelector,
   updateCellStyles,
@@ -46,9 +42,6 @@ import {
 } from './selectors';
 
 import { wrapExecutor, wrapConsoleExecutor } from './execute';
-
-// define and register SoS CodeMirror mode
-import './codemirror-sos';
 
 import '../style/index.css';
 
