@@ -1,6 +1,6 @@
 {
   "name": "jupyterlab-sos",
-  "version": "0.8.9",
+  "version": "0.10.1",
   "description": "JupyterLab extension for SoS workflow engine and polyglot notebook",
   "keywords": [
     "jupyter",
@@ -70,8 +70,9 @@
     "@lumino/algorithm": "^2.0.0",
     "@lumino/commands": "^2.0.1",
     "@lumino/disposable": "^2.0.0",
+    "codemirror-sos": "file://Users/bpeng/vatlab/codemirror-sos",
     "react": "^18.2.0",
-    "transient-display-data": "^0.4.3"
+    "transient-display-data": "^0.4.4"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^4.0.0",
@@ -81,7 +82,7 @@
     "@types/react-addons-linked-state-mixin": "^0.14.22",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
-    "codemirror": "^5.53.2",
+    "codemirror": "^6.0.1",
     "css-loader": "^6.7.1",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.8.0",
