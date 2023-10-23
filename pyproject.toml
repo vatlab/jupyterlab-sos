@@ -22,6 +22,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
+    'sos>=0.24.2',
+    'sos-notebook>=0.24.3',
+    'transient-display-data>=0.4.4',
+    'jupyterlab>=4.0.0',
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
