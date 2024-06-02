@@ -1,6 +1,9 @@
 # jupyterlab_sos
 
-[![Github Actions Status](https://github.com/vatlab/jupyterlab-sos.git/workflows/Build/badge.svg)](https://github.com/vatlab/jupyterlab-sos.git/actions/workflows/build.yml)
+[![Github Actions Status](https://github.com/vatlab/jupyterlab-sos/workflows/Build/badge.svg)](https://github.com/vatlab/jupyterlab-sos/actions/workflows/build.yml)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/vatlab/jupyterlab-sos/main?urlpath=lab)
+
+
 JupyterLab extension for SoS workflow engine and polyglot notebook
 
 ## Requirements
@@ -70,6 +73,26 @@ pip uninstall jupyterlab_sos
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
 folder is located. Then you can remove the symlink named `jupyterlab-sos` within that folder.
+
+### Testing the extension
+
+#### Frontend tests
+
+This extension is using [Jest](https://jestjs.io/) for JavaScript code testing.
+
+To execute them, execute:
+
+```sh
+jlpm
+jlpm test
+```
+
+#### Integration tests
+
+This extension uses [Playwright](https://playwright.dev/docs/intro) for the integration tests (aka user level tests).
+More precisely, the JupyterLab helper [Galata](https://github.com/jupyterlab/jupyterlab/tree/master/galata) is used to handle testing the extension in JupyterLab.
+
+More information are provided within the [ui-tests](./ui-tests/README.md) README.
 
 ### Packaging the extension
 
