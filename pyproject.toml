@@ -25,6 +25,7 @@ classifiers = [
 dependencies = [
     "sos",
     "sos-notebook",
+    "transient-display-data",
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
