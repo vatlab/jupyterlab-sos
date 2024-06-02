@@ -634,7 +634,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   let info = Manager.manager.get_info(panel);
   if (info.sos_comm && !renew) return;
-
+  if (!panel.context.sessionContext.session) return;
   try {
     let sos_comm =
       panel.context.sessionContext.session?.kernel.createComm('sos_comm');
@@ -765,8 +765,10 @@ export class SoSWidgets
             version: ''
           });
         }
-        // connectSoSComm(panel);
-        // wrapExecutor(panel);
+        if (!info.sos_comm) {
+          connectSoSComm(panel);
+          wrapExecutor(panel);
+        }
         updateCellStyles(panel, info);
         showSoSWidgets(panel.node);
       } else {
@@ -792,8 +794,10 @@ export class SoSWidgets
               version: ''
             });
           }
-          // connectSoSComm(panel);
-          // wrapExecutor(panel);
+          if (!info.sos_comm) {
+            connectSoSComm(panel);
+            wrapExecutor(panel);
+          }
           updateCellStyles(panel, info);
           showSoSWidgets(panel.node);
         } else {
