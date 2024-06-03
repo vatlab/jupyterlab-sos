@@ -248,9 +248,8 @@ function update_workflow_status(info, panel) {
 
   // look for status etc and update them.
   let onmouseover = `onmouseover='this.classList="fa fa-2x fa-fw fa-trash"'`;
-  let onmouseleave = `onmouseleave='this.classList="fa fa-2x fa-fw ${
-    status_class[info.status]
-  }"'`;
+  let onmouseleave = `onmouseleave='this.classList="fa fa-2x fa-fw ${status_class[info.status]
+    }"'`;
   let onclick = `onclick="cancel_workflow(this.id.substring(21))"`;
 
   let data = {
@@ -262,20 +261,17 @@ function update_workflow_status(info, panel) {
 <table id="workflow_${cell_id}" class="workflow_table  ${info.status}">
 <tr>
       <td class="workflow_icon">
-        <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${
-          status_class[info.status]
+        <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${status_class[info.status]
         }"
         ${onmouseover} ${onmouseleave} ${onclick}></i>
       </td>
       <td class="workflow_name">
-        <pre><span id="workflow_name_${cell_id}">${
-          info.workflow_name
+        <pre><span id="workflow_name_${cell_id}">${info.workflow_name
         }</span></pre>
       </td>
       <td class="workflow_id">
         <span>Workflow ID</span></br>
-        <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${
-          info.workflow_id
+        <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${info.workflow_id
         }</span></pre>
       </td>
       <td class="workflow_index">
@@ -284,8 +280,7 @@ function update_workflow_status(info, panel) {
       </td>
       <td class="workflow_status">
         <span id="status_text_${cell_id}">${info.status}</span></br>
-        <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${
-          info.status
+        <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${info.status
         }" datetime="${info.start_time}">${timer_text}</time></pre>
       </td>
 </tr>
@@ -463,9 +458,8 @@ function update_task_status(info, panel) {
 <table id="task_${elem_id}_${cell_id}" class="task_table ${info.status}">
 <tr>
   <td class="task_icon">
-    <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${
-      status_class[info.status]
-    }"
+    <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${status_class[info.status]
+        }"
     ${onmouseover} ${onmouseleave} ${onclick}></i>
   </td>
   <td class="task_id">
@@ -475,14 +469,12 @@ function update_task_status(info, panel) {
     <span id="status_tags_${elem_id}_${cell_id}"><pre><i class="fa fa-fw fa-info-circle"></i></pre>${tags_elems}</span>
   </td>
   <td class="task_timer">
-    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${
-      info.status
-    }" datetime="${info.start_time}">${timer_text}</time></pre>
+    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${info.status
+        }" datetime="${info.start_time}">${timer_text}</time></pre>
   </td>
   <td class="task_status">
-    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${
-      info.status
-    }</span></pre>
+    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${info.status
+        }</span></pre>
   </td>
 </tr>
 </table>
@@ -526,7 +518,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     } else if (
       cell.model.getMetadata('tags') &&
       (cell.model.getMetadata('tags') as Array<string>).indexOf('report_output') >=
-        0
+      0
     ) {
       // #639
       // if kernel is different, changeStyleOnKernel would set report_output.
@@ -671,7 +663,7 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
 
 function hideSoSWidgets(element: HTMLElement) {
   let sos_elements = element.getElementsByClassName(
-    'sos-widget'
+    'jp-CelllanguageDropDown'
   ) as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < sos_elements.length; ++i)
     sos_elements[i].style.display = 'none';
@@ -679,7 +671,7 @@ function hideSoSWidgets(element: HTMLElement) {
 
 function showSoSWidgets(element: HTMLElement) {
   let sos_elements = element.getElementsByClassName(
-    'sos-widget'
+    'jp-CelllanguageDropDown'
   ) as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < sos_elements.length; ++i)
     sos_elements[i].style.display = '';
@@ -728,8 +720,7 @@ function showSoSWidgets(element: HTMLElement) {
 };
 
 export class SoSWidgets
-  implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel>
-{
+  implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
   /**
    * The createNew function does not return whatever created. It is just a registery that Will
    * be called when a notebook is created/opened, and the toolbar is created. it is therefore
@@ -749,9 +740,7 @@ export class SoSWidgets
       // However, when the notebook is created from File -> New Notebook -> Select Kernel
       // The kernelPreference.name is not yet set and we have to use kernelDisplayName
       // which is SoS (not sos)
-      let cur_kernel =
-        panel.context.sessionContext.kernelPreference.name ||
-        panel.context.sessionContext.kernelDisplayName;
+      let cur_kernel = panel.context.sessionContext.kernelDisplayName == "No Kernel" ? panel.context.sessionContext.kernelPreference.name : panel.context.sessionContext.kernelDisplayName;
       if (cur_kernel.toLowerCase() === 'sos') {
         console.log(`session ready with kernel sos`);
         // if this is not a sos kernel, remove all buttons
@@ -841,7 +830,7 @@ export class SoSWidgets
                 if (panel.content.widgets[idx].model.type === 'code') {
                   kernel = panel.content.widgets[idx].model.getMetadata(
                     'kernel'
-                   ) as string;
+                  ) as string;
                   break;
                 }
               }
@@ -869,7 +858,7 @@ export class SoSWidgets
       }
     });
 
-    return new DisposableDelegate(() => {});
+    return new DisposableDelegate(() => { });
   }
 }
 
@@ -908,17 +897,17 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
   var fn =
     dtype === 'numeric'
       ? function (a, b) {
-          return parseFloat(a.cells[n].textContent) <=
-            parseFloat(b.cells[n].textContent)
-            ? -1
-            : 1;
-        }
+        return parseFloat(a.cells[n].textContent) <=
+          parseFloat(b.cells[n].textContent)
+          ? -1
+          : 1;
+      }
       : function (a, b) {
-          var c = a.cells[n].textContent
-            .trim()
-            .localeCompare(b.cells[n].textContent.trim());
-          return c > 0 ? 1 : c < 0 ? -1 : 0;
-        };
+        var c = a.cells[n].textContent
+          .trim()
+          .localeCompare(b.cells[n].textContent.trim());
+        return c > 0 ? 1 : c < 0 ? -1 : 0;
+      };
   var isSorted = function (array, fn) {
     if (array.length < 2) {
       return 1;

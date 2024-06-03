@@ -69,7 +69,7 @@ export function toggleDisplayOutput(cell) {
     if (
       cell.model.metadata['tags'] &&
       (cell.model.metadata['tags'] as Array<string>).indexOf('report_output') >=
-        0
+      0
     ) {
       // if report_output on, remove it
       remove_tag(cell, 'report_output');
@@ -303,13 +303,12 @@ export class KernelSwitcher extends ReactWidget {
     this.update();
   };
 
-  handleKeyDown = (event: React.KeyboardEvent): void => {};
+  handleKeyDown = (event: React.KeyboardEvent): void => { };
 
   render(): JSX.Element {
     let panel = Manager.currentNotebook;
     let cur_kernel =
-      panel.context.sessionContext.kernelPreference.name ||
-      panel.context.sessionContext.kernelDisplayName;
+      panel.context.sessionContext.kernelDisplayName == "No Kernel" ? panel.context.sessionContext.kernelPreference.name : panel.context.sessionContext.kernelDisplayName;
     if (cur_kernel.toLowerCase() !== 'sos') {
       return;
     }
