@@ -25,6 +25,7 @@ classifiers = [
 dependencies = [
     "sos",
     "sos-notebook",
+    "jupyterlab>=4.2.0",
     "transient-display-data",
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]

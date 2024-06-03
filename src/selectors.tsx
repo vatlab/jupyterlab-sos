@@ -28,9 +28,6 @@ export function saveKernelInfo() {
       used_kernels.add(cell.getMetadata('kernel') as string);
     }
   }
-  if (used_kernels.size == 0) {
-    used_kernels.add('SoS');
-  }
   let sos_info = panel.content.model.getMetadata('sos');
   sos_info['kernels'] = Array.from(used_kernels.values())
     .sort()
