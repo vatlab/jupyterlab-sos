@@ -1,6 +1,6 @@
 {
   "name": "jupyterlab-sos",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "description": "JupyterLab extension for SoS workflow engine and polyglot notebook",
   "keywords": [
     "jupyter",
@@ -72,7 +72,8 @@
     "@lumino/commands": "^2.0.1",
     "@lumino/disposable": "^2.0.0",
     "react": "^18.2.0",
-    "transient-display-data": "^0.4.3"
+    "transient-display-data": "^0.4.3",
+    "codemirror-sos": "latest"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^4.0.0",
@@ -95,7 +96,6 @@
     "source-map-loader": "^1.0.2",
     "style-loader": "^3.3.1",
     "stylelint": "^15.10.1",
-    "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-recommended": "^13.0.0",
     "stylelint-config-standard": "^34.0.0",
     "stylelint-csstree-validator": "^3.0.0",

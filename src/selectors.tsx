@@ -309,7 +309,7 @@ export class KernelSwitcher extends ReactWidget {
     let panel = Manager.currentNotebook;
     let cur_kernel =
       panel.context.sessionContext.kernelDisplayName == "No Kernel" ? panel.context.sessionContext.kernelPreference.name : panel.context.sessionContext.kernelDisplayName;
-    if (cur_kernel.toLowerCase() !== 'sos') {
+    if (!cur_kernel || cur_kernel.toLowerCase() !== 'sos') {
       return;
     }
 
