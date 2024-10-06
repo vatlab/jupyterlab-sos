@@ -29,10 +29,6 @@ import {
 
 import { IConsoleTracker } from '@jupyterlab/console';
 
-// import {
-//   sosHintWords, sos_mode
-// } from "./codemirror-sos";
-
 import {
   addLanSelector,
   updateCellStyles,
@@ -1013,8 +1009,8 @@ const extension: JupyterFrontEndPlugin<void> = {
       name: 'sos',
       mime: 'text/x-sos',
       load: async () => {
-        const m = await import('@codemirror/lang-python');
-        return m.python();
+        const m = await import('codemirror-sos');
+        return m.sos();
       }
     });
 
