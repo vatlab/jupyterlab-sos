@@ -662,15 +662,6 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   }
 }
 
-function hideSoSWidgets(element: HTMLElement) {
-  let sos_elements = element.getElementsByClassName(
-    'jp-CelllanguageDropDown'
-  ) as HTMLCollectionOf<HTMLElement>;
-  for (let i = 0; i < sos_elements.length; ++i)
-    sos_elements[i].style.display = 'none';
-}
-
-
 
 (<any>window).task_action = async function (param) {
   if (!param.action) {
@@ -731,10 +722,6 @@ export class SoSWidgets
 
     // this is a singleton class
     context.sessionContext.ready.then(() => {
-      // kernel information (for opened notebook) should be ready at this time.
-      // However, when the notebook is created from File -> New Notebook -> Select Kernel
-      // The kernelPreference.name is not yet set and we have to use kernelDisplayName
-      // which is SoS (not sos)
       void context.sessionContext.session?.kernel?.info.then(kernel_info => {
         const lang = kernel_info.language_info;
         const kernel_name = context.sessionContext.session.kernel.name;
@@ -758,8 +745,6 @@ export class SoSWidgets
           }
           updateCellStyles(panel, info);
           showSoSWidgets(panel.node);
-        } else {
-          hideSoSWidgets(panel.node);
         }
       })
     });
@@ -788,9 +773,6 @@ export class SoSWidgets
           }
           updateCellStyles(panel, info);
           showSoSWidgets(panel.node);
-        } else {
-          // in this case, the .sos_widget should be hidden
-          hideSoSWidgets(panel.node);
         }
       });
     });
