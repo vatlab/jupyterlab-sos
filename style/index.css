@@ -28,14 +28,6 @@
   padding: 0px;
 }
 
-/*
-.cm-sos-script {
-	font-style: normal;
-}
-
-.cm-sos-option {
-	font-style: italic;
-} */
 .jp-CodeCell .jp-InputArea .jp-CelllanguageDropDown {
   width: 70pt;
   background: none;
@@ -324,8 +316,7 @@ td.task_icon {
   font-size: 0.75em;
 }
 
-td.task_status,
-  {
+td.task_status {
   width: 15em;
   text-align: left;
 }
