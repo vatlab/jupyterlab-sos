@@ -16,12 +16,13 @@
   background-color: orange;
 }
 
-.jp-Hidden {
-  display: none;
+.jp-CelllanguageDropDown {
+  display: block;
 }
 
-/* .jp-CelllanguageDropDown {
-*/
+.jp-CelllanguageDropDown.jp-Hidden {
+  display: none;
+}
 
 .jp-OutputArea-prompt:empty {
   padding: 0px;
