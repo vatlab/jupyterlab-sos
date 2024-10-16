@@ -17,6 +17,10 @@
 }
 
 .jp-CelllanguageDropDown {
+  display: block;
+}
+
+.jp-CelllanguageDropDown.jp-Hidden {
   display: none;
 }
 
@@ -24,28 +28,20 @@
   padding: 0px;
 }
 
-/*
-.cm-sos-script {
-	font-style: normal;
-}
-
-.cm-sos-option {
-	font-style: italic;
-} */
 .jp-CodeCell .jp-InputArea .jp-CelllanguageDropDown {
   width: 70pt;
   background: none;
   z-index: 1000;
   right: 8pt;
   font-size: 80%;
-  display: block;
+  /* display: block; */
 }
 
 .jp-CodeCell .jp-cell-menu .jp-CelllanguageDropDown {
   width: 70pt;
   background: none;
   font-size: 80%;
-  display: block;
+  /* display: block; */
   margin-left: 5px;
   margin-right: 5px;
   border: 0px;
@@ -320,8 +316,7 @@ td.task_icon {
   font-size: 0.75em;
 }
 
-td.task_status,
-  {
+td.task_status {
   width: 15em;
   text-align: left;
 }
