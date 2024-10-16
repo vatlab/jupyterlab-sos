@@ -16,6 +16,14 @@ import React from 'react';
 
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
 
+export function showSoSWidgets(element: HTMLElement) {
+  let sos_elements = element.getElementsByClassName(
+    CELL_LANGUAGE_DROPDOWN_CLASS
+  ) as HTMLCollectionOf<HTMLElement>;
+  for (let i = 0; i < sos_elements.length; ++i)
+    sos_elements[i].classList.remove('jp-Hidden');
+}
+
 export function saveKernelInfo() {
   let panel = Manager.currentNotebook;
   let info = Manager.manager.get_info(panel);
@@ -286,6 +294,9 @@ export function updateCellStyles(
 export class KernelSwitcher extends ReactWidget {
   constructor() {
     super();
+    // this.state = {
+    //   is_sos: false;
+    // }
   }
 
   handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -307,12 +318,8 @@ export class KernelSwitcher extends ReactWidget {
 
   render(): JSX.Element {
     let panel = Manager.currentNotebook;
-    let cur_kernel = panel.context.sessionContext.kernelPreference.name;
-    if (!cur_kernel || cur_kernel.toLowerCase() !== 'sos') {
-      return;
-    }
-
     let info = Manager.manager.get_info(panel);
+
     let cell = panel.content.activeCell;
 
     const optionChildren = info.KernelList.map(lan => {
@@ -326,7 +333,7 @@ export class KernelSwitcher extends ReactWidget {
 
     return (
       <HTMLSelect
-        className={CELL_LANGUAGE_DROPDOWN_CLASS}
+        className={CELL_LANGUAGE_DROPDOWN_CLASS + " jp-Hidden"}
         onChange={this.handleChange}
         onKeyDown={this.handleKeyDown}
         value={kernel ? kernel : 'SoS'}

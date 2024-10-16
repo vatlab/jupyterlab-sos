@@ -9,7 +9,7 @@ import { IDisposable, DisposableDelegate } from '@lumino/disposable';
 
 import { Cell, CodeCell } from '@jupyterlab/cells';
 
-import { Kernel, Session } from '@jupyterlab/services';
+import { Kernel } from '@jupyterlab/services';
 
 import { DocumentRegistry } from '@jupyterlab/docregistry';
 
@@ -42,7 +42,8 @@ import {
   toggleDisplayOutput,
   toggleCellKernel,
   toggleMarkdownCell,
-  KernelSwitcher
+  KernelSwitcher,
+  showSoSWidgets
 } from './selectors';
 
 import { wrapExecutor, wrapConsoleExecutor } from './execute';
@@ -669,13 +670,7 @@ function hideSoSWidgets(element: HTMLElement) {
     sos_elements[i].style.display = 'none';
 }
 
-function showSoSWidgets(element: HTMLElement) {
-  let sos_elements = element.getElementsByClassName(
-    'jp-CelllanguageDropDown'
-  ) as HTMLCollectionOf<HTMLElement>;
-  for (let i = 0; i < sos_elements.length; ++i)
-    sos_elements[i].style.display = '';
-}
+
 
 (<any>window).task_action = async function (param) {
   if (!param.action) {
@@ -740,49 +735,50 @@ export class SoSWidgets
       // However, when the notebook is created from File -> New Notebook -> Select Kernel
       // The kernelPreference.name is not yet set and we have to use kernelDisplayName
       // which is SoS (not sos)
-      let cur_kernel = panel.context.sessionContext.kernelPreference.name;
-      if (!cur_kernel) {
-        return;
-      }
-      if (cur_kernel.toLowerCase() === 'sos') {
-        console.log(`session ready with kernel sos`);
-        // if this is not a sos kernel, remove all buttons
-        if (panel.content.model.getMetadata('sos')) {
-          info.updateLanguages(
-            (panel.content.model.getMetadata('sos') as any)['kernels']
-          );
-        } else {
-          panel.content.model.setMetadata('sos', {
-            kernels: [['SoS', 'sos', '', '']],
-            version: ''
-          });
-        }
-        if (!info.sos_comm) {
-          connectSoSComm(panel);
-          wrapExecutor(panel);
-        }
-        updateCellStyles(panel, info);
-        showSoSWidgets(panel.node);
-      } else {
-        hideSoSWidgets(panel.node);
-      }
-    });
-
-    context.sessionContext.kernelChanged.connect(
-      (sender: any, args: Session.ISessionConnection.IKernelChangedArgs) => {
-        // somehow when the kernelChanged is sent, there could be no newValue?
-        if (!args.newValue) {
-          return;
-        }
-        console.log(`kernel changed to ${args.newValue.name}`);
-        if (args.newValue.name === 'sos') {
+      void context.sessionContext.session?.kernel?.info.then(kernel_info => {
+        const lang = kernel_info.language_info;
+        const kernel_name = context.sessionContext.session.kernel.name;
+        if (lang.name === 'sos') {
+          console.log(`session ready with kernel sos`);
+          info.LanguageName.set(kernel_name, 'sos');
+          // if this is not a sos kernel, remove all buttons
           if (panel.content.model.getMetadata('sos')) {
             info.updateLanguages(
               (panel.content.model.getMetadata('sos') as any)['kernels']
             );
           } else {
             panel.content.model.setMetadata('sos', {
-              kernels: [['SoS', 'sos', '', '']],
+              kernels: [['SoS', kernel_name, 'sos', '', '']],
+              version: ''
+            });
+          }
+          if (!info.sos_comm) {
+            connectSoSComm(panel);
+            wrapExecutor(panel);
+          }
+          updateCellStyles(panel, info);
+          showSoSWidgets(panel.node);
+        } else {
+          hideSoSWidgets(panel.node);
+        }
+      })
+    });
+
+    context.sessionContext.kernelChanged.connect(() => {
+      void context.sessionContext.session?.kernel?.info.then(kernel_info => {
+        const lang = kernel_info.language_info;
+        const kernel_name = context.sessionContext.session.kernel.name;
+        info.LanguageName.set(kernel_name, 'sos');
+
+        console.log(`kernel changed to ${lang.name}`);
+        if (lang.name === 'sos') {
+          if (panel.content.model.getMetadata('sos')) {
+            info.updateLanguages(
+              (panel.content.model.getMetadata('sos') as any)['kernels']
+            );
+          } else {
+            panel.content.model.setMetadata('sos', {
+              kernels: [['SoS', kernel_name, 'sos', '', '']],
               version: ''
             });
           }
@@ -796,8 +792,8 @@ export class SoSWidgets
           // in this case, the .sos_widget should be hidden
           hideSoSWidgets(panel.node);
         }
-      }
-    );
+      });
+    });
 
     context.sessionContext.statusChanged.connect((sender, status) => {
       // if a sos notebook is restarted
@@ -812,6 +808,9 @@ export class SoSWidgets
 
     panel.content.model.cells.changed.connect((list, changed) => {
       let cur_kernel = panel.context.sessionContext.kernelPreference.name;
+      if (!cur_kernel) {
+        return;
+      }
       if (cur_kernel.toLowerCase() === 'sos') {
         each(changed.newValues, cellmodel => {
           let idx = changed.newIndex; // panel.content.widgets.findIndex(x => x.model.id == cellmodel.id);

@@ -16,9 +16,12 @@
   background-color: orange;
 }
 
-.jp-CelllanguageDropDown {
+.jp-Hidden {
   display: none;
 }
+
+/* .jp-CelllanguageDropDown {
+*/
 
 .jp-OutputArea-prompt:empty {
   padding: 0px;
@@ -38,14 +41,14 @@
   z-index: 1000;
   right: 8pt;
   font-size: 80%;
-  display: block;
+  /* display: block; */
 }
 
 .jp-CodeCell .jp-cell-menu .jp-CelllanguageDropDown {
   width: 70pt;
   background: none;
   font-size: 80%;
-  display: block;
+  /* display: block; */
   margin-left: 5px;
   margin-right: 5px;
   border: 0px;
