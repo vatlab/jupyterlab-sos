@@ -740,7 +740,10 @@ export class SoSWidgets
       // However, when the notebook is created from File -> New Notebook -> Select Kernel
       // The kernelPreference.name is not yet set and we have to use kernelDisplayName
       // which is SoS (not sos)
-      let cur_kernel = panel.context.sessionContext.kernelDisplayName == "No Kernel" ? panel.context.sessionContext.kernelPreference.name : panel.context.sessionContext.kernelDisplayName;
+      let cur_kernel = panel.context.sessionContext.kernelPreference.name;
+      if (!cur_kernel) {
+        return;
+      }
       if (cur_kernel.toLowerCase() === 'sos') {
         console.log(`session ready with kernel sos`);
         // if this is not a sos kernel, remove all buttons
@@ -808,9 +811,7 @@ export class SoSWidgets
     });
 
     panel.content.model.cells.changed.connect((list, changed) => {
-      let cur_kernel =
-        panel.context.sessionContext.kernelPreference.name ||
-        panel.context.sessionContext.kernelDisplayName;
+      let cur_kernel = panel.context.sessionContext.kernelPreference.name;
       if (cur_kernel.toLowerCase() === 'sos') {
         each(changed.newValues, cellmodel => {
           let idx = changed.newIndex; // panel.content.widgets.findIndex(x => x.model.id == cellmodel.id);
