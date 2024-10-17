@@ -43,7 +43,7 @@ import {
   toggleCellKernel,
   toggleMarkdownCell,
   KernelSwitcher,
-  showSoSWidgets
+  markSoSNotebookPanel
 } from './selectors';
 
 import { wrapExecutor, wrapConsoleExecutor } from './execute';
@@ -744,7 +744,9 @@ export class SoSWidgets
             wrapExecutor(panel);
           }
           updateCellStyles(panel, info);
-          showSoSWidgets(panel.node);
+          markSoSNotebookPanel(panel.node, true);
+        } else {
+          markSoSNotebookPanel(panel.node, false);
         }
       })
     });
@@ -772,7 +774,9 @@ export class SoSWidgets
             wrapExecutor(panel);
           }
           updateCellStyles(panel, info);
-          showSoSWidgets(panel.node);
+          markSoSNotebookPanel(panel.node, true);
+        } else {
+          markSoSNotebookPanel(panel.node,false);
         }
       });
     });

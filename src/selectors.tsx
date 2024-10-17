@@ -15,15 +15,16 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
-const CELL_HIDDEN_LANGUAGE_DROPDOWN_CLASS = 'jp-Hidden'
+const SOS_NOTEBOOK_CLASS = 'jp-SoSNotebook';
 
-export function showSoSWidgets(element: HTMLElement) {
-  let sos_elements = element.getElementsByClassName(
-    CELL_LANGUAGE_DROPDOWN_CLASS
-  ) as HTMLCollectionOf<HTMLElement>;
-  for (let i = 0; i < sos_elements.length; ++i)
-    sos_elements[i].classList.remove(CELL_HIDDEN_LANGUAGE_DROPDOWN_CLASS);
+export function markSoSNotebookPanel(panel: HTMLElement, is_sos: boolean): void {
+  if (is_sos) {
+    panel.classList.add(SOS_NOTEBOOK_CLASS);
+  } else {
+    panel.classList.remove(SOS_NOTEBOOK_CLASS);
+  }
 }
+
 
 export function saveKernelInfo() {
   let panel = Manager.currentNotebook;
@@ -334,7 +335,7 @@ export class KernelSwitcher extends ReactWidget {
 
     return (
       <HTMLSelect
-        className={CELL_LANGUAGE_DROPDOWN_CLASS + " " + CELL_HIDDEN_LANGUAGE_DROPDOWN_CLASS}
+        className={CELL_LANGUAGE_DROPDOWN_CLASS}
         onChange={this.handleChange}
         onKeyDown={this.handleKeyDown}
         value={kernel ? kernel : 'SoS'}

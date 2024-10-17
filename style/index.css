@@ -16,16 +16,16 @@
   background-color: orange;
 }
 
-.jp-CelllanguageDropDown {
+.jp-OutputArea-prompt:empty {
+  padding: 0px;
+}
+
+.jp-NotebookPanel.jp-SoSNotebook .jp-CelllanguageDropDown {
   display: block;
 }
 
-.jp-CelllanguageDropDown.jp-Hidden {
+.jp-CelllanguageDropDown {
   display: none;
-}
-
-.jp-OutputArea-prompt:empty {
-  padding: 0px;
 }
 
 .jp-CodeCell .jp-InputArea .jp-CelllanguageDropDown {
@@ -34,14 +34,12 @@
   z-index: 1000;
   right: 8pt;
   font-size: 80%;
-  /* display: block; */
 }
 
 .jp-CodeCell .jp-cell-menu .jp-CelllanguageDropDown {
   width: 70pt;
   background: none;
   font-size: 80%;
-  /* display: block; */
   margin-left: 5px;
   margin-right: 5px;
   border: 0px;
