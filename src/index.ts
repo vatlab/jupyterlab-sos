@@ -503,7 +503,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
         'update-task-status': unknownTasks
       });
     }
-    console.log('kernel list updated');
+    console.log(`kernel list updated ${data}`);
   } else if (msg_type === 'cell-kernel') {
     // jupyter lab does not yet handle panel cell
     if (data[0] === '') {

@@ -1,6 +1,6 @@
 {
   "name": "jupyterlab-sos",
-  "version": "0.10.7",
+  "version": "0.11.0",
   "description": "JupyterLab extension for SoS workflow engine and polyglot notebook",
   "keywords": [
     "jupyter",
