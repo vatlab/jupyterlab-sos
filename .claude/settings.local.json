@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jlpm run:*)",
+      "Bash(jlpm list:*)",
+      "Bash(cat:*)",
+      "Bash(jlpm build:*)",
+      "Bash(pip install:*)",
+      "Bash(jupyter labextension develop:*)",
+      "Bash(yarn.lock)",
+      "Bash(jlpm add:*)",
+      "Bash(jupyter labextension:*)",
+      "Bash(python:*)",
+      "Bash(inv:*)",
+      "Bash(jlpm prettier:base:*)",
+      "Bash(jlpm stylelint:check:*)",
+      "Bash(jlpm lint:check:*)",
+      "Bash(jlpm eslint:check:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

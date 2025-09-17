@@ -15,7 +15,8 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": false,
-    "target": "ES2018"
+    "target": "ES2018",
+    "skipLibCheck": true
   },
   "include": ["src/*"]
 }

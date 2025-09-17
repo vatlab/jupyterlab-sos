@@ -27,6 +27,7 @@ dependencies = [
     "sos-notebook",
     "jupyterlab>=4.2.0",
     "transient-display-data",
+    "invoke",
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 

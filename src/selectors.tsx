@@ -17,7 +17,10 @@ import React from 'react';
 const CELL_LANGUAGE_DROPDOWN_CLASS = 'jp-CelllanguageDropDown';
 const SOS_NOTEBOOK_CLASS = 'jp-SoSNotebook';
 
-export function markSoSNotebookPanel(panel: HTMLElement, is_sos: boolean): void {
+export function markSoSNotebookPanel(
+  panel: HTMLElement,
+  is_sos: boolean
+): void {
   if (is_sos) {
     panel.classList.add(SOS_NOTEBOOK_CLASS);
   } else {
@@ -25,23 +28,22 @@ export function markSoSNotebookPanel(panel: HTMLElement, is_sos: boolean): void 
   }
 }
 
-
 export function saveKernelInfo() {
-  let panel = Manager.currentNotebook;
-  let info = Manager.manager.get_info(panel);
+  const panel = Manager.currentNotebook;
+  const info = Manager.manager.get_info(panel);
 
-  let used_kernels = new Set();
-  let cells = panel.content.model.cells;
-  for (var i = cells.length - 1; i >= 0; --i) {
-    let cell = cells.get(i);
+  const used_kernels = new Set();
+  const cells = panel.content.model.cells;
+  for (let i = cells.length - 1; i >= 0; --i) {
+    const cell = cells.get(i);
     if (cell.type === 'code' && cell.getMetadata('kernel')) {
       used_kernels.add(cell.getMetadata('kernel') as string);
     }
   }
-  let sos_info = panel.content.model.getMetadata('sos');
+  const sos_info = panel.content.model.getMetadata('sos');
   sos_info['kernels'] = Array.from(used_kernels.values())
     .sort()
-    .map(function (x) {
+    .map(x => {
       return [
         info.DisplayName.get(x as string),
         info.KernelName.get(x as string),
@@ -54,7 +56,7 @@ export function saveKernelInfo() {
 }
 
 export function hideLanSelector(cell) {
-  let nodes = cell.node.getElementsByClassName(
+  const nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
   if (nodes.length > 0) {
@@ -79,7 +81,7 @@ export function toggleDisplayOutput(cell) {
     if (
       cell.model.metadata['tags'] &&
       (cell.model.metadata['tags'] as Array<string>).indexOf('report_output') >=
-      0
+        0
     ) {
       // if report_output on, remove it
       remove_tag(cell, 'report_output');
@@ -96,18 +98,18 @@ export function toggleCellKernel(cell: Cell, panel: NotebookPanel) {
     return;
   } else if (cell.model.type === 'code') {
     // switch to the next used kernel
-    let kernels = (panel.content.model.metadata['sos'] as any)['kernels'];
+    const kernels = (panel.content.model.metadata['sos'] as any)['kernels'];
     // current kernel
-    let kernel = cell.model.getMetadata('kernel');
+    const kernel = cell.model.getMetadata('kernel');
 
-    if (kernels.length == 1) {
+    if (kernels.length === 1) {
       return;
     }
     // index of kernel
     for (let i = 0; i < kernels.length; ++i) {
       if (kernels[i][0] === kernel) {
-        let info: NotebookInfo = Manager.manager.get_info(panel);
-        let next = (i + 1) % kernels.length;
+        const info: NotebookInfo = Manager.manager.get_info(panel);
+        const next = (i + 1) % kernels.length;
         // notebook_1.NotebookActions.changeCellType(panel.content, 'markdown');
         changeCellKernel(cell, kernels[next][0], info);
         break;
@@ -126,15 +128,15 @@ export function toggleMarkdownCell(cell: Cell, panel: NotebookPanel) {
 }
 
 function remove_tag(cell, tag) {
-  let taglist = cell.model.metadata['tags'] as string[];
-  let new_list: string[] = [];
+  const taglist = cell.model.metadata['tags'] as string[];
+  const new_list: string[] = [];
   for (let i = 0; i < taglist.length; i++) {
-    if (taglist[i] != tag) {
+    if (taglist[i] !== tag) {
       new_list.push(taglist[i]);
     }
   }
   cell.model.metadata.set('tags', new_list);
-  let op = cell.node.getElementsByClassName(
+  const op = cell.node.getElementsByClassName(
     'jp-Cell-outputWrapper'
   ) as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < op.length; ++i) {
@@ -150,7 +152,7 @@ function add_tag(cell, tag) {
     taglist = [tag];
   }
   cell.model.metadata.set('tags', taglist);
-  let op = cell.node.getElementsByClassName(
+  const op = cell.node.getElementsByClassName(
     'jp-Cell-outputWrapper'
   ) as HTMLCollectionOf<HTMLElement>;
   for (let i = 0; i < op.length; ++i) {
@@ -162,21 +164,23 @@ export function addLanSelector(cell: Cell, info: NotebookInfo) {
   if (!cell.model.getMetadata('kernel')) {
     cell.model.setMetadata('kernel', 'SoS');
   }
-  let kernel = cell.model.getMetadata('kernel') as string;
+  const kernel = cell.model.getMetadata('kernel') as string;
 
-  let nodes = cell.node.getElementsByClassName(
+  const nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
   if (nodes.length > 0) {
     // use the existing dropdown box
-    let select = nodes
+    const select = nodes
       .item(0)
       .getElementsByTagName('select')[0] as HTMLSelectElement;
     // update existing
-    for (let lan of info.KernelList) {
+    for (const lan of info.KernelList) {
       // ignore if already exists
-      if (select.options.namedItem(lan)) continue;
-      let option = document.createElement('option');
+      if (select.options.namedItem(lan)) {
+        continue;
+      }
+      const option = document.createElement('option');
       option.value = lan;
       option.id = lan;
       option.textContent = lan;
@@ -192,11 +196,11 @@ export function changeCellKernel(
   info: NotebookInfo
 ) {
   cell.model.setMetadata('kernel', kernel);
-  let nodes = cell.node.getElementsByClassName(
+  const nodes = cell.node.getElementsByClassName(
     CELL_LANGUAGE_DROPDOWN_CLASS
   ) as HTMLCollectionOf<HTMLElement>;
   // use the existing dropdown box
-  let select = nodes.item(0) as HTMLSelectElement;
+  const select = nodes.item(0) as HTMLSelectElement;
   if (select) {
     select.value = kernel;
   }
@@ -213,19 +217,21 @@ export function changeStyleOnKernel(
     cell.model.metadata['tags'] &&
     (cell.model.metadata['tags'] as Array<string>).indexOf('report_output') >= 0
   ) {
-    let op = cell.node.getElementsByClassName(
+    const op = cell.node.getElementsByClassName(
       'jp-Cell-outputWrapper'
     ) as HTMLCollectionOf<HTMLElement>;
-    for (let i = 0; i < op.length; ++i)
+    for (let i = 0; i < op.length; ++i) {
       op.item(i).classList.add('report-output');
+    }
   } else {
-    let op = cell.node.getElementsByClassName(
+    const op = cell.node.getElementsByClassName(
       'jp-Cell-outputWrapper'
     ) as HTMLCollectionOf<HTMLElement>;
-    for (let i = 0; i < op.length; ++i)
+    for (let i = 0; i < op.length; ++i) {
       op.item(i).classList.remove('report-output');
+    }
   }
-  for (let className of Array.from(cell.node.classList)) {
+  for (const className of Array.from(cell.node.classList)) {
     if (className.startsWith('sos_lan_')) {
       cell.node.classList.remove(className);
     }
@@ -258,7 +264,7 @@ export function updateCellStyles(
   panel: NotebookPanel,
   info: NotebookInfo
 ): Array<string> {
-  var cells = panel.content.widgets;
+  const cells = panel.content.widgets;
 
   // setting up background color and selection according to notebook metadata
   for (let i = 0; i < cells.length; ++i) {
@@ -272,7 +278,7 @@ export function updateCellStyles(
     }
   }
 
-  let panels = Manager.consolesOfNotebook(panel);
+  const panels = Manager.consolesOfNotebook(panel);
   for (let i = 0; i < panels.length; ++i) {
     addLanSelector(panels[i].console.promptCell, info);
     changeStyleOnKernel(
@@ -281,8 +287,8 @@ export function updateCellStyles(
       info
     );
   }
-  let tasks = document.querySelectorAll('[id^="task_status_"]');
-  let unknownTasks = [];
+  const tasks = document.querySelectorAll('[id^="task_status_"]');
+  const unknownTasks = [];
   for (let i = 0; i < tasks.length; ++i) {
     // status_localhost_5ea9232779ca1959
     if (tasks[i].id.match('^task_status_icon_.*')) {
@@ -302,12 +308,12 @@ export class KernelSwitcher extends ReactWidget {
   }
 
   handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    let cell = Manager.currentNotebook.content.activeCell;
+    const cell = Manager.currentNotebook.content.activeCell;
 
-    let kernel = event.target.value;
+    const kernel = event.target.value;
     cell.model.setMetadata('kernel', kernel);
-    let panel = Manager.currentNotebook;
-    let info: NotebookInfo = Manager.manager.get_info(panel);
+    const panel = Manager.currentNotebook;
+    const info: NotebookInfo = Manager.manager.get_info(panel);
     info.sos_comm.send({ 'set-editor-kernel': kernel });
     // change style
     changeStyleOnKernel(cell, kernel, info);
@@ -316,13 +322,13 @@ export class KernelSwitcher extends ReactWidget {
     this.update();
   };
 
-  handleKeyDown = (event: React.KeyboardEvent): void => { };
+  handleKeyDown = (event: React.KeyboardEvent): void => {};
 
   render(): JSX.Element {
-    let panel = Manager.currentNotebook;
-    let info = Manager.manager.get_info(panel);
+    const panel = Manager.currentNotebook;
+    const info = Manager.manager.get_info(panel);
 
-    let cell = panel.content.activeCell;
+    const cell = panel.content.activeCell;
 
     const optionChildren = info.KernelList.map(lan => {
       return (
@@ -331,7 +337,7 @@ export class KernelSwitcher extends ReactWidget {
         </option>
       );
     });
-    let kernel = cell.model.getMetadata('kernel') as string;
+    const kernel = cell.model.getMetadata('kernel') as string;
 
     return (
       <HTMLSelect
