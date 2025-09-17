@@ -44,3 +44,8 @@ htmlcov/
 
 # Claude Code settings
 .claude/
+
+# Test artifacts
+ui-tests/test-results/
+ui-tests/playwright-report/
+**/.last-run.json

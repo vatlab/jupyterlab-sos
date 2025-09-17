@@ -19,7 +19,9 @@
       "Bash(git add:*)",
       "Bash(jlpm test:*)",
       "Bash(jlpm:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(find:*)",
+      "Read(//Users/bpeng/vatlab/**)"
     ],
     "deny": [],
     "ask": []
