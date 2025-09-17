@@ -5,11 +5,11 @@
 }
 
 .cm-sos-interpolated {
-  background-color: rgb(223, 144, 207, 0.4);
+  background-color: rgb(223 144 207 / 40%);
 }
 
 .cm-sos-sigil {
-  background-color: rgb(223, 144, 207, 0.4);
+  background-color: rgb(223 144 207 / 40%);
 }
 
 .cm-sos-unmatched {
@@ -17,15 +17,15 @@
 }
 
 .jp-OutputArea-prompt:empty {
-  padding: 0px;
-}
-
-.jp-NotebookPanel.jp-SoSNotebook .jp-CelllanguageDropDown {
-  display: block;
+  padding: 0;
 }
 
 .jp-CelllanguageDropDown {
   display: none;
+}
+
+.jp-NotebookPanel.jp-SoSNotebook .jp-CelllanguageDropDown {
+  display: block;
 }
 
 .jp-CodeCell .jp-InputArea .jp-CelllanguageDropDown {
@@ -42,7 +42,7 @@
   font-size: 80%;
   margin-left: 5px;
   margin-right: 5px;
-  border: 0px;
+  border: 0;
 }
 
 .sos_logging {
@@ -52,7 +52,7 @@
 }
 
 .sos_hint {
-  color: rgba(0, 0, 0, .4);
+  color: rgb(0 0 0 / 40%);
   font-family: monospace;
 }
 
@@ -74,25 +74,17 @@
 
 .sos_warning {
   color: black;
-  background: #fdd
+  background: #fdd;
 }
 
 .sos_error {
   color: black;
-  background: #fdd
+  background: #fdd;
 }
 
 .report_output {
-  border-right-width: 13px;
-  border-right-color: #aaaaaa;
-  border-right-style: solid;
+  border-right: 13px solid #aaa;
 }
-
-.sos_hint {
-  color: gray;
-  font-family: monospace;
-}
-
 
 .session_info td {
   text-align: left;
@@ -108,7 +100,6 @@
   font-size: 120%;
 }
 
-
 .one_liner {
   overflow: hidden;
   height: 15px;
@@ -120,7 +111,7 @@
 }
 
 .dataframe_container {
-  max-height: 400px
+  max-height: 400px;
 }
 
 .dataframe_input {
@@ -134,8 +125,10 @@
   -moz-transform: translateY(15px) translateX(15px) rotate(45deg);
   -webkit-transform: translateY(15px) translateX(15px) rotate(45deg);
   -o-transform: translateY(15px) translateX(15px) rotate(45deg);
-  /*rotation-point:50% 50%;*/
-  /*rotation:270deg;*/
+
+  /* rotation-point:50% 50%; */
+
+  /* rotation:270deg; */
 }
 
 .sos_dataframe td,
@@ -144,9 +137,8 @@
 }
 
 pre.section-header.CodeMirror-line {
-  border-top: 1px dotted #cfcfcf
+  border-top: 1px dotted #cfcfcf;
 }
-
 
 .jp-CodeCell .cm-header-1,
 .jp-CodeCell .cm-header-2,
@@ -161,16 +153,16 @@ pre.section-header.CodeMirror-line {
 }
 
 /* jp-NotebooklanguageDropDown */
+
 /* jp-CelllanguageDropDown */
 
 /* sos generated static TOC */
 
 .jp-OutputArea .toc {
-  padding: 0px;
-  overflow-y: auto;
+  padding: 0;
+  overflow: auto auto;
   font-weight: normal;
   white-space: nowrap;
-  overflow-x: auto;
 }
 
 .jp-OutputArea .toc ul.toc-item {
@@ -179,55 +171,58 @@ pre.section-header.CodeMirror-line {
 }
 
 .jp-OutputArea .toc-item-highlight-select {
-  background-color: Gold
+  background-color: gold;
 }
 
 .jp-OutputArea .toc-item-highlight-execute {
-  background-color: red
+  background-color: red;
 }
 
 .jp-OutputArea .lev1 {
-  margin-left: 5px
+  margin-left: 5px;
 }
 
 .jp-OutputArea .lev2 {
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .jp-OutputArea .lev3 {
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .jp-OutputArea .lev4 {
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .jp-OutputArea .lev5 {
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .jp-OutputArea .lev6 {
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .jp-OutputArea .lev7 {
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .jp-OutputArea .lev8 {
-  margin-left: 10px
+  margin-left: 10px;
 }
-
 
 table.workflow_table,
 table.task_table {
-  border: 0px;
+  border: 0;
 }
-
 
 table.workflow_table i,
 table.task_table i {
   margin-right: 5px;
+}
+
+.workflow_table pre,
+.task_table pre {
+  background: unset;
 }
 
 td.workflow_name {
@@ -260,12 +255,18 @@ td.task_tags span {
   display: inline-flex;
 }
 
+td.task_timer pre {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 td.task_tags span pre {
   padding-right: 0.5em;
 }
 
 td.task_tags i {
-  margin-right: 0px;
+  margin-right: 0;
 }
 
 .task_id_actions,
@@ -299,17 +300,6 @@ td.task_timer {
   text-align: left !important;
 }
 
-td.task_timer pre {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.workflow_table pre,
-.task_table pre {
-  background: unset;
-}
-
 td.task_icon {
   font-size: 0.75em;
 }
@@ -334,38 +324,42 @@ table.task_table.pending pre,
 table.task_table.submitted pre,
 table.task_table.missing pre {
   color: #9d9d9d;
+
   /* gray */
 }
 
 table.workflow_table.running pre,
 table.task_table.running pre {
   color: #cdb62c;
+
   /* yellow */
 }
 
 table.workflow_table.completed pre,
 table.task_table.completed pre {
   color: #39aa56;
+
   /* green */
 }
 
 table.workflow_table.aborted pre,
 table.task_table.aborted pre {
-  color: #FFA07A;
+  color: #ffa07a;
+
   /* salmon */
 }
 
 table.workflow_table.failed pre,
 table.task_table.failed pre {
   color: #db4545;
+
   /* red */
 }
 
 table.task_table {
-  border: 0px;
+  border: 0;
   border-style: solid;
 }
-
 
 .bs-callout {
   padding: 20px;
@@ -381,10 +375,8 @@ table.task_table {
   font-weight: 500;
   line-height: 1.1;
   display: block;
-  margin-block-start: 1.33em;
-  margin-block-end: 1.33em;
-  margin-inline-start: 0px;
-  margin-inline-end: 0px;
+  margin-block: 1.33em 1.33em;
+  margin-inline: 0 0;
 }
 
 .bs-callout p:last-child {
@@ -395,7 +387,7 @@ table.task_table {
   border-radius: 3px;
 }
 
-.bs-callout+.bs-callout {
+.bs-callout + .bs-callout {
   margin-top: -5px;
 }
 

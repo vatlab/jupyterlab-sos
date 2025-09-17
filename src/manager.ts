@@ -1,12 +1,12 @@
-import { NotebookPanel, INotebookTracker } from "@jupyterlab/notebook";
+import { NotebookPanel, INotebookTracker } from '@jupyterlab/notebook';
 
-import { ConsolePanel, IConsoleTracker } from "@jupyterlab/console";
+import { ConsolePanel, IConsoleTracker } from '@jupyterlab/console';
 
-import { CommandRegistry } from "@lumino/commands";
+import { CommandRegistry } from '@lumino/commands';
 
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
-import { Kernel } from "@jupyterlab/services";
+import { Kernel } from '@jupyterlab/services';
 //
 export class NotebookInfo {
   notebook: NotebookPanel;
@@ -40,9 +40,10 @@ export class NotebookInfo {
 
     this.pendingCells = new Map<any, any>();
 
-    let data = [["SoS", "sos", "", ""]];
-    if (notebook.model.getMetadata("sos"))
-      data = (notebook.model.getMetadata('sos') as any)["kernels"];
+    let data = [['SoS', 'sos', '', '']];
+    if (notebook.model.getMetadata('sos')) {
+      data = (notebook.model.getMetadata('sos') as any)['kernels'];
+    }
     // fill the look up tables with language list passed from the kernel
     for (let i = 0; i < data.length; i++) {
       // BackgroundColor is color
@@ -99,16 +100,17 @@ export class NotebookInfo {
         this.KernelOptions.set(data[i][0], data[i][5]);
       }
 
-      if (this.KernelList.indexOf(data[i][0]) === -1)
+      if (this.KernelList.indexOf(data[i][0]) === -1) {
         this.KernelList.push(data[i][0]);
+      }
     }
 
     // add css to window
-    let css_text = this.KernelList.map(
+    const css_text = this.KernelList.map(
       // add language specific css
       (lan: string) => {
         if (this.BackgroundColor.get(lan)) {
-          let css_name = safe_css_name(`sos_lan_${lan}`);
+          const css_name = safe_css_name(`sos_lan_${lan}`);
           return `.jp-CodeCell.${css_name} .jp-InputPrompt,
             .jp-CodeCell.${css_name} .jp-OutputPrompt {
               background: ${this.BackgroundColor.get(lan)};
@@ -120,8 +122,8 @@ export class NotebookInfo {
       }
     )
       .filter(Boolean)
-      .join("\n");
-    var css = document.createElement("style");
+      .join('\n');
+    const css = document.createElement('style');
     // css.type = "text/css";
     css.innerHTML = css_text;
     document.body.appendChild(css);
@@ -133,11 +135,15 @@ export class NotebookInfo {
 }
 
 export function safe_css_name(name) {
-  return name.replace(/[^a-z0-9_]/g, function(s) {
-    var c = s.charCodeAt(0);
-    if (c == 32) return "-";
-    if (c >= 65 && c <= 90) return "_" + s.toLowerCase();
-    return "__" + ("000" + c.toString(16)).slice(-4);
+  return name.replace(/[^a-z0-9_]/g, s => {
+    const c = s.charCodeAt(0);
+    if (c === 32) {
+      return '-';
+    }
+    if (c >= 65 && c <= 90) {
+      return '_' + s.toLowerCase();
+    }
+    return '__' + ('000' + c.toString(16)).slice(-4);
   });
 }
 
@@ -188,15 +194,16 @@ export class Manager {
   }
 
   static get manager() {
-    if (this._instance === null || this._instance === undefined)
+    if (this._instance === null || this._instance === undefined) {
       this._instance = new Manager();
+    }
     return this._instance;
   }
 
   // register notebook info to the global registry
   public get_info(notebook: NotebookPanel): NotebookInfo {
     if (!this._info.has(notebook)) {
-      console.log("Creating a new notebook info");
+      console.log('Creating a new notebook info');
       this._info.set(notebook, new NotebookInfo(notebook));
     }
     return this._info.get(notebook);
@@ -208,8 +215,11 @@ export class Manager {
 
   // this is the same as get_info,
   public notebook_of_comm(comm_id: string): NotebookPanel {
-    for (let [panel, info] of Array.from(this._info.entries()))
-      if (info.sos_comm && info.sos_comm.commId === comm_id) return panel;
+    for (const [panel, info] of Array.from(this._info.entries())) {
+      if (info.sos_comm && info.sos_comm.commId === comm_id) {
+        return panel;
+      }
+    }
   }
 
   public update_config(settings: ISettingRegistry.ISettings): void {

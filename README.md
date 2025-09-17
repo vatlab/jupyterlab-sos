@@ -3,7 +3,6 @@
 [![Github Actions Status](https://github.com/vatlab/jupyterlab-sos/workflows/Build/badge.svg)](https://github.com/vatlab/jupyterlab-sos/actions/workflows/build.yml)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/vatlab/jupyterlab-sos/main?urlpath=lab)
 
-
 JupyterLab extension for SoS workflow engine and polyglot notebook
 
 ## Requirements

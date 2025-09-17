@@ -71,25 +71,25 @@ function registerSoSFileType(app: JupyterFrontEnd) {
 }
 
 function formatDuration(ms: number): string {
-  let res = [];
-  let seconds: number = Math.floor(ms / 1000);
-  let day: number = Math.floor(seconds / 86400);
+  const res = [];
+  const seconds: number = Math.floor(ms / 1000);
+  const day: number = Math.floor(seconds / 86400);
   if (day > 0) {
     res.push(day + ' day');
   }
-  let hh = Math.floor((seconds % 86400) / 3600);
+  const hh = Math.floor((seconds % 86400) / 3600);
   if (hh > 0) {
     res.push(hh + ' hr');
   }
-  let mm = Math.floor((seconds % 3600) / 60);
+  const mm = Math.floor((seconds % 3600) / 60);
   if (mm > 0) {
     res.push(mm + ' min');
   }
-  let ss = seconds % 60;
+  const ss = seconds % 60;
   if (ss > 0) {
     res.push(ss + ' sec');
   }
-  let ret = res.join(' ');
+  const ret = res.join(' ');
   if (ret === '') {
     return '0 sec';
   } else {
@@ -98,11 +98,11 @@ function formatDuration(ms: number): string {
 }
 
 function update_duration() {
-  setInterval(function () {
+  setInterval(() => {
     document
       .querySelectorAll("[id^='status_duration_']")
       .forEach((item: Element) => {
-        if (item.className != 'running') {
+        if (item.className !== 'running') {
           return;
         }
         (item as HTMLElement).innerText =
@@ -127,8 +127,8 @@ function fix_display_id(cell) {
     return;
   }
   for (let idx = 0; idx < cell.outputArea.model.length; ++idx) {
-    let output = cell.outputArea.model.get(idx);
-    if (output.type != 'display_data' || !output.data['text/html']) {
+    const output = cell.outputArea.model.get(idx);
+    if (output.type !== 'display_data' || !output.data['text/html']) {
       continue;
     }
     // the HTML should look like
@@ -136,11 +136,11 @@ function fix_display_id(cell) {
     if (!output.data || !output.data['text/html']) {
       continue;
     }
-    let id = output.data['text/html'].match(/id="([^"]*)"/);
+    const id = output.data['text/html'].match(/id="([^"]*)"/);
     if (!id || !id[1]) {
       continue;
     }
-    let targets = cell.outputArea._displayIdMap.get(id[1]) || [];
+    const targets = cell.outputArea._displayIdMap.get(id[1]) || [];
     targets.push(idx);
     let target_id = id[1];
     if (target_id.match('^task_.*')) {
@@ -153,19 +153,19 @@ function fix_display_id(cell) {
 function add_data_to_cell(cell, data, display_id) {
   if (data.output_type === 'update_display_data') {
     fix_display_id(cell);
-    let targets = cell.outputArea._displayIdMap.get(display_id);
+    const targets = cell.outputArea._displayIdMap.get(display_id);
     if (!targets) {
       // something wrong
       console.log('Failed to rebuild displayIdMap');
       return;
     }
     data.output_type = 'display_data';
-    for (let index of targets) {
+    for (const index of targets) {
       cell.outputArea.model.set(index, data);
     }
   } else {
     cell.outputArea.model.add(data);
-    let targets = cell.outputArea._displayIdMap.get(display_id) || [];
+    const targets = cell.outputArea._displayIdMap.get(display_id) || [];
     targets.push(cell.outputArea.model.length - 1);
     cell.outputArea._displayIdMap.set(display_id, targets);
   }
@@ -174,8 +174,8 @@ function add_data_to_cell(cell, data, display_id) {
 // add workflow status indicator table
 function update_workflow_status(info, panel) {
   // find the cell
-  let cell_id = info.cell_id;
-  let cell = panel.content.widgets.find(x => x.model.id == cell_id);
+  const cell_id = info.cell_id;
+  const cell = panel.content.widgets.find(x => x.model.id === cell_id);
   if (!cell) {
     console.log(`Cannot find cell by ID ${info.cell_id}`);
     return;
@@ -183,8 +183,8 @@ function update_workflow_status(info, panel) {
 
   // if there is an existing status table, try to retrieve its information
   // if the new data does not have it
-  let has_status_table = document.getElementById(`workflow_${cell_id}`);
-  if (!has_status_table && info.status != 'pending') {
+  const has_status_table = document.getElementById(`workflow_${cell_id}`);
+  if (!has_status_table && info.status !== 'pending') {
     return;
   }
   let timer_text = '';
@@ -192,11 +192,11 @@ function update_workflow_status(info, panel) {
     // convert from python time to JS time.
     info.start_time = info.start_time * 1000;
   }
-  if (info.status == 'purged') {
+  if (info.status === 'purged') {
     if (!has_status_table) {
       return;
     }
-    let data = {
+    const data = {
       output_type: 'update_display_data',
       transient: { display_id: `workflow_${cell_id}` },
       metadata: {},
@@ -208,7 +208,7 @@ function update_workflow_status(info, panel) {
   }
   if (has_status_table) {
     // if we already have timer, let us try to "fix" it in the notebook
-    let timer = document.getElementById(`status_duration_${cell_id}`);
+    const timer = document.getElementById(`status_duration_${cell_id}`);
     timer_text = timer.innerText;
     if (
       timer_text === '' &&
@@ -239,7 +239,7 @@ function update_workflow_status(info, panel) {
     }
   }
   // new and existing, check icon
-  let status_class = {
+  const status_class = {
     pending: 'fa-square-o',
     running: 'fa-spinner fa-pulse fa-spin',
     completed: 'fa-check-square-o',
@@ -248,12 +248,14 @@ function update_workflow_status(info, panel) {
   };
 
   // look for status etc and update them.
-  let onmouseover = `onmouseover='this.classList="fa fa-2x fa-fw fa-trash"'`;
-  let onmouseleave = `onmouseleave='this.classList="fa fa-2x fa-fw ${status_class[info.status]
-    }"'`;
-  let onclick = `onclick="cancel_workflow(this.id.substring(21))"`;
+  const onmouseover =
+    'onmouseover=\'this.classList="fa fa-2x fa-fw fa-trash"\'';
+  const onmouseleave = `onmouseleave='this.classList="fa fa-2x fa-fw ${
+    status_class[info.status]
+  }"'`;
+  const onclick = 'onclick="cancel_workflow(this.id.substring(21))"';
 
-  let data = {
+  const data = {
     output_type: has_status_table ? 'update_display_data' : 'display_data',
     transient: { display_id: `workflow_${cell_id}` },
     metadata: {},
@@ -262,17 +264,20 @@ function update_workflow_status(info, panel) {
 <table id="workflow_${cell_id}" class="workflow_table  ${info.status}">
 <tr>
       <td class="workflow_icon">
-        <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${status_class[info.status]
+        <i id="workflow_status_icon_${cell_id}" class="fa fa-2x fa-fw ${
+          status_class[info.status]
         }"
         ${onmouseover} ${onmouseleave} ${onclick}></i>
       </td>
       <td class="workflow_name">
-        <pre><span id="workflow_name_${cell_id}">${info.workflow_name
+        <pre><span id="workflow_name_${cell_id}">${
+          info.workflow_name
         }</span></pre>
       </td>
       <td class="workflow_id">
         <span>Workflow ID</span></br>
-        <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${info.workflow_id
+        <pre><i class="fa fa-fw fa-sitemap"></i><span id="workflow_id_${cell_id}">${
+          info.workflow_id
         }</span></pre>
       </td>
       <td class="workflow_index">
@@ -281,7 +286,8 @@ function update_workflow_status(info, panel) {
       </td>
       <td class="workflow_status">
         <span id="status_text_${cell_id}">${info.status}</span></br>
-        <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${info.status
+        <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${cell_id}" class="${
+          info.status
         }" datetime="${info.start_time}">${timer_text}</time></pre>
       </td>
 </tr>
@@ -296,22 +302,22 @@ function update_task_status(info, panel) {
   // find the cell
   //console.log(info);
   // special case, purge by tag, there is no task_id
-  if (!info.task_id && info.tag && info.status == 'purged') {
+  if (!info.task_id && info.tag && info.status === 'purged') {
     // find all elements by tag
-    let elems = document.getElementsByClassName(`task_tag_${info.tag}`);
+    const elems = document.getElementsByClassName(`task_tag_${info.tag}`);
     if (!elems) {
       return;
     }
-    let cell_elems = Array.from(elems).map(x => x.closest('.jp-CodeCell'));
-    let cells = cell_elems.map(cell_elem =>
-      panel.content.widgets.find(x => x.node == cell_elem)
+    const cell_elems = Array.from(elems).map(x => x.closest('.jp-CodeCell'));
+    const cells = cell_elems.map(cell_elem =>
+      panel.content.widgets.find(x => x.node === cell_elem)
     );
-    let display_ids = Array.from(elems).map(x =>
+    const display_ids = Array.from(elems).map(x =>
       x.closest('.task_table').id.split('_').slice(0, -1).join('_')
     );
 
     for (let i = 0; i < cells.length; ++i) {
-      let data = {
+      const data = {
         output_type: 'update_display_data',
         transient: { display_id: display_ids[i] },
         metadata: {},
@@ -324,7 +330,7 @@ function update_task_status(info, panel) {
     return;
   }
 
-  let elem_id = `${info.queue}_${info.task_id}`;
+  const elem_id = `${info.queue}_${info.task_id}`;
   // convert between Python and JS float time
   if (info.start_time) {
     info.start_time = info.start_time * 1000;
@@ -335,14 +341,14 @@ function update_task_status(info, panel) {
   let has_status_table;
 
   if (cell_id) {
-    cell = panel.content.widgets.find(x => x.model.id == cell_id);
+    cell = panel.content.widgets.find(x => x.model.id === cell_id);
     has_status_table = document.getElementById(`task_${elem_id}_${cell_id}`);
-    if (!has_status_table && info.status != 'pending') {
+    if (!has_status_table && info.status !== 'pending') {
       // if there is already a table inside, with cell_id that is different from before...
       has_status_table = document.querySelector(`[id^="task_${elem_id}"]`);
       if (has_status_table) {
         cell_id = has_status_table.id.split('_').slice(-1)[0];
-        cell = panel.content.widgets.find(x => x.model.id == cell_id);
+        cell = panel.content.widgets.find(x => x.model.id === cell_id);
       }
     }
     if (info.update_only && !has_status_table) {
@@ -353,8 +359,8 @@ function update_task_status(info, panel) {
     }
   } else {
     has_status_table = document.querySelector(`[id^="task_${elem_id}"]`);
-    let elem = has_status_table.closest('.jp-CodeCell');
-    cell = panel.content.widgets.find(x => x.node == elem);
+    const elem = has_status_table.closest('.jp-CodeCell');
+    cell = panel.content.widgets.find(x => x.node === elem);
     cell_id = cell.model.id;
   }
 
@@ -363,9 +369,9 @@ function update_task_status(info, panel) {
     return;
   }
 
-  if (info.status == 'purged') {
+  if (info.status === 'purged') {
     if (has_status_table) {
-      let data = {
+      const data = {
         output_type: 'update_display_data',
         transient: { display_id: `task_${elem_id}` },
         metadata: {},
@@ -414,7 +420,7 @@ function update_task_status(info, panel) {
     }
   }
 
-  let status_class = {
+  const status_class = {
     pending: 'fa-square-o',
     submitted: 'fa-spinner',
     running: 'fa-spinner fa-pulse fa-spin',
@@ -425,32 +431,32 @@ function update_task_status(info, panel) {
   };
 
   // look for status etc and update them.
-  let id_elems =
+  const id_elems =
     `<pre>${info.task_id}` +
-    `<div class="task_id_actions">` +
+    '<div class="task_id_actions">' +
     `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
     `<i class="fa fa-fw fa-play" onclick="task_action({action:'execute', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
     `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
     `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', task:'${info.task_id}', queue: '${info.queue}'})"></i>` +
-    `</div></pre>`;
+    '</div></pre>';
 
-  let tags = info.tags.split(/\s+/g);
+  const tags = info.tags.split(/\s+/g);
   let tags_elems = '';
   for (let ti = 0; ti < tags.length; ++ti) {
-    let tag = tags[ti];
+    const tag = tags[ti];
     if (!tag) {
       continue;
     }
     tags_elems +=
       `<pre class="task_tags task_tag_${tag}">${tag}` +
-      `<div class="task_tag_actions">` +
+      '<div class="task_tag_actions">' +
       `<i class="fa fa-fw fa-refresh" onclick="task_action({action:'status', tag:'${tag}', queue: '${info.queue}'})"></i>` +
       `<i class="fa fa-fw fa-stop"" onclick="task_action({action:'kill', tag:'${tag}', queue: '${info.queue}'})"></i>` +
       `<i class="fa fa-fw fa-trash"" onclick="task_action({action:'purge', tag:'${tag}', queue: '${info.queue}'})"></i>` +
-      `</div></pre>`;
+      '</div></pre>';
   }
 
-  let data = {
+  const data = {
     output_type: has_status_table ? 'update_display_data' : 'display_data',
     transient: { display_id: `task_${elem_id}` },
     metadata: {},
@@ -459,8 +465,9 @@ function update_task_status(info, panel) {
 <table id="task_${elem_id}_${cell_id}" class="task_table ${info.status}">
 <tr>
   <td class="task_icon">
-    <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${status_class[info.status]
-        }"
+    <i id="task_status_icon_${elem_id}_${cell_id}" class="fa fa-2x fa-fw ${
+      status_class[info.status]
+    }"
     ${onmouseover} ${onmouseleave} ${onclick}></i>
   </td>
   <td class="task_id">
@@ -470,12 +477,14 @@ function update_task_status(info, panel) {
     <span id="status_tags_${elem_id}_${cell_id}"><pre><i class="fa fa-fw fa-info-circle"></i></pre>${tags_elems}</span>
   </td>
   <td class="task_timer">
-    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${info.status
-        }" datetime="${info.start_time}">${timer_text}</time></pre>
+    <pre><i class="fa fa-fw fa-clock-o"></i><time id="status_duration_${elem_id}_${cell_id}" class="${
+      info.status
+    }" datetime="${info.start_time}">${timer_text}</time></pre>
   </td>
   <td class="task_status">
-    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${info.status
-        }</span></pre>
+    <pre><i class="fa fa-fw fa-tasks"></i><span id="status_text_${elem_id}_${cell_id}">${
+      info.status
+    }</span></pre>
   </td>
 </tr>
 </table>
@@ -489,15 +498,15 @@ function update_task_status(info, panel) {
  * SoS frontend Comm
  */
 function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
-  let data: any = msg.content.data;
-  let panel = Manager.manager.notebook_of_comm(msg.content.comm_id);
-  let msg_type = msg.metadata.msg_type;
-  let info = Manager.manager.get_info(panel);
+  const data: any = msg.content.data;
+  const panel = Manager.manager.notebook_of_comm(msg.content.comm_id);
+  const msg_type = msg.metadata.msg_type;
+  const info = Manager.manager.get_info(panel);
   console.log(`Received ${msg_type}`);
 
   if (msg_type === 'kernel-list') {
     info.updateLanguages(data);
-    let unknownTasks = updateCellStyles(panel, info);
+    const unknownTasks = updateCellStyles(panel, info);
     if (unknownTasks) {
       info.sos_comm.send({
         'update-task-status': unknownTasks
@@ -509,7 +518,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     if (data[0] === '') {
       return;
     }
-    let cell = panel.content.widgets.find(x => x.model.id == data[0]);
+    const cell = panel.content.widgets.find(x => x.model.id === data[0]);
     if (!cell) {
       return;
     }
@@ -518,13 +527,14 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       saveKernelInfo();
     } else if (
       cell.model.getMetadata('tags') &&
-      (cell.model.getMetadata('tags') as Array<string>).indexOf('report_output') >=
-      0
+      (cell.model.getMetadata('tags') as Array<string>).indexOf(
+        'report_output'
+      ) >= 0
     ) {
       // #639
       // if kernel is different, changeStyleOnKernel would set report_output.
       // otherwise we mark report_output
-      let op = cell.node.getElementsByClassName(
+      const op = cell.node.getElementsByClassName(
         'jp-Cell-outputWrapper'
       ) as HTMLCollectionOf<HTMLElement>;
       for (let i = 0; i < op.length; ++i) {
@@ -540,16 +550,16 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
      changeStyleOnKernel(window.my_panel.cell, data);
    */
   } else if (msg_type === 'highlight-workflow') {
-    let elem = document.getElementById(data[1]) as HTMLTextAreaElement;
+    const elem = document.getElementById(data[1]) as HTMLTextAreaElement;
     // CodeMirror.fromTextArea(elem, {
     //   mode: "sos"
     // });
     // if in a regular notebook, we use static version of the HTML
     // to replace the codemirror js version.
     if (data[0]) {
-      let cell = panel.content.widgets.find(x => x.model.id == data[0]);
+      const cell = panel.content.widgets.find(x => x.model.id === data[0]);
 
-      let cm_node = elem.parentElement.lastElementChild;
+      const cm_node = elem.parentElement.lastElementChild;
       add_data_to_cell(
         cell,
         {
@@ -565,10 +575,10 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       cm_node.remove();
     }
   } else if (msg_type === 'tasks-pending') {
-    let cell = panel.content.widgets[data[0]];
+    const cell = panel.content.widgets[data[0]];
     info.pendingCells.set(cell.model.id, data[1]);
   } else if (msg_type === 'remove-task') {
-    let item = document.querySelector(`[id^="table_${data[0]}_${data[1]}"]`);
+    const item = document.querySelector(`[id^="table_${data[0]}_${data[1]}"]`);
     if (item) {
       item.parentNode.removeChild(item);
     }
@@ -577,7 +587,7 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     if (data.status === 'running') {
       update_duration();
     }
-  } else if (msg_type == 'workflow_status') {
+  } else if (msg_type === 'workflow_status') {
     update_workflow_status(data, panel);
     if (data.status === 'running') {
       update_duration();
@@ -590,11 +600,11 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
       data.status === 'failed'
     ) {
       // find all cell_ids with pending workflows
-      let elems = document.querySelectorAll("[id^='status_duration_']");
-      let pending = Array.from(elems)
+      const elems = document.querySelectorAll("[id^='status_duration_']");
+      const pending = Array.from(elems)
         .filter(item => {
           return (
-            item.className == 'pending' && !item.id.substring(16).includes('_')
+            item.className === 'pending' && !item.id.substring(16).includes('_')
           );
         })
         .map(item => {
@@ -608,8 +618,8 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
     //let idx = panel.content.activeCellIndex;
     //let cm = panel.content.widgets[idx].editor;
     // cm.replaceRange(data, cm.getCursor());
-  } else if (msg_type == 'print') {
-    let cell = panel.content.widgets.find(x => x.model.id == data[0]);
+  } else if (msg_type === 'print') {
+    const cell = panel.content.widgets.find(x => x.model.id === data[0]);
 
     (cell as CodeCell).outputArea.model.add({
       output_type: 'stream',
@@ -625,14 +635,18 @@ function on_frontend_msg(msg: KernelMessage.ICommMsgMsg) {
 }
 
 function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
-  let info = Manager.manager.get_info(panel);
-  if (info.sos_comm && !renew) return;
-  if (!panel.context.sessionContext.session) return;
+  const info = Manager.manager.get_info(panel);
+  if (info.sos_comm && !renew) {
+    return;
+  }
+  if (!panel.context.sessionContext.session) {
+    return;
+  }
   try {
-    let sos_comm =
+    const sos_comm =
       panel.context.sessionContext.session?.kernel.createComm('sos_comm');
     if (!sos_comm) {
-      console.log(`Failed to connect to sos_comm. Will try later.`);
+      console.log('Failed to connect to sos_comm. Will try later.');
       return null;
     }
     Manager.manager.register_comm(sos_comm, panel);
@@ -644,7 +658,9 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
         'notebook-version': (panel.content.model.getMetadata('sos') as any)[
           'version'
         ],
-        'list-kernel': (panel.content.model.getMetadata('sos') as any)['kernels']
+        'list-kernel': (panel.content.model.getMetadata('sos') as any)[
+          'kernels'
+        ]
       });
     } else {
       sos_comm.send({
@@ -662,16 +678,15 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
   }
 }
 
-
 (<any>window).task_action = async function (param) {
   if (!param.action) {
     return;
   }
 
-  let commands = Manager.commands;
-  let path = Manager.currentNotebook.context.path;
+  const commands = Manager.commands;
+  const path = Manager.currentNotebook.context.path;
 
-  let code =
+  const code =
     `%task ${param.action}` +
     (param.task ? ` ${param.task}` : '') +
     (param.tag ? ` -t ${param.tag}` : '') +
@@ -691,7 +706,7 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
 
 (<any>window).cancel_workflow = function (cell_id) {
   console.log('Cancel workflow ' + cell_id);
-  let info = Manager.manager.get_info(Manager.currentNotebook);
+  const info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
     'cancel-workflow': [cell_id]
   });
@@ -699,14 +714,15 @@ function connectSoSComm(panel: NotebookPanel, renew: boolean = false) {
 
 (<any>window).execute_workflow = function (cell_ids) {
   console.log('Run workflows ' + cell_ids);
-  let info = Manager.manager.get_info(Manager.currentNotebook);
+  const info = Manager.manager.get_info(Manager.currentNotebook);
   info.sos_comm.send({
     'execute-workflow': cell_ids
   });
 };
 
 export class SoSWidgets
-  implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
+  implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel>
+{
   /**
    * The createNew function does not return whatever created. It is just a registery that Will
    * be called when a notebook is created/opened, and the toolbar is created. it is therefore
@@ -718,7 +734,7 @@ export class SoSWidgets
   ): IDisposable {
     // register notebook to get language info, or get existing info
     // unfortunately, for new notebook, language info is currently empty
-    let info = Manager.manager.get_info(panel);
+    const info = Manager.manager.get_info(panel);
 
     // this is a singleton class
     context.sessionContext.ready.then(() => {
@@ -726,7 +742,7 @@ export class SoSWidgets
         const lang = kernel_info.language_info;
         const kernel_name = context.sessionContext.session.kernel.name;
         if (lang.name === 'sos') {
-          console.log(`session ready with kernel sos`);
+          console.log('session ready with kernel sos');
           info.LanguageName.set(kernel_name, 'sos');
           // if this is not a sos kernel, remove all buttons
           if (panel.content.model.getMetadata('sos')) {
@@ -748,7 +764,7 @@ export class SoSWidgets
         } else {
           markSoSNotebookPanel(panel.node, false);
         }
-      })
+      });
     });
 
     context.sessionContext.kernelChanged.connect(() => {
@@ -776,7 +792,7 @@ export class SoSWidgets
           updateCellStyles(panel, info);
           markSoSNotebookPanel(panel.node, true);
         } else {
-          markSoSNotebookPanel(panel.node,false);
+          markSoSNotebookPanel(panel.node, false);
         }
       });
     });
@@ -793,14 +809,14 @@ export class SoSWidgets
     });
 
     panel.content.model.cells.changed.connect((list, changed) => {
-      let cur_kernel = panel.context.sessionContext.kernelPreference.name;
+      const cur_kernel = panel.context.sessionContext.kernelPreference.name;
       if (!cur_kernel) {
         return;
       }
       if (cur_kernel.toLowerCase() === 'sos') {
         each(changed.newValues, cellmodel => {
           let idx = changed.newIndex; // panel.content.widgets.findIndex(x => x.model.id == cellmodel.id);
-          let cell = panel.content.widgets[idx];
+          const cell = panel.content.widgets[idx];
 
           if (changed.type !== 'add' && changed.type !== 'set') {
             return;
@@ -837,14 +853,14 @@ export class SoSWidgets
           // this happens after kernel restart #53
           connectSoSComm(panel, true);
         }
-        let cell_kernel = cell.model.getMetadata('kernel') as string;
+        const cell_kernel = cell.model.getMetadata('kernel') as string;
         info.sos_comm.send({
           'set-editor-kernel': cell_kernel
         });
       }
     });
 
-    return new DisposableDelegate(() => { });
+    return new DisposableDelegate(() => {});
   }
 }
 
@@ -853,15 +869,15 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
 }
 
 (<any>window).filterDataFrame = function (id) {
-  var input = document.getElementById('search_' + id) as HTMLInputElement;
-  var filter = input.value.toUpperCase();
-  var table = document.getElementById('dataframe_' + id) as HTMLTableElement;
-  var tr = table.getElementsByTagName('tr');
+  const input = document.getElementById('search_' + id) as HTMLInputElement;
+  const filter = input.value.toUpperCase();
+  const table = document.getElementById('dataframe_' + id) as HTMLTableElement;
+  const tr = table.getElementsByTagName('tr');
 
   // Loop through all table rows, and hide those who do not match the search query
-  for (var i = 1; i < tr.length; i++) {
-    for (var j = 0; j < tr[i].cells.length; ++j) {
-      var matched = false;
+  for (let i = 1; i < tr.length; i++) {
+    for (let j = 0; j < tr[i].cells.length; ++j) {
+      let matched = false;
       if (tr[i].cells[j].innerHTML.toUpperCase().indexOf(filter) !== -1) {
         tr[i].style.display = '';
         matched = true;
@@ -875,32 +891,32 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
 };
 
 (<any>window).sortDataFrame = function (id, n, dtype) {
-  var table = document.getElementById('dataframe_' + id) as HTMLTableElement;
+  const table = document.getElementById('dataframe_' + id) as HTMLTableElement;
 
-  var tb = table.tBodies[0]; // use `<tbody>` to ignore `<thead>` and `<tfoot>` rows
-  var tr = Array.prototype.slice.call(tb.rows, 0); // put rows into array
+  const tb = table.tBodies[0]; // use `<tbody>` to ignore `<thead>` and `<tfoot>` rows
+  let tr = Array.prototype.slice.call(tb.rows, 0); // put rows into array
 
-  var fn =
+  const fn =
     dtype === 'numeric'
       ? function (a, b) {
-        return parseFloat(a.cells[n].textContent) <=
-          parseFloat(b.cells[n].textContent)
-          ? -1
-          : 1;
-      }
+          return parseFloat(a.cells[n].textContent) <=
+            parseFloat(b.cells[n].textContent)
+            ? -1
+            : 1;
+        }
       : function (a, b) {
-        var c = a.cells[n].textContent
-          .trim()
-          .localeCompare(b.cells[n].textContent.trim());
-        return c > 0 ? 1 : c < 0 ? -1 : 0;
-      };
-  var isSorted = function (array, fn) {
+          const c = a.cells[n].textContent
+            .trim()
+            .localeCompare(b.cells[n].textContent.trim());
+          return c > 0 ? 1 : c < 0 ? -1 : 0;
+        };
+  const isSorted = function (array, fn) {
     if (array.length < 2) {
       return 1;
     }
-    var direction = fn(array[0], array[1]);
-    for (var i = 1; i < array.length - 1; ++i) {
-      var d = fn(array[i], array[i + 1]);
+    let direction = fn(array[0], array[1]);
+    for (let i = 1; i < array.length - 1; ++i) {
+      const d = fn(array[i], array[i + 1]);
       if (d === 0) {
         continue;
       } else if (direction === 0) {
@@ -912,8 +928,8 @@ function registerSoSWidgets(app: JupyterFrontEnd) {
     return direction;
   };
 
-  var sorted = isSorted(tr, fn);
-  var i;
+  const sorted = isSorted(tr, fn);
+  let i;
 
   if (sorted === 1 || sorted === -1) {
     // if sorted already, reverse it
@@ -976,17 +992,17 @@ const extension: JupyterFrontEndPlugin<void> = {
 
       labconsole.promptCellCreated.connect(panel => {
         if (Manager.currentNotebook) {
-          let info = Manager.manager.get_info(Manager.currentNotebook);
+          const info = Manager.manager.get_info(Manager.currentNotebook);
           addLanSelector(panel.promptCell, info);
         }
       });
       labconsole.sessionContext.statusChanged.connect(
         (sender, status: Kernel.Status) => {
           if (
-            status == 'busy' &&
+            status === 'busy' &&
             panel.console.sessionContext?.kernelDisplayName === 'SoS'
           ) {
-            console.log(`connected to sos kernel`);
+            console.log('connected to sos kernel');
             // connectSoSComm(panel, true);
             wrapConsoleExecutor(panel);
           }

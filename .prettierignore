@@ -4,3 +4,43 @@ node_modules
 **/package.json
 !/package.json
 jupyterlab_sos
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+
+# Build artifacts
+lib/
+dist/
+build/
+*.egg-info/
+
+# Cache directories
+.yarn/
+.cache/
+.pytest_cache/
+__pycache__/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage reports
+coverage/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Claude Code settings
+.claude/
