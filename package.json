@@ -216,5 +216,11 @@
             "selector-no-vendor-prefix": null,
             "value-no-vendor-prefix": null
         }
+    },
+    "jest": {
+        "testPathIgnorePatterns": [
+            "/node_modules/",
+            "/ui-tests/"
+        ]
     }
 }

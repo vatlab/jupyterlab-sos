@@ -1,0 +1,14 @@
+{
+  "name": "jupyterlab-sos-ui-tests",
+  "version": "1.0.0",
+  "description": "UI Tests for jupyterlab-sos",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@jupyterlab/galata": "^5.0.0",
+    "@playwright/test": "^1.40.0"
+  },
+  "private": true
+}
