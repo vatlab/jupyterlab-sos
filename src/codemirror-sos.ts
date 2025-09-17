@@ -383,7 +383,7 @@ export function sos_mode(
   } else {
     // this is SoS mode
     base_mode = (CodeMirror as any).getMode(conf, sosPythonConf);
-    overlay_mode = markExpr(base_mode);
+    const overlay_mode = markExpr(base_mode);
     return {
       startState: function () {
         return {
