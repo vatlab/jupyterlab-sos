@@ -16,7 +16,9 @@
       "Bash(jlpm stylelint:check:*)",
       "Bash(jlpm lint:check:*)",
       "Bash(jlpm eslint:check:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(jlpm prettier:*)"
     ],
     "deny": [],
     "ask": []

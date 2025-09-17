@@ -7,13 +7,41 @@ import { CommandRegistry } from '@lumino/commands';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { Kernel } from '@jupyterlab/services';
+
+interface ISosMetadata {
+  version: string;
+  kernels: Array<[string, string, string, string, any?, string?]>;
+}
+
+interface INotebookState {
+  autoResume: boolean;
+  pendingCells: Map<any, any>;
+}
+
+class NotebookRuntimeState implements INotebookState {
+  autoResume: boolean;
+  pendingCells: Map<any, any>;
+  sos_comm: Kernel.IComm | null;
+
+  constructor() {
+    this.autoResume = false;
+    this.pendingCells = new Map<any, any>();
+    this.sos_comm = null;
+  }
+
+  reset(): void {
+    this.autoResume = false;
+    this.pendingCells.clear();
+    this.sos_comm = null;
+  }
+}
+
 //
 export class NotebookInfo {
   notebook: NotebookPanel;
   KernelList: Array<string>;
 
-  sos_comm: Kernel.IComm;
-
+  // Language mapping data (persistent)
   BackgroundColor: Map<string, string>;
   DisplayName: Map<string, string>;
   KernelName: Map<string, string>;
@@ -21,15 +49,19 @@ export class NotebookInfo {
   CodeMirrorMode: Map<string, any>;
   KernelOptions: Map<string, string>;
 
-  autoResume: boolean;
-  pendingCells: Map<any, any>;
+  // Runtime state (non-persistent)
+  private runtimeState: NotebookRuntimeState;
+
+  private static readonly METADATA_VERSION = '1.0';
+  private static readonly DEFAULT_KERNEL_DATA: Array<
+    [string, string, string, string]
+  > = [['SoS', 'sos', '', '']];
   /** create an info object from metadata of the notebook
    */
   constructor(notebook: NotebookPanel) {
     this.notebook = notebook;
     this.KernelList = new Array<string>();
-    this.autoResume = false;
-    this.sos_comm = null;
+    this.runtimeState = new NotebookRuntimeState();
 
     this.BackgroundColor = new Map<string, string>();
     this.DisplayName = new Map<string, string>();
@@ -38,65 +70,121 @@ export class NotebookInfo {
     this.KernelOptions = new Map<string, any>();
     this.CodeMirrorMode = new Map<string, any>();
 
-    this.pendingCells = new Map<any, any>();
+    const metadata = this.getVersionedMetadata();
+    this.initializeFromKernelData(metadata.kernels);
+  }
 
-    let data = [['SoS', 'sos', '', '']];
-    if (notebook.model.getMetadata('sos')) {
-      data = (notebook.model.getMetadata('sos') as any)['kernels'];
+  // Getters for backward compatibility
+  get autoResume(): boolean {
+    return this.runtimeState.autoResume;
+  }
+
+  set autoResume(value: boolean) {
+    this.runtimeState.autoResume = value;
+  }
+
+  get pendingCells(): Map<any, any> {
+    return this.runtimeState.pendingCells;
+  }
+
+  get sos_comm(): Kernel.IComm | null {
+    return this.runtimeState.sos_comm;
+  }
+
+  set sos_comm(comm: Kernel.IComm | null) {
+    this.runtimeState.sos_comm = comm;
+  }
+
+  resetRuntimeState(): void {
+    this.runtimeState.reset();
+  }
+
+  private validateMetadata(metadata: any): metadata is ISosMetadata {
+    if (!metadata || typeof metadata !== 'object') {
+      return false;
     }
-    // fill the look up tables with language list passed from the kernel
+
+    if (!Array.isArray(metadata.kernels)) {
+      return false;
+    }
+
+    return metadata.kernels.every(
+      (item: any) =>
+        Array.isArray(item) &&
+        item.length >= 4 &&
+        typeof item[0] === 'string' &&
+        typeof item[1] === 'string' &&
+        typeof item[2] === 'string' &&
+        typeof item[3] === 'string'
+    );
+  }
+
+  private getVersionedMetadata(): ISosMetadata {
+    const rawMetadata = this.notebook.model.getMetadata('sos') as any;
+
+    if (!rawMetadata) {
+      return {
+        version: NotebookInfo.METADATA_VERSION,
+        kernels: NotebookInfo.DEFAULT_KERNEL_DATA
+      };
+    }
+
+    if (this.validateMetadata(rawMetadata)) {
+      return {
+        version: rawMetadata.version || NotebookInfo.METADATA_VERSION,
+        kernels: rawMetadata.kernels
+      };
+    }
+
+    // Legacy format support
+    if (Array.isArray(rawMetadata.kernels)) {
+      console.warn('Converting legacy SoS metadata format');
+      return {
+        version: NotebookInfo.METADATA_VERSION,
+        kernels: rawMetadata.kernels
+      };
+    }
+
+    console.error('Invalid SoS metadata format, using defaults');
+    return {
+      version: NotebookInfo.METADATA_VERSION,
+      kernels: NotebookInfo.DEFAULT_KERNEL_DATA
+    };
+  }
+
+  private initializeFromKernelData(
+    data: Array<[string, string, string, string, any?, string?]>
+  ): void {
     for (let i = 0; i < data.length; i++) {
       // BackgroundColor is color
       this.BackgroundColor.set(data[i][0], data[i][3]);
-      this.BackgroundColor.set(data[i][1], data[i][3]);
+      // by kernel name? For compatibility ...
+      if (!this.BackgroundColor.has(data[i][1])) {
+        this.BackgroundColor.set(data[i][1], data[i][3]);
+      }
       // DisplayName
       this.DisplayName.set(data[i][0], data[i][0]);
-      this.DisplayName.set(data[i][1], data[i][0]);
+      if (!this.DisplayName.has(data[i][1])) {
+        this.DisplayName.set(data[i][1], data[i][0]);
+      }
       // Name
       this.KernelName.set(data[i][0], data[i][1]);
-      this.KernelName.set(data[i][1], data[i][1]);
+      if (!this.KernelName.has(data[i][1])) {
+        this.KernelName.set(data[i][1], data[i][1]);
+      }
       // LanguageName
       this.LanguageName.set(data[i][0], data[i][2]);
-      this.LanguageName.set(data[i][1], data[i][2]);
+      if (!this.LanguageName.has(data[i][2])) {
+        this.LanguageName.set(data[i][2], data[i][2]);
+      }
 
       // if codemirror mode ...
       if (data[i].length >= 5 && data[i][4]) {
         this.CodeMirrorMode.set(data[i][0], data[i][4]);
       }
 
-      this.KernelList.push(data[i][0]);
-    }
-  }
-
-  updateLanguages(data: Array<Array<string>>) {
-    for (let i = 0; i < data.length; i++) {
-      // BackgroundColor is color
-      this.BackgroundColor.set(data[i][0], data[i][3]);
-      // by kernel name? For compatibility ...
-      if (!(data[i][1] in this.BackgroundColor)) {
-        this.BackgroundColor.set(data[i][1], data[i][3]);
-      }
-      // DisplayName
-      this.DisplayName.set(data[i][0], data[i][0]);
-      if (!(data[i][1] in this.DisplayName)) {
-        this.DisplayName.set(data[i][1], data[i][0]);
-      }
-      // Name
-      this.KernelName.set(data[i][0], data[i][1]);
-      if (!(data[i][1] in this.KernelName)) {
-        this.KernelName.set(data[i][1], data[i][1]);
-      }
-      // Language Name
-      this.LanguageName.set(data[i][0], data[i][2]);
-      if (!(data[i][2] in this.LanguageName)) {
-        this.LanguageName.set(data[i][2], data[i][2]);
-      }
-      // if codemirror mode ...
-      if (data[i].length > 4 && data[i][4]) {
-        this.CodeMirrorMode.set(data[i][0], data[i][4]);
-      }
       // if options ...
-      if (data[i].length > 5) {
+      if (data[i].length >= 6 && data[i][5]) {
         this.KernelOptions.set(data[i][0], data[i][5]);
       }
 
@@ -104,27 +192,84 @@ export class NotebookInfo {
         this.KernelList.push(data[i][0]);
       }
     }
+  }
 
-    // add css to window
-    const css_text = this.KernelList.map(
-      // add language specific css
-      (lan: string) => {
-        if (this.BackgroundColor.get(lan)) {
-          const css_name = safe_css_name(`sos_lan_${lan}`);
-          return `.jp-CodeCell.${css_name} .jp-InputPrompt,
+  saveMetadata(): void {
+    const kernelData: Array<[string, string, string, string, any?, string?]> =
+      [];
+
+    for (const kernel of this.KernelList) {
+      const entry: [string, string, string, string, any?, string?] = [
+        kernel,
+        this.KernelName.get(kernel) || kernel,
+        this.LanguageName.get(kernel) || '',
+        this.BackgroundColor.get(kernel) || ''
+      ];
+
+      const mode = this.CodeMirrorMode.get(kernel);
+      if (mode) {
+        entry.push(mode);
+      }
+
+      const options = this.KernelOptions.get(kernel);
+      if (options) {
+        if (!mode) {
+          entry.push(undefined);
+        }
+        entry.push(options);
+      }
+
+      kernelData.push(entry);
+    }
+
+    const metadata: ISosMetadata = {
+      version: NotebookInfo.METADATA_VERSION,
+      kernels: kernelData
+    };
+
+    this.notebook.model.setMetadata('sos', metadata);
+  }
+
+  updateLanguages(data: Array<Array<string>>) {
+    // Convert Array<Array<string>> to the expected format
+    const kernelData: Array<[string, string, string, string, any?, string?]> =
+      data.map(item => {
+        const result: [string, string, string, string, any?, string?] = [
+          item[0] || '',
+          item[1] || '',
+          item[2] || '',
+          item[3] || ''
+        ];
+        if (item.length > 4 && item[4]) {
+          result[4] = item[4];
+        }
+        if (item.length > 5 && item[5]) {
+          result[5] = item[5];
+        }
+        return result;
+      });
+
+    this.initializeFromKernelData(kernelData);
+    this.saveMetadata();
+    this.updateCSS();
+  }
+
+  public updateCSS(): void {
+    const css_text = this.KernelList.map((lan: string) => {
+      if (this.BackgroundColor.get(lan)) {
+        const css_name = safe_css_name(`sos_lan_${lan}`);
+        return `.jp-CodeCell.${css_name} .jp-InputPrompt,
             .jp-CodeCell.${css_name} .jp-OutputPrompt {
               background: ${this.BackgroundColor.get(lan)};
             }
           `;
-        } else {
-          return null;
-        }
+      } else {
+        return null;
       }
-    )
+    })
       .filter(Boolean)
       .join('\n');
     const css = document.createElement('style');
-    // css.type = "text/css";
     css.innerHTML = css_text;
     document.body.appendChild(css);
   }
@@ -229,5 +374,47 @@ export class Manager {
   public get_config(key: string): any {
     // sos.kernel_codemirror_mode
     return this._settings.get(key).composite;
+  }
+
+  public getDefaultBackgroundColors(): Record<string, string> {
+    return this.get_config('sos.default_background_colors') || {};
+  }
+
+  public getPreferredKernels(): string[] {
+    return this.get_config('sos.preferred_kernels') || [];
+  }
+
+  public getAutoResumeWorkflows(): boolean {
+    return this.get_config('sos.auto_resume_workflows') || false;
+  }
+
+  public getMetadataVersion(): string {
+    return this.get_config('sos.metadata_version') || '1.0';
+  }
+
+  public applyDefaultColorsToNotebook(notebook: NotebookPanel): void {
+    const info = this.get_info(notebook);
+    const defaultColors = this.getDefaultBackgroundColors();
+
+    for (const [kernelName, color] of Object.entries(defaultColors)) {
+      if (!info.BackgroundColor.has(kernelName) && color) {
+        info.BackgroundColor.set(kernelName, color);
+      }
+    }
+  }
+
+  public initializeNotebookWithDefaults(notebook: NotebookPanel): void {
+    const info = this.get_info(notebook);
+
+    // Apply default colors
+    this.applyDefaultColorsToNotebook(notebook);
+
+    // Set auto resume from user preferences
+    if (this.getAutoResumeWorkflows()) {
+      info.autoResume = true;
+    }
+
+    // Update CSS with any new colors
+    info.updateCSS();
   }
 }
