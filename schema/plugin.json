@@ -23,11 +23,6 @@
       "command": "sos:toggle_markdown",
       "keys": ["Ctrl Shift M"],
       "selector": ".jp-Notebook.jp-mod-editMode"
-    },
-    {
-      "command": "notebook:run-in-console",
-      "keys": ["Ctrl Shift Enter"],
-      "selector": ".jp-Notebook.jp-mod-editMode"
     }
   ],
   "properties": {
@@ -76,43 +71,6 @@
         },
         "stex": "stex"
       }
-    },
-    "sos.default_background_colors": {
-      "title": "Default background colors for kernels",
-      "description": "Default background colors for different kernel types. These can be overridden by notebook-specific settings.",
-      "type": "object",
-      "additionalProperties": {
-        "type": "string",
-        "pattern": "^#[0-9A-Fa-f]{6}$|^$"
-      },
-      "default": {
-        "Python": "#FFE5B4",
-        "R": "#AED6F1",
-        "Julia": "#C8E6C9",
-        "Bash": "#FFCDD2",
-        "JavaScript": "#FFF3E0"
-      }
-    },
-    "sos.preferred_kernels": {
-      "title": "Preferred kernels",
-      "description": "List of preferred kernels in order of preference for new cells.",
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "default": ["Python", "R", "Julia", "Bash"]
-    },
-    "sos.auto_resume_workflows": {
-      "title": "Auto resume workflows",
-      "description": "Automatically resume interrupted workflows when opening a notebook.",
-      "type": "boolean",
-      "default": false
-    },
-    "sos.metadata_version": {
-      "title": "Metadata version",
-      "description": "Version of the SoS metadata format to use for new notebooks.",
-      "type": "string",
-      "default": "1.0"
     }
   },
   "additionalProperties": false,

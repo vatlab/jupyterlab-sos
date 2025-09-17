@@ -375,46 +375,4 @@ export class Manager {
     // sos.kernel_codemirror_mode
     return this._settings.get(key).composite;
   }
-
-  public getDefaultBackgroundColors(): Record<string, string> {
-    return this.get_config('sos.default_background_colors') || {};
-  }
-
-  public getPreferredKernels(): string[] {
-    return this.get_config('sos.preferred_kernels') || [];
-  }
-
-  public getAutoResumeWorkflows(): boolean {
-    return this.get_config('sos.auto_resume_workflows') || false;
-  }
-
-  public getMetadataVersion(): string {
-    return this.get_config('sos.metadata_version') || '1.0';
-  }
-
-  public applyDefaultColorsToNotebook(notebook: NotebookPanel): void {
-    const info = this.get_info(notebook);
-    const defaultColors = this.getDefaultBackgroundColors();
-
-    for (const [kernelName, color] of Object.entries(defaultColors)) {
-      if (!info.BackgroundColor.has(kernelName) && color) {
-        info.BackgroundColor.set(kernelName, color);
-      }
-    }
-  }
-
-  public initializeNotebookWithDefaults(notebook: NotebookPanel): void {
-    const info = this.get_info(notebook);
-
-    // Apply default colors
-    this.applyDefaultColorsToNotebook(notebook);
-
-    // Set auto resume from user preferences
-    if (this.getAutoResumeWorkflows()) {
-      info.autoResume = true;
-    }
-
-    // Update CSS with any new colors
-    info.updateCSS();
-  }
 }
